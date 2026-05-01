@@ -380,47 +380,164 @@ tr:hover td{background:var(--blue-pale)}
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title">🤝 <span id="modalTitle">เพิ่ม MOU ใหม่</span></div>
+    <input type="hidden" id="editId" value="">
     <div class="form-grid">
       <div class="form-group form-full">
-        <label>หน่วยงาน ม.พะเยา</label>
-        <select><option>-- เลือกหน่วยงาน --</option><option>คณะวิทยาศาสตร์</option><option>คณะวิศวกรรมศาสตร์</option><option>คณะแพทยศาสตร์</option><option>คณะนิติศาสตร์</option><option>คณะรัฐศาสตร์และสังคมศาสตร์</option><option>วิทยาลัยการศึกษา</option><option>สำนักงานวิเทศสัมพันธ์</option><option>สถาบันนวัตกรรม</option></select>
+        <label>หน่วยงาน ม.พะเยา *</label>
+        <select id="f_dept" required>
+          <option value="">-- เลือกหน่วยงาน --</option>
+          <option>คณะวิทยาศาสตร์</option>
+          <option>คณะวิศวกรรมศาสตร์</option>
+          <option>คณะแพทยศาสตร์</option>
+          <option>คณะทันตแพทยศาสตร์</option>
+          <option>คณะเภสัชศาสตร์</option>
+          <option>คณะพยาบาลศาสตร์</option>
+          <option>คณะนิติศาสตร์</option>
+          <option>คณะรัฐศาสตร์และสังคมศาสตร์</option>
+          <option>คณะบริหารธุรกิจและนิเทศศาสตร์</option>
+          <option>คณะศิลปศาสตร์</option>
+          <option>คณะสถาปัตยกรรมศาสตร์</option>
+          <option>คณะเทคโนโลยีสารสนเทศและการสื่อสาร</option>
+          <option>วิทยาลัยการศึกษา</option>
+          <option>วิทยาลัยการแพทย์และการสาธารณสุข</option>
+          <option>สำนักงานวิเทศสัมพันธ์</option>
+          <option>สถาบันนวัตกรรมและถ่ายทอดเทคโนโลยี</option>
+          <option>กองบริการการศึกษา</option>
+          <option>มหาวิทยาลัยพะเยา (ภาพรวม)</option>
+        </select>
       </div>
       <div class="form-group form-full">
-        <label>ชื่อองค์กรต่างประเทศ (ภาษาอังกฤษ)</label>
-        <input type="text" placeholder="เช่น Shanghai Open University">
+        <label>ชื่อองค์กรต่างประเทศ (ภาษาอังกฤษ) *</label>
+        <input type="text" id="f_uni" placeholder="เช่น Shanghai Open University" required>
       </div>
       <div class="form-group">
-        <label>ประเทศ</label>
-        <input type="text" placeholder="เช่น China">
+        <label>ประเทศ *</label>
+        <select id="f_country" required>
+          <option value="">-- เลือกประเทศ --</option>
+          <optgroup label="🌏 เอเชียตะวันออก">
+            <option>China</option>
+            <option>Japan</option>
+            <option>South Korea</option>
+            <option>Taiwan</option>
+            <option>Hong Kong</option>
+            <option>Mongolia</option>
+          </optgroup>
+          <optgroup label="🌏 เอเชียตะวันออกเฉียงใต้">
+            <option>Thailand</option>
+            <option>Vietnam</option>
+            <option>Myanmar</option>
+            <option>Laos</option>
+            <option>Cambodia</option>
+            <option>Indonesia</option>
+            <option>Malaysia</option>
+            <option>Philippines</option>
+            <option>Singapore</option>
+            <option>Brunei</option>
+            <option>Timor-Leste</option>
+          </optgroup>
+          <optgroup label="🌏 เอเชียใต้">
+            <option>India</option>
+            <option>Bangladesh</option>
+            <option>Sri Lanka</option>
+            <option>Nepal</option>
+            <option>Pakistan</option>
+          </optgroup>
+          <optgroup label="🌏 เอเชียกลาง/ตะวันออกกลาง">
+            <option>Kazakhstan</option>
+            <option>Uzbekistan</option>
+            <option>Saudi Arabia</option>
+            <option>UAE</option>
+            <option>Iran</option>
+            <option>Turkey</option>
+          </optgroup>
+          <optgroup label="🌍 ยุโรป">
+            <option>Germany</option>
+            <option>France</option>
+            <option>United Kingdom</option>
+            <option>Netherlands</option>
+            <option>Sweden</option>
+            <option>Norway</option>
+            <option>Finland</option>
+            <option>Denmark</option>
+            <option>Belgium</option>
+            <option>Switzerland</option>
+            <option>Austria</option>
+            <option>Italy</option>
+            <option>Spain</option>
+            <option>Portugal</option>
+            <option>Poland</option>
+            <option>Czech Republic</option>
+            <option>Hungary</option>
+            <option>Russia</option>
+          </optgroup>
+          <optgroup label="🌎 อเมริกา">
+            <option>USA</option>
+            <option>Canada</option>
+            <option>Brazil</option>
+            <option>Mexico</option>
+            <option>Argentina</option>
+            <option>Chile</option>
+          </optgroup>
+          <optgroup label="🦘 โอเชียเนีย">
+            <option>Australia</option>
+            <option>New Zealand</option>
+            <option>Papua New Guinea</option>
+          </optgroup>
+          <optgroup label="🌍 แอฟริกา">
+            <option>South Africa</option>
+            <option>Egypt</option>
+            <option>Nigeria</option>
+            <option>Kenya</option>
+            <option>Ethiopia</option>
+          </optgroup>
+        </select>
       </div>
       <div class="form-group">
-        <label>ประเภทความร่วมมือ</label>
-        <select><option>MOU</option><option>MOA</option><option>LOI</option><option>Agreement</option></select>
+        <label>ทวีป *</label>
+        <select id="f_continent" required>
+          <option value="">-- เลือกทวีป --</option>
+          <option value="asia">เอเชีย</option>
+          <option value="europe">ยุโรป</option>
+          <option value="america">อเมริกา</option>
+          <option value="oceania">โอเชียเนีย</option>
+          <option value="africa">แอฟริกา</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>มีผลตั้งแต่วันที่</label>
-        <input type="date">
+        <label>ประเภทความร่วมมือ *</label>
+        <select id="f_type" required>
+          <option value="MOU">MOU</option>
+          <option value="MOA">MOA</option>
+          <option value="LOI">LOI</option>
+          <option value="Agreement">Agreement</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>สิ้นสุดวันที่</label>
-        <input type="date">
+        <label>ปีงบประมาณ *</label>
+        <select id="f_fy" required>
+          <option>2569</option><option>2568</option><option>2567</option>
+          <option>2566</option><option>2565</option><option>2564</option>
+          <option>2563</option><option>2562</option><option>2561</option>
+        </select>
       </div>
       <div class="form-group">
-        <label>ปีงบประมาณ</label>
-        <input type="text" placeholder="เช่น 2568">
+        <label>มีผลตั้งแต่วันที่ *</label>
+        <input type="date" id="f_start" required>
       </div>
       <div class="form-group">
-        <label>แนบไฟล์เอกสาร</label>
-        <input type="file" accept=".pdf,.doc,.docx">
+        <label>สิ้นสุดวันที่ *</label>
+        <input type="date" id="f_end" required>
       </div>
       <div class="form-group form-full">
         <label>หมายเหตุ</label>
-        <textarea placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+        <textarea id="f_note" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
       </div>
     </div>
+    <!-- SAVE STATUS -->
+    <div id="saveStatus" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;margin-top:8px;display:none;align-items:center;gap:8px"></div>
     <div class="modal-footer">
       <button class="modal-btn modal-cancel" onclick="closeModal()">ยกเลิก</button>
-      <button class="modal-btn modal-save">💾 บันทึก MOU</button>
+      <button class="modal-btn modal-save" id="saveBtn" onclick="saveMOU()">💾 บันทึก MOU</button>
     </div>
   </div>
 </div>
@@ -627,6 +744,142 @@ document.getElementById('modalOverlay').addEventListener('click',function(e){if(
 function exportData(){alert('📥 กำลัง Export รายงาน...\n(Feature นี้จะเชื่อมต่อกับ Backend จริง)');}
 </script>
 <script src="iroup-config.js"></script>
+<script>
+// ============================================================
+// AUTO-FILL CONTINENT เมื่อเลือกประเทศ
+// ============================================================
+document.getElementById('f_country').addEventListener('change', function() {
+  const country = this.value;
+  const continentMap = {
+    'China':'asia','Japan':'asia','South Korea':'asia','Taiwan':'asia',
+    'Hong Kong':'asia','Mongolia':'asia','Vietnam':'asia','Myanmar':'asia',
+    'Laos':'asia','Cambodia':'asia','Indonesia':'asia','Malaysia':'asia',
+    'Philippines':'asia','Singapore':'asia','Brunei':'asia','Timor-Leste':'asia',
+    'Thailand':'asia','India':'asia','Bangladesh':'asia','Sri Lanka':'asia',
+    'Nepal':'asia','Pakistan':'asia','Kazakhstan':'asia','Uzbekistan':'asia',
+    'Saudi Arabia':'asia','UAE':'asia','Iran':'asia','Turkey':'asia',
+    'Germany':'europe','France':'europe','United Kingdom':'europe',
+    'Netherlands':'europe','Sweden':'europe','Norway':'europe','Finland':'europe',
+    'Denmark':'europe','Belgium':'europe','Switzerland':'europe','Austria':'europe',
+    'Italy':'europe','Spain':'europe','Portugal':'europe','Poland':'europe',
+    'Czech Republic':'europe','Hungary':'europe','Russia':'europe',
+    'USA':'america','Canada':'america','Brazil':'america','Mexico':'america',
+    'Argentina':'america','Chile':'america',
+    'Australia':'oceania','New Zealand':'oceania','Papua New Guinea':'oceania',
+    'South Africa':'africa','Egypt':'africa','Nigeria':'africa',
+    'Kenya':'africa','Ethiopia':'africa',
+  };
+  const cont = document.getElementById('f_continent');
+  if (continentMap[country]) cont.value = continentMap[country];
+});
+
+// ============================================================
+// SAVE MOU — บันทึกลง Google Sheets จริง
+// ============================================================
+async function saveMOU() {
+  const id      = document.getElementById('editId').value;
+  const dept    = document.getElementById('f_dept').value;
+  const uni     = document.getElementById('f_uni').value;
+  const country = document.getElementById('f_country').value;
+  const cont    = document.getElementById('f_continent').value;
+  const type    = document.getElementById('f_type').value;
+  const fy      = document.getElementById('f_fy').value;
+  const start   = document.getElementById('f_start').value;
+  const end     = document.getElementById('f_end').value;
+  const note    = document.getElementById('f_note').value;
+
+  // Validate
+  if (!dept || !uni || !country || !start || !end) {
+    showSaveStatus('error', '⚠️ กรุณากรอกข้อมูลที่จำเป็นให้ครบ (*)');
+    return;
+  }
+  if (new Date(start) >= new Date(end)) {
+    showSaveStatus('error', '⚠️ วันสิ้นสุดต้องมากกว่าวันเริ่มต้น');
+    return;
+  }
+
+  const data = {
+    'หน่วยงาน_UP': dept,
+    'องค์กร_ตปท':  uni,
+    'ประเทศ':      country,
+    'ทวีป':        cont,
+    'ประเภท':      type,
+    'ปีงบ':        fy,
+    'วันเริ่ม':    start,
+    'วันสิ้นสุด':  end,
+    'หมายเหตุ':    note,
+    'ไฟล์_URL':    '',
+  };
+
+  // Show loading
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังบันทึก...';
+  showSaveStatus('loading', '⏳ กำลังบันทึกข้อมูล...');
+
+  try {
+    let result;
+    if (id) {
+      // แก้ไข
+      result = await IROUP.edit(IROUP.SHEETS.MOU, id, data);
+    } else {
+      // เพิ่มใหม่
+      result = await IROUP.add(IROUP.SHEETS.MOU, data);
+    }
+
+    if (result.success) {
+      showSaveStatus('success', '✅ บันทึกสำเร็จ! กำลังโหลดข้อมูลใหม่...');
+      setTimeout(() => {
+        closeModal();
+        loadMouData(); // โหลดข้อมูลใหม่จาก Sheets
+      }, 1200);
+    } else {
+      showSaveStatus('error', '❌ เกิดข้อผิดพลาด: ' + (result.error || 'ลองใหม่อีกครั้ง'));
+    }
+  } catch(e) {
+    showSaveStatus('error', '❌ ไม่สามารถเชื่อมต่อได้: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 บันทึก MOU';
+  }
+}
+
+function showSaveStatus(type, msg) {
+  const el = document.getElementById('saveStatus');
+  el.style.display = 'flex';
+  if (type === 'loading') {
+    el.style.background = 'var(--blue-pale)';
+    el.style.color = 'var(--blue)';
+  } else if (type === 'success') {
+    el.style.background = 'var(--green-pale)';
+    el.style.color = 'var(--green)';
+  } else {
+    el.style.background = 'var(--red-pale)';
+    el.style.color = 'var(--red)';
+  }
+  el.textContent = msg;
+}
+
+// Reset form เมื่อเปิด modal ใหม่
+const _origOpenModal = window.openModal;
+window.openModal = function(id) {
+  document.getElementById('editId').value = id || '';
+  document.getElementById('modalTitle').textContent = id ? 'แก้ไข MOU' : 'เพิ่ม MOU ใหม่';
+  document.getElementById('saveStatus').style.display = 'none';
+  if (!id) {
+    // Reset form
+    ['f_dept','f_uni','f_country','f_continent','f_type','f_note'].forEach(f => {
+      const el = document.getElementById(f);
+      if (el) el.value = el.tagName === 'SELECT' ? el.options[0]?.value || '' : '';
+    });
+    document.getElementById('f_fy').value = '2569';
+    document.getElementById('f_start').value = '';
+    document.getElementById('f_end').value = '';
+  }
+  document.getElementById('modalOverlay').classList.add('show');
+};
+</script>
+
 
 <script>
 // ============================================================
