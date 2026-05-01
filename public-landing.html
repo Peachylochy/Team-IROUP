@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iROUP — International Relations · University of Phayao</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sky:#4BBDE8;--sky-dark:#1A6DB5;--sky-pale:#E8F6FD;
+  --navy:#0F2D5A;--navy-dark:#071828;
+  --green:#5BAD3E;--green-light:#7BC842;--green-pale:#EBF7E3;
+  --gold:#F5A623;--gold-dark:#C47D0A;--gold-pale:#FEF3DC;
+  --white:#FFFFFF;--gray-100:#F5F8FC;--gray-200:#E8EFF7;--gray-600:#5A6A7E;--gray-800:#2D3E52;
+  --shadow-card:0 4px 24px rgba(15,45,90,0.10);
+  --shadow-float:0 12px 48px rgba(15,45,90,0.18);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Prompt',sans-serif;background:var(--white);color:var(--navy);overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;transition:all .3s}
+nav.scrolled{background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);box-shadow:0 1px 20px rgba(15,45,90,0.08)}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--sky),var(--sky-dark));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;letter-spacing:-0.5px}
+.nav-logo-text{font-size:18px;font-weight:800;color:var(--navy);letter-spacing:-0.3px}
+.nav-logo-text span{color:var(--sky)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-link{font-size:13px;font-weight:500;color:var(--gray-600);text-decoration:none;transition:color .2s}
+.nav-link:hover{color:var(--sky-dark)}
+.nav-lang{display:flex;background:var(--gray-200);border-radius:20px;padding:3px;gap:2px}
+.nav-lang-btn{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gray-600);transition:all .2s;font-family:'Sarabun',sans-serif}
+.nav-lang-btn.active{background:var(--sky-dark);color:#fff}
+.nav-admin-btn{padding:8px 18px;background:linear-gradient(135deg,var(--sky-dark),var(--sky));border-radius:20px;font-size:12px;font-weight:700;color:#fff;text-decoration:none;transition:all .2s;box-shadow:0 2px 8px rgba(27,109,181,0.25)}
+.nav-admin-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(27,109,181,0.35)}
+
+/* HERO */
+.hero{min-height:100vh;background:linear-gradient(160deg,#EAF5FC 0%,#F0F8E8 40%,#FEF8EC 100%);display:flex;align-items:center;padding:80px 5% 60px;position:relative;overflow:hidden}
+.hero-bg-circle{position:absolute;border-radius:50%;pointer-events:none}
+.hbc1{width:600px;height:600px;background:radial-gradient(circle,rgba(75,189,232,0.12),transparent);top:-100px;right:-100px}
+.hbc2{width:400px;height:400px;background:radial-gradient(circle,rgba(91,173,62,0.1),transparent);bottom:-80px;left:5%}
+.hbc3{width:300px;height:300px;background:radial-gradient(circle,rgba(245,166,35,0.1),transparent);top:30%;left:30%}
+.hero-content{flex:1;max-width:560px;z-index:2;animation:fadeUp .8s ease both}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(75,189,232,0.12);border:1px solid rgba(75,189,232,0.3);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;color:var(--sky-dark);margin-bottom:20px}
+.hero-tag-dot{width:6px;height:6px;background:var(--sky);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.hero-title{font-size:52px;font-weight:900;line-height:1.05;letter-spacing:-1.5px;color:var(--navy-dark);margin-bottom:8px}
+.hero-title .accent{color:var(--sky);display:block}
+.hero-title .accent2{color:var(--green-light);font-size:38px;font-weight:700}
+.hero-sub{font-size:15px;color:var(--gray-600);font-family:'Sarabun',sans-serif;line-height:1.7;margin-bottom:28px;font-weight:400}
+.hero-sub strong{color:var(--navy);font-weight:600}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:36px}
+.hero-btn-main{padding:14px 28px;background:linear-gradient(135deg,var(--sky-dark),var(--sky));border-radius:12px;font-size:14px;font-weight:700;color:#fff;text-decoration:none;transition:all .25s;box-shadow:0 4px 16px rgba(27,109,181,0.3);display:flex;align-items:center;gap:8px}
+.hero-btn-main:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(27,109,181,0.4)}
+.hero-btn-sec{padding:14px 28px;background:var(--white);border:2px solid var(--sky);border-radius:12px;font-size:14px;font-weight:700;color:var(--sky-dark);text-decoration:none;transition:all .25s;display:flex;align-items:center;gap:8px}
+.hero-btn-sec:hover{background:var(--sky-pale);transform:translateY(-2px)}
+.hero-stats{display:flex;gap:24px}
+.hero-stat{text-align:center}
+.hero-stat-num{font-size:30px;font-weight:900;color:var(--sky-dark);letter-spacing:-1px;line-height:1}
+.hero-stat-label{font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:3px}
+.stat-divider{width:1px;background:var(--gray-200);align-self:stretch;margin:4px 0}
+
+/* GLOBY */
+.hero-visual{flex:1;display:flex;justify-content:center;align-items:center;position:relative;z-index:2;animation:fadeUp .8s .2s ease both}
+.globy-wrap{position:relative;width:420px;height:420px}
+.globy-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 20px 40px rgba(75,189,232,0.25));animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.globy-bubble{position:absolute;background:var(--white);border-radius:12px;padding:8px 12px;box-shadow:var(--shadow-float);font-size:11px;font-weight:600;white-space:nowrap;animation:float 4s ease-in-out infinite}
+.gb1{top:12%;left:-10%;animation-delay:.5s;color:var(--sky-dark);border-left:3px solid var(--sky)}
+.gb2{top:28%;right:-8%;animation-delay:1s;color:var(--green);border-left:3px solid var(--green-light)}
+.gb3{bottom:22%;left:-5%;animation-delay:1.5s;color:var(--gold-dark);border-left:3px solid var(--gold)}
+.gb4{bottom:10%;right:5%;animation-delay:.8s;color:var(--navy);border-left:3px solid var(--sky-dark)}
+.bubble-sub{font-size:9px;color:var(--gray-600);font-weight:400;font-family:'Sarabun',sans-serif;margin-top:1px}
+
+/* SECTION COMMON */
+section{padding:80px 5%}
+.section-tag{display:inline-block;background:var(--sky-pale);color:var(--sky-dark);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px;font-family:'Sarabun',sans-serif;letter-spacing:0.5px;text-transform:uppercase}
+.section-title{font-size:34px;font-weight:800;color:var(--navy-dark);letter-spacing:-0.8px;line-height:1.15;margin-bottom:10px}
+.section-title span{color:var(--sky)}
+.section-sub{font-size:14px;color:var(--gray-600);font-family:'Sarabun',sans-serif;line-height:1.7;max-width:520px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* FEATURES */
+.features{background:var(--white)}
+.features-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:48px}
+.feature-card{background:var(--gray-100);border-radius:20px;padding:28px 22px;transition:all .25s;cursor:pointer;border:2px solid transparent;text-decoration:none;display:block}
+.feature-card:hover{background:var(--white);border-color:var(--sky);box-shadow:var(--shadow-float);transform:translateY(-4px)}
+.feature-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px}
+.fi-blue{background:linear-gradient(135deg,var(--sky-pale),#cce8f8)}
+.fi-green{background:linear-gradient(135deg,var(--green-pale),#d0efbf)}
+.fi-gold{background:linear-gradient(135deg,var(--gold-pale),#fde8b8)}
+.fi-navy{background:linear-gradient(135deg,#dde8f5,#c0d4ec)}
+.feature-title{font-size:15px;font-weight:700;color:var(--navy-dark);margin-bottom:6px}
+.feature-desc{font-size:12px;color:var(--gray-600);font-family:'Sarabun',sans-serif;line-height:1.6}
+.feature-count{display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-size:11px;font-weight:700;color:var(--sky-dark)}
+.feature-count-num{font-size:20px;font-weight:900;color:var(--sky-dark)}
+
+/* SCHOLARSHIP SPOTLIGHT */
+.scholarships{background:linear-gradient(160deg,#F0F8E8,#EAF5FC)}
+.scholar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.scholar-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);transition:all .25s;cursor:pointer}
+.scholar-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-float)}
+.sc-top{padding:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.sc-flag-wrap{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.sc-info{flex:1}
+.sc-title{font-size:13px;font-weight:700;color:var(--navy-dark);line-height:1.3;margin-bottom:3px}
+.sc-org{font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif}
+.sc-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;font-family:'Sarabun',sans-serif}
+.sc-open{background:var(--green-pale);color:var(--green)}
+.sc-soon{background:var(--gold-pale);color:var(--gold-dark)}
+.sc-covers{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:4px}
+.sc-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--sky-pale);color:var(--sky-dark);font-weight:500;font-family:'Sarabun',sans-serif}
+.sc-bottom{padding:10px 16px;background:var(--gray-100);border-top:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.sc-deadline{font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;display:flex;align-items:center;gap:4px}
+.sc-days{font-size:11px;font-weight:700}
+.sc-days.urgent{color:var(--sky-dark)}
+.view-all-btn{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;background:var(--sky-dark);border-radius:10px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;margin-top:28px}
+.view-all-btn:hover{background:var(--sky);transform:translateY(-1px)}
+
+/* MAP SECTION */
+.map-section{background:var(--navy-dark);padding:80px 5%;position:relative;overflow:hidden}
+.map-bg-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none}
+.orb1{width:500px;height:500px;background:radial-gradient(circle,rgba(75,189,232,0.15),transparent);top:-100px;right:-100px}
+.orb2{width:400px;height:400px;background:radial-gradient(circle,rgba(91,173,62,0.1),transparent);bottom:-100px;left:-50px}
+.map-header{position:relative;z-index:2;margin-bottom:32px}
+.map-header .section-tag{background:rgba(75,189,232,0.15);color:var(--sky)}
+.map-header .section-title{color:#fff}
+.map-header .section-sub{color:rgba(255,255,255,0.55)}
+.map-container{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;position:relative;z-index:2}
+.map-placeholder{width:100%;height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px dashed rgba(75,189,232,0.2)}
+.map-world-emoji{font-size:80px;animation:float 4s ease-in-out infinite}
+.map-caption{font-size:13px;color:rgba(255,255,255,0.4);font-family:'Sarabun',sans-serif}
+.map-stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px}
+.map-stat{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:center}
+.map-stat-flag{font-size:20px;margin-bottom:4px}
+.map-stat-num{font-size:18px;font-weight:800;color:var(--sky)}
+.map-stat-label{font-size:10px;color:rgba(255,255,255,0.45);font-family:'Sarabun',sans-serif;margin-top:2px}
+
+/* EVENTS */
+.events-section{background:var(--white)}
+.events-list{margin-top:40px;display:flex;flex-direction:column;gap:12px}
+.event-row{background:var(--gray-100);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;transition:all .2s;cursor:pointer;border:1.5px solid transparent}
+.event-row:hover{background:var(--white);border-color:var(--sky);box-shadow:var(--shadow-card)}
+.ev-date{text-align:center;background:var(--white);border-radius:10px;padding:8px 12px;min-width:56px;box-shadow:0 2px 8px rgba(15,45,90,0.08)}
+.ev-day{font-size:22px;font-weight:900;color:var(--sky-dark);line-height:1}
+.ev-month{font-size:9px;color:var(--gray-600);font-family:'Sarabun',sans-serif;text-transform:uppercase}
+.ev-type-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ev-content{flex:1}
+.ev-title{font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:3px}
+.ev-meta{font-size:12px;color:var(--gray-600);font-family:'Sarabun',sans-serif;display:flex;align-items:center;gap:8px}
+.ev-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;font-family:'Sarabun',sans-serif}
+.tag-travel{background:#DBEAFE;color:#1E40AF}
+.tag-inbound{background:#EDE9FE;color:#5B21B6}
+.tag-meet{background:var(--green-pale);color:var(--green)}
+.tag-train{background:var(--gold-pale);color:var(--gold-dark)}
+.ev-arrow{color:var(--sky);font-size:18px;transition:transform .2s}
+.event-row:hover .ev-arrow{transform:translateX(4px)}
+
+/* ABOUT STRIP */
+.about-strip{background:linear-gradient(135deg,var(--sky-dark),var(--navy));padding:60px 5%;display:flex;align-items:center;gap:48px}
+.about-globy{width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.3));animation:float 4s ease-in-out infinite;flex-shrink:0}
+.about-text h2{font-size:26px;font-weight:800;color:#fff;margin-bottom:8px;letter-spacing:-0.5px}
+.about-text p{font-size:13px;color:rgba(255,255,255,0.65);font-family:'Sarabun',sans-serif;line-height:1.7;max-width:600px}
+.about-contact{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap}
+.contact-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:6px 14px;font-size:12px;color:rgba(255,255,255,0.8);font-family:'Sarabun',sans-serif}
+
+/* FOOTER */
+footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:center;justify-content:space-between}
+.footer-logo{display:flex;align-items:center;gap:8px}
+.footer-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--sky),var(--sky-dark));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff}
+.footer-logo-text{font-size:14px;font-weight:700;color:rgba(255,255,255,0.8)}
+.footer-text{font-size:11px;color:rgba(255,255,255,0.3);font-family:'Sarabun',sans-serif;text-align:center}
+.footer-admin{font-size:11px;color:rgba(75,189,232,0.6);font-family:'Sarabun',sans-serif;cursor:pointer;transition:color .2s}
+.footer-admin:hover{color:var(--sky)}
+
+/* COUNTER ANIMATION */
+.count-up{display:inline-block}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">iR</div>
+    <div class="nav-logo-text">i<span>ROUP</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">บริการ</a>
+    <a href="#scholarships" class="nav-link">ทุนการศึกษา</a>
+    <a href="#events" class="nav-link">กิจกรรม</a>
+    <a href="#map" class="nav-link">ความร่วมมือ</a>
+    <div class="nav-lang">
+      <div class="nav-lang-btn active">TH</div>
+      <div class="nav-lang-btn">EN</div>
+    </div>
+    <a href="#" class="nav-admin-btn">🔐 เข้าสู่ระบบ Admin</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-circle hbc1"></div>
+  <div class="hero-bg-circle hbc2"></div>
+  <div class="hero-bg-circle hbc3"></div>
+
+  <div class="hero-content">
+    <div class="hero-tag">
+      <div class="hero-tag-dot"></div>
+      งานวิเทศสัมพันธ์ มหาวิทยาลัยพะเยา
+    </div>
+    <h1 class="hero-title">
+      ศูนย์กลาง
+      <span class="accent">ความร่วมมือ<br>นานาชาติ</span>
+      <span class="accent2">University of Phayao</span>
+    </h1>
+    <p class="hero-sub">
+      รวบรวมข้อมูล <strong>MOU</strong> ทุนการศึกษา กิจกรรม และความเคลื่อนไหวนานาชาติของมหาวิทยาลัยพะเยาทั้งหมดไว้ในที่เดียว
+    </p>
+    <div class="hero-btns">
+      <a href="#scholarships" class="hero-btn-main">🎓 ดูทุนการศึกษา</a>
+      <a href="#features" class="hero-btn-sec">🤝 ดู MOU ทั้งหมด</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="count-up" data-target="142">0</span></div>
+        <div class="hero-stat-label">MOU ทั้งหมด</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="count-up" data-target="38">0</span></div>
+        <div class="hero-stat-label">ประเทศ</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="count-up" data-target="24">0</span></div>
+        <div class="hero-stat-label">ทุนเปิดรับ</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="hero-stat">
+        <div class="hero-stat-num"><span class="count-up" data-target="215">0</span></div>
+        <div class="hero-stat-label">Mobility ปีนี้</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="globy-wrap">
+      <img src="/mnt/user-data/uploads/Globy_IROUP.png" alt="Globy mascot" class="globy-img">
+      <div class="globy-bubble gb1">🇯🇵 Shinshu University<div class="bubble-sub">Japan · MOU Active</div></div>
+      <div class="globy-bubble gb2">🎓 JASSO Scholarship<div class="bubble-sub">เหลือ 45 วัน!</div></div>
+      <div class="globy-bubble gb3">🇨🇳 Shanghai Open Univ.<div class="bubble-sub">Immersion Hub 2569</div></div>
+      <div class="globy-bubble gb4">🌍 38 ประเทศทั่วโลก<div class="bubble-sub">142 MOU Active</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-tag">บริการของเรา</div>
+  <h2 class="section-title">ข้อมูลนานาชาติ<br><span>ครบในที่เดียว</span></h2>
+  <p class="section-sub">ค้นหาข้อมูลที่ต้องการได้ง่าย ไม่ว่าจะเป็นทุนการศึกษา ความร่วมมือ หรือกิจกรรมต่างๆ</p>
+  <div class="features-grid">
+    <a href="#" class="feature-card">
+      <div class="feature-icon fi-blue">🤝</div>
+      <div class="feature-title">MOU ต่างประเทศ</div>
+      <div class="feature-desc">ข้อมูลความร่วมมือทางวิชาการกับสถาบันทั่วโลก พร้อมแผนที่ interactive</div>
+      <div class="feature-count"><span class="feature-count-num">142</span> ฉบับ · 38 ประเทศ</div>
+    </a>
+    <a href="#scholarships" class="feature-card">
+      <div class="feature-icon fi-green">🎓</div>
+      <div class="feature-title">ทุนการศึกษา</div>
+      <div class="feature-desc">ทุนจากต่างประเทศสำหรับนิสิตและบุคลากร พร้อมวันปิดรับสมัคร</div>
+      <div class="feature-count"><span class="feature-count-num">8</span> ทุน กำลังรับสมัคร</div>
+    </a>
+    <a href="#events" class="feature-card">
+      <div class="feature-icon fi-gold">📅</div>
+      <div class="feature-title">กิจกรรม & Events</div>
+      <div class="feature-desc">ปฏิทินกิจกรรมนานาชาติ การเดินทาง Exchange และโปรแกรมพิเศษ</div>
+      <div class="feature-count"><span class="feature-count-num">15</span> กิจกรรมปีนี้</div>
+    </a>
+    <a href="#" class="feature-card">
+      <div class="feature-icon fi-navy">👥</div>
+      <div class="feature-title">Mobility</div>
+      <div class="feature-desc">สถิติการเคลื่อนย้ายนิสิต อาจารย์ และนักวิจัย Inbound & Outbound</div>
+      <div class="feature-count"><span class="feature-count-num">215</span> คน ปีการศึกษา 2568</div>
+    </a>
+  </div>
+</section>
+
+<!-- SCHOLARSHIPS -->
+<section class="scholarships" id="scholarships">
+  <div class="section-tag">ทุนการศึกษา</div>
+  <h2 class="section-title">ทุนที่<span>กำลังรับสมัคร</span></h2>
+  <p class="section-sub">อย่าพลาดโอกาส! ทุนจากต่างประเทศเปิดรับสมัครอยู่ตอนนี้</p>
+  <div class="scholar-grid">
+
+    <div class="scholar-card">
+      <div class="sc-top">
+        <div class="sc-flag-wrap" style="background:#E8F4FD">🇯🇵</div>
+        <div class="sc-info">
+          <div class="sc-title">JASSO Student Exchange Support Program</div>
+          <div class="sc-org">Japan Student Services Organization</div>
+        </div>
+        <span class="sc-badge sc-open">รับสมัคร</span>
+      </div>
+      <div class="sc-covers">
+        <span class="sc-tag">✈️ ตั๋วเครื่องบิน</span>
+        <span class="sc-tag">🏠 ที่พัก</span>
+        <span class="sc-tag">💴 ค่าครองชีพ</span>
+      </div>
+      <div class="sc-bottom">
+        <div class="sc-deadline">📅 ปิดรับ 15 มิ.ย. 2569</div>
+        <div class="sc-days urgent">⏰ เหลือ 45 วัน</div>
+      </div>
+    </div>
+
+    <div class="scholar-card">
+      <div class="sc-top">
+        <div class="sc-flag-wrap" style="background:#FDECEA">🇨🇳</div>
+        <div class="sc-info">
+          <div class="sc-title">Chinese Government Scholarship (CSC)</div>
+          <div class="sc-org">China Scholarship Council</div>
+        </div>
+        <span class="sc-badge sc-open">รับสมัคร</span>
+      </div>
+      <div class="sc-covers">
+        <span class="sc-tag">📚 ค่าเล่าเรียน</span>
+        <span class="sc-tag">🏠 ที่พัก</span>
+        <span class="sc-tag">💴 ค่าครองชีพ</span>
+        <span class="sc-tag">🏥 ประกัน</span>
+      </div>
+      <div class="sc-bottom">
+        <div class="sc-deadline">📅 ปิดรับ 1 ก.ค. 2569</div>
+        <div class="sc-days urgent">⏰ เหลือ 61 วัน</div>
+      </div>
+    </div>
+
+    <div class="scholar-card">
+      <div class="sc-top">
+        <div class="sc-flag-wrap" style="background:#EBF7E3">🇰🇷</div>
+        <div class="sc-info">
+          <div class="sc-title">Global Korea Scholarship (GKS)</div>
+          <div class="sc-org">NIIED · South Korea</div>
+        </div>
+        <span class="sc-badge sc-soon">เร็วๆ นี้</span>
+      </div>
+      <div class="sc-covers">
+        <span class="sc-tag">📚 ค่าเล่าเรียน</span>
+        <span class="sc-tag">✈️ ตั๋วเครื่องบิน</span>
+        <span class="sc-tag">🏠 ที่พัก</span>
+        <span class="sc-tag">💴 ค่าครองชีพ</span>
+        <span class="sc-tag">🏥 ประกัน</span>
+      </div>
+      <div class="sc-bottom">
+        <div class="sc-deadline">📅 ปิดรับ 30 ก.ย. 2569</div>
+        <div class="sc-days" style="color:var(--green);font-weight:700">📆 เหลือ 152 วัน</div>
+      </div>
+    </div>
+
+  </div>
+  <a href="#" class="view-all-btn">ดูทุนการศึกษาทั้งหมด 24 ทุน →</a>
+</section>
+
+<!-- MAP -->
+<section class="map-section" id="map">
+  <div class="map-bg-orb orb1"></div>
+  <div class="map-bg-orb orb2"></div>
+  <div class="map-header">
+    <div class="section-tag">ความร่วมมือทั่วโลก</div>
+    <h2 class="section-title">มหาวิทยาลัยพะเยา<br><span>เชื่อมต่อ 38 ประเทศ</span></h2>
+    <p class="section-sub">ดูแผนที่ความร่วมมือและ MOU ที่ Active ทั่วโลก</p>
+  </div>
+  <div class="map-container">
+    <div class="map-placeholder">
+      <div class="map-world-emoji">🗺️</div>
+      <div class="map-caption">Interactive World Map · คลิกประเทศเพื่อดูรายละเอียด MOU</div>
+    </div>
+    <div class="map-stats-row">
+      <div class="map-stat"><div class="map-stat-flag">🌏</div><div class="map-stat-num">21</div><div class="map-stat-label">เอเชีย</div></div>
+      <div class="map-stat"><div class="map-stat-flag">🌍</div><div class="map-stat-num">9</div><div class="map-stat-label">ยุโรป</div></div>
+      <div class="map-stat"><div class="map-stat-flag">🌎</div><div class="map-stat-num">4</div><div class="map-stat-label">อเมริกา</div></div>
+      <div class="map-stat"><div class="map-stat-flag">🦘</div><div class="map-stat-num">3</div><div class="map-stat-label">โอเชียเนีย</div></div>
+      <div class="map-stat"><div class="map-stat-flag">🌐</div><div class="map-stat-num">1</div><div class="map-stat-label">แอฟริกา</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section class="events-section" id="events">
+  <div class="section-tag">กิจกรรม & Events</div>
+  <h2 class="section-title">กิจกรรมที่<span>กำลังจะมาถึง</span></h2>
+  <p class="section-sub">ติดตามกิจกรรมนานาชาติ โปรแกรม Exchange และการเดินทางของมหาวิทยาลัย</p>
+  <div class="events-list">
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">29</div><div class="ev-month">มิ.ย.</div></div>
+      <div class="ev-type-dot" style="background:#1A6DB5"></div>
+      <div class="ev-content">
+        <div class="ev-title">Immersion Hub @ Shanghai Open University</div>
+        <div class="ev-meta">
+          <span>📍 Shanghai, China · 29 มิ.ย.–11 ก.ค. 2569</span>
+          <span>👥 25 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-travel">✈️ การเดินทาง</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">3</div><div class="ev-month">มิ.ย.</div></div>
+      <div class="ev-type-dot" style="background:#7C3AED"></div>
+      <div class="ev-content">
+        <div class="ev-title">คณะผู้แทน Keimyung University เยือนมหาวิทยาลัยพะเยา</div>
+        <div class="ev-meta">
+          <span>📍 มหาวิทยาลัยพะเยา · 3–5 มิ.ย. 2569</span>
+          <span>👥 8 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-inbound">🌏 Inbound</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">20</div><div class="ev-month">พ.ค.</div></div>
+      <div class="ev-type-dot" style="background:#F5A623"></div>
+      <div class="ev-content">
+        <div class="ev-title">English Academic Writing Workshop</div>
+        <div class="ev-meta">
+          <span>📍 มหาวิทยาลัยพะเยา · 20–21 พ.ค. 2569</span>
+          <span>👥 40 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-train">📚 อบรม</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">8</div><div class="ev-month">ก.ค.</div></div>
+      <div class="ev-type-dot" style="background:#1A6DB5"></div>
+      <div class="ev-content">
+        <div class="ev-title">Executive Visit — Deggendorf Institute of Technology, Germany</div>
+        <div class="ev-meta">
+          <span>📍 Deggendorf, Germany · 8–14 ก.ค. 2569</span>
+          <span>👥 5 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-travel">✈️ การเดินทาง</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+  </div>
+  <a href="#" class="view-all-btn" style="background:var(--navy)">ดูกิจกรรมทั้งหมด →</a>
+</section>
+
+<!-- ABOUT STRIP -->
+<div class="about-strip">
+  <img src="/mnt/user-data/uploads/Globy_IROUP.png" alt="Globy" class="about-globy">
+  <div class="about-text">
+    <h2>งานวิเทศสัมพันธ์ มหาวิทยาลัยพะเยา</h2>
+    <p>International Relations Office, University of Phayao (iROUP) ทำหน้าที่ประสานงานความร่วมมือนานาชาติ ดูแลการแลกเปลี่ยนนิสิต อาจารย์ และบุคลากร รวมถึงการทำ MOU กับสถาบันทั่วโลก</p>
+    <div class="about-contact">
+      <div class="contact-chip">📧 international@up.ac.th</div>
+      <div class="contact-chip">📞 054-466-666 ต่อ 1234</div>
+      <div class="contact-chip">📍 อาคาร CE มหาวิทยาลัยพะเยา</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div class="footer-logo-icon">iR</div>
+    <div class="footer-logo-text">iROUP · University of Phayao</div>
+  </div>
+  <div class="footer-text">© 2569 งานวิเทศสัมพันธ์ มหาวิทยาลัยพะเยา · ข้อมูลทั้งหมดอัพเดตโดยทีมงานวิเทศฯ</div>
+  <div class="footer-admin" onclick="window.location='#'">🔐 Admin Login</div>
+</footer>
+
+<script>
+// Scroll nav
+window.addEventListener('scroll',()=>{
+  document.getElementById('mainNav').classList.toggle('scrolled',window.scrollY>40);
+});
+
+// Count up animation
+const counters = document.querySelectorAll('.count-up');
+const observer = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const el = entry.target;
+      const target = +el.dataset.target;
+      const duration = 1200;
+      const step = target/60;
+      let current = 0;
+      const timer = setInterval(()=>{
+        current = Math.min(current+step, target);
+        el.textContent = Math.floor(current);
+        if(current>=target){clearInterval(timer);el.textContent=target;}
+      }, duration/60);
+      observer.unobserve(el);
+    }
+  });
+},{threshold:0.5});
+counters.forEach(c=>observer.observe(c));
+
+// Smooth nav lang toggle
+document.querySelectorAll('.nav-lang-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.nav-lang-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+<script src="iroup-config.js"></script>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iROUP — International Relations · University of Phayao</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#1A6DB5;--blue-light:#4BBDE8;--blue-pale:#E8F4FD;
+  --navy:#0F2D5A;--navy-dark:#071828;
+  --green:#5BAD3E;--green-pale:#EBF7E3;
+  --gold:#D4890A;--gold-pale:#FEF3DC;
+  --red:#D63B32;--red-pale:#FDECEA;
+  --purple:#7C3AED;--purple-pale:#F0EBFF;
+  --teal:#0D9488;--teal-pale:#E0F7F5;
+  --orange:#C2410C;--orange-pale:#FEF0E8;
+  --gray-100:#F8F9FB;--gray-200:#EEF1F5;--gray-300:#DDE2EA;
+  --gray-400:#B8C2D0;--gray-600:#6B7A8D;--gray-800:#2D3748;--gray-900:#1A202C;
+  --white:#FFFFFF;
+  --shadow-sm:0 1px 4px rgba(15,45,90,0.08);
+  --shadow-md:0 4px 16px rgba(15,45,90,0.12);
+  --shadow-lg:0 8px 32px rgba(15,45,90,0.16);
+  --radius-md:12px;--radius-lg:16px;--radius-xl:20px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray-900);display:flex;flex-direction:column}
+
+/* TOP NAV */
+.topnav{height:52px;background:var(--navy-dark);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.tn-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.tn-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue-light),var(--blue));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff}
+.tn-logo-text{font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px}
+.tn-logo-text span{color:var(--blue-light)}
+.tn-divider{width:1px;height:20px;background:rgba(255,255,255,0.1)}
+.tn-breadcrumb{font-size:12px;color:rgba(255,255,255,0.45);font-family:'Sarabun',sans-serif}
+.tn-breadcrumb strong{color:rgba(255,255,255,0.85)}
+.tn-spacer{flex:1}
+.tn-right{display:flex;align-items:center;gap:8px}
+.tn-lang{display:flex;background:rgba(255,255,255,0.08);border-radius:6px;padding:2px;gap:2px}
+.tn-lang-btn{padding:3px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;color:rgba(255,255,255,0.5);transition:all .2s}
+.tn-lang-btn.active{background:var(--blue);color:#fff}
+.tn-public-btn{padding:5px 14px;background:rgba(75,189,232,0.15);border:1px solid rgba(75,189,232,0.3);border-radius:6px;font-size:11px;font-weight:600;color:var(--blue-light);cursor:pointer;transition:all .2s;font-family:'Prompt',sans-serif}
+.tn-public-btn:hover{background:rgba(75,189,232,0.25)}
+.tn-avatar{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--blue-light),var(--blue));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;cursor:pointer}
+
+/* MAIN SHELL */
+.shell{flex:1;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--white);border-right:1px solid var(--gray-200);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:0}
+.sb-section{padding:16px 12px 6px;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.8px;font-family:'Sarabun',sans-serif}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 6px;border-radius:8px;cursor:pointer;transition:all .18s;text-decoration:none;position:relative}
+.sb-item:hover{background:var(--blue-pale)}
+.sb-item.active{background:var(--blue-pale);color:var(--blue)}
+.sb-item.active::after{content:'';position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--blue);border-radius:2px 0 0 2px}
+.sb-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.sb-label{font-size:12px;font-weight:600;color:var(--gray-800)}
+.sb-item.active .sb-label{color:var(--blue)}
+.sb-badge{margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;background:var(--red-pale);color:var(--red);font-family:'Sarabun',sans-serif}
+.sb-spacer{flex:1}
+.sb-footer{padding:12px;border-top:1px solid var(--gray-200)}
+.sb-user{display:flex;align-items:center;gap:8px}
+.sb-user-avatar{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--blue-light),var(--blue));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-user-name{font-size:11px;font-weight:600;color:var(--gray-800)}
+.sb-user-role{font-size:10px;color:var(--gray-400);font-family:'Sarabun',sans-serif}
+
+/* PAGE CONTAINER */
+.page-container{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.page.active{display:flex}
+.page::-webkit-scrollbar{width:5px}
+.page::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:3px}
+.page-inner{padding:20px 24px;display:flex;flex-direction:column;gap:16px;flex:1}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:center;justify-content:space-between}
+.page-title-wrap{}
+.page-title{font-size:18px;font-weight:800;color:var(--navy-dark);letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.page-subtitle{font-size:12px;color:var(--gray-600);margin-top:3px;font-family:'Sarabun',sans-serif}
+.page-actions{display:flex;align-items:center;gap:8px}
+.btn{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'Prompt',sans-serif;display:flex;align-items:center;gap:6px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff;box-shadow:0 2px 8px rgba(27,109,181,0.25)}
+.btn-primary:hover{transform:translateY(-1px)}
+.btn-outline{background:var(--white);color:var(--blue);border:1.5px solid var(--blue-light)}
+.btn-outline:hover{background:var(--blue-pale)}
+.btn-green{background:linear-gradient(135deg,var(--green),#7BC842);color:#fff}
+.btn-teal{background:linear-gradient(135deg,var(--teal),#0D9488);color:#fff}
+
+/* KPI GRID */
+.kpi-grid{display:grid;gap:12px}
+.kpi-grid-4{grid-template-columns:repeat(4,1fr)}
+.kpi-grid-5{grid-template-columns:repeat(5,1fr)}
+.kpi-card{background:var(--white);border-radius:var(--radius-md);padding:14px 16px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer}
+.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.kpi-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.kpi-num{font-size:26px;font-weight:800;line-height:1;letter-spacing:-0.5px}
+.kpi-label{font-size:11px;color:var(--gray-600);margin-top:3px;font-family:'Sarabun',sans-serif}
+.kpi-change{font-size:10px;margin-top:2px;font-family:'Sarabun',sans-serif}
+.ch-up{color:var(--green)}
+.ch-warn{color:var(--gold)}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);overflow:hidden}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--gray-900)}
+.card-body{padding:16px 18px}
+.see-all{font-size:11px;color:var(--blue);cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:600}
+
+/* GRID LAYOUTS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-cols-6-4{display:grid;grid-template-columns:1fr 340px;gap:16px}
+
+/* ALERT */
+.alert{border-radius:var(--radius-md);padding:11px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-family:'Sarabun',sans-serif}
+.alert-warn{background:var(--gold-pale);border:1.5px solid rgba(212,137,10,0.25);color:#8B5E00}
+.alert-icon{font-size:16px;flex-shrink:0}
+
+/* DASHBOARD SPECIFIC */
+.dash-map{background:var(--navy-dark);border-radius:var(--radius-lg);overflow:hidden;min-height:280px;position:relative}
+.map-inner-header{padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.map-inner-title{font-size:13px;font-weight:700;color:#fff}
+.map-inner-sub{font-size:10px;color:rgba(255,255,255,0.4);font-family:'Sarabun',sans-serif;margin-top:2px}
+#dashMap{width:100%;height:220px;display:block}
+.map-legend-row{display:flex;gap:12px;padding:6px 18px 12px}
+.ml-item{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.5);font-family:'Sarabun',sans-serif}
+.ml-dot{width:8px;height:8px;border-radius:2px}
+
+/* ACTIVITY LIST */
+.activity-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--gray-200)}
+.activity-item:last-child{border-bottom:none}
+.act-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.act-content{flex:1}
+.act-title{font-size:12px;font-weight:600;color:var(--gray-900)}
+.act-meta{font-size:10px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:2px}
+.act-time{font-size:10px;color:var(--gray-400);font-family:'Sarabun',sans-serif;white-space:nowrap;margin-left:4px}
+
+/* QUICK STATS */
+.quick-stat-row{display:flex;gap:8px;margin-bottom:10px}
+.qs{flex:1;text-align:center;background:var(--gray-100);border-radius:8px;padding:10px 6px}
+.qs-num{font-size:20px;font-weight:800;color:var(--navy-dark)}
+.qs-label{font-size:9px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:2px}
+
+/* UPCOMING LIST */
+.upcoming-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-200)}
+.upcoming-item:last-child{border-bottom:none}
+.upc-date{text-align:center;background:var(--blue-pale);border-radius:8px;padding:5px 8px;min-width:40px}
+.upc-day{font-size:16px;font-weight:800;color:var(--blue);line-height:1}
+.upc-month{font-size:8px;color:var(--blue);font-family:'Sarabun',sans-serif;text-transform:uppercase}
+.upc-info{flex:1}
+.upc-title{font-size:11px;font-weight:600;color:var(--gray-900)}
+.upc-sub{font-size:10px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:1px}
+.upc-type{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;font-family:'Sarabun',sans-serif}
+
+/* IFRAME-LIKE PAGE CONTENT */
+.iframe-page{flex:1;border:none;width:100%;display:none}
+.iframe-page.active{display:block}
+
+/* SCROLLBAR */
+.sidebar::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <a class="tn-logo" href="#" onclick="showPage('dashboard')">
+    <div class="tn-logo-icon">iR</div>
+    <div class="tn-logo-text">i<span>ROUP</span></div>
+  </a>
+  <div class="tn-divider"></div>
+  <div class="tn-breadcrumb" id="tnBreadcrumb">
+    งานวิเทศสัมพันธ์ · <strong>Dashboard</strong>
+  </div>
+  <div class="tn-spacer"></div>
+  <div class="tn-right">
+    <div class="tn-lang">
+      <div class="tn-lang-btn active">TH</div>
+      <div class="tn-lang-btn">EN</div>
+    </div>
+    <button class="tn-public-btn" onclick="showPage('public')">🌐 Public View</button>
+    <div class="tn-avatar">UP</div>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-section">หลัก</div>
+    <div class="sb-item active" onclick="showPage('dashboard')" id="sb-dashboard">
+      <span class="sb-icon">⊞</span>
+      <span class="sb-label">Dashboard</span>
+    </div>
+
+    <div class="sb-section">ข้อมูลหลัก</div>
+    <div class="sb-item" onclick="showPage('mou')" id="sb-mou">
+      <span class="sb-icon">🤝</span>
+      <span class="sb-label">MOU ต่างประเทศ</span>
+      <span class="sb-badge">3</span>
+    </div>
+    <div class="sb-item" onclick="showPage('scholarship')" id="sb-scholarship">
+      <span class="sb-icon">🎓</span>
+      <span class="sb-label">ทุน & กิจกรรม</span>
+    </div>
+    <div class="sb-item" onclick="showPage('travel')" id="sb-travel">
+      <span class="sb-icon">✈️</span>
+      <span class="sb-label">การเดินทาง</span>
+    </div>
+    <div class="sb-item" onclick="showPage('mobility')" id="sb-mobility">
+      <span class="sb-icon">👥</span>
+      <span class="sb-label">Mobility</span>
+    </div>
+
+    <div class="sb-section">รายงาน</div>
+    <div class="sb-item" onclick="showPage('report')" id="sb-report">
+      <span class="sb-icon">📊</span>
+      <span class="sb-label">รายงาน & Export</span>
+    </div>
+
+    <div class="sb-section">อื่นๆ</div>
+    <div class="sb-item" onclick="showPage('public')" id="sb-public">
+      <span class="sb-icon">🌐</span>
+      <span class="sb-label">Public View</span>
+    </div>
+    <div class="sb-item" id="sb-settings">
+      <span class="sb-icon">⚙️</span>
+      <span class="sb-label">ตั้งค่า</span>
+    </div>
+
+    <div class="sb-spacer"></div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-user-avatar">UP</div>
+        <div>
+          <div class="sb-user-name">Admin IROUP</div>
+          <div class="sb-user-role">งานวิเทศสัมพันธ์</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE CONTAINER -->
+  <div class="page-container">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-inner">
+        <div class="page-header">
+          <div class="page-title-wrap">
+            <div class="page-title">⊞ Dashboard <span style="font-size:13px;font-weight:500;color:var(--gray-600);letter-spacing:0">ภาพรวมงานวิเทศสัมพันธ์</span></div>
+            <div class="page-subtitle">University of Phayao · International Relations Division · อัพเดต 1 พ.ค. 2569</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-outline">📥 Export ภาพรวม</button>
+            <button class="btn btn-primary">📊 ดูรายงาน</button>
+          </div>
+        </div>
+
+        <!-- ALERT -->
+        <div class="alert alert-warn">
+          <span class="alert-icon">⚠️</span>
+          <div><strong>แจ้งเตือน:</strong> มี 3 MOU ใกล้หมดอายุใน 180 วัน และ 2 ทุนปิดรับสมัครใน 30 วัน · <span style="color:var(--blue);font-weight:600;cursor:pointer">ดูรายการ →</span></div>
+        </div>
+
+        <!-- KPI ROW -->
+        <div class="kpi-grid kpi-grid-4">
+          <div class="kpi-card" onclick="showPage('mou')">
+            <div class="kpi-icon" style="background:var(--blue-pale)">🤝</div>
+            <div>
+              <div class="kpi-num" style="color:var(--blue)">142</div>
+              <div class="kpi-label">MOU ทั้งหมด</div>
+              <div class="kpi-change ch-up">▲ +8 ปีนี้ · 38 ประเทศ</div>
+            </div>
+          </div>
+          <div class="kpi-card" onclick="showPage('scholarship')">
+            <div class="kpi-icon" style="background:var(--gold-pale)">🎓</div>
+            <div>
+              <div class="kpi-num" style="color:var(--gold)">24</div>
+              <div class="kpi-label">ทุนการศึกษา</div>
+              <div class="kpi-change ch-warn">⏰ 8 กำลังรับสมัคร</div>
+            </div>
+          </div>
+          <div class="kpi-card" onclick="showPage('mobility')">
+            <div class="kpi-icon" style="background:var(--purple-pale)">👥</div>
+            <div>
+              <div class="kpi-num" style="color:var(--purple)">215</div>
+              <div class="kpi-label">Mobility ปีนี้</div>
+              <div class="kpi-change ch-up">▲ +18% · In 87 / Out 128</div>
+            </div>
+          </div>
+          <div class="kpi-card" onclick="showPage('travel')">
+            <div class="kpi-icon" style="background:var(--teal-pale)">✈️</div>
+            <div>
+              <div class="kpi-num" style="color:var(--teal)">48</div>
+              <div class="kpi-label">การเดินทาง</div>
+              <div class="kpi-change" style="color:var(--green)">🟢 3 กำลังเดินทางอยู่</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAP + RIGHT -->
+        <div class="grid-cols-6-4">
+          <!-- MAP -->
+          <div class="dash-map">
+            <div class="map-inner-header">
+              <div>
+                <div class="map-inner-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div>
+                <div class="map-inner-sub">142 MOU · 38 ประเทศ · คลิกเพื่อดูรายละเอียด</div>
+              </div>
+            </div>
+            <svg id="dashMap"></svg>
+            <div class="map-legend-row">
+              <div class="ml-item"><div class="ml-dot" style="background:#4BBDE8"></div>1–3 MOU</div>
+              <div class="ml-item"><div class="ml-dot" style="background:#1A6DB5"></div>4–7 MOU</div>
+              <div class="ml-item"><div class="ml-dot" style="background:#F5A623"></div>8+ MOU</div>
+            </div>
+          </div>
+
+          <!-- RIGHT PANEL -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <!-- UPCOMING -->
+            <div class="card" style="flex:1">
+              <div class="card-header">
+                <div class="card-title">📅 กำลังจะมาถึง</div>
+                <div class="see-all" onclick="showPage('scholarship')">ดูทั้งหมด →</div>
+              </div>
+              <div class="card-body" style="padding:12px 16px">
+                <div class="upcoming-item">
+                  <div class="upc-date"><div class="upc-day">20</div><div class="upc-month">พ.ค.</div></div>
+                  <div class="upc-info">
+                    <div class="upc-title">OCSC ทุนรัฐบาลไทย</div>
+                    <div class="upc-sub">ปิดรับสมัคร · เหลือ 19 วัน</div>
+                  </div>
+                  <span class="upc-type" style="background:var(--gold-pale);color:var(--gold)">ทุน</span>
+                </div>
+                <div class="upcoming-item">
+                  <div class="upc-date"><div class="upc-day">3</div><div class="upc-month">มิ.ย.</div></div>
+                  <div class="upc-info">
+                    <div class="upc-title">Keimyung Univ. เยือน UP</div>
+                    <div class="upc-sub">Inbound Visit · 3–5 มิ.ย.</div>
+                  </div>
+                  <span class="upc-type" style="background:var(--purple-pale);color:var(--purple)">Inbound</span>
+                </div>
+                <div class="upcoming-item">
+                  <div class="upc-date"><div class="upc-day">15</div><div class="upc-month">มิ.ย.</div></div>
+                  <div class="upc-info">
+                    <div class="upc-title">JASSO Scholarship</div>
+                    <div class="upc-sub">ปิดรับสมัคร · เหลือ 45 วัน</div>
+                  </div>
+                  <span class="upc-type" style="background:var(--gold-pale);color:var(--gold)">ทุน</span>
+                </div>
+                <div class="upcoming-item">
+                  <div class="upc-date"><div class="upc-day">29</div><div class="upc-month">มิ.ย.</div></div>
+                  <div class="upc-info">
+                    <div class="upc-title">Immersion Hub @ SOU</div>
+                    <div class="upc-sub">Shanghai · 27 คน</div>
+                  </div>
+                  <span class="upc-type" style="background:var(--blue-pale);color:var(--blue)">เดินทาง</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM ROW -->
+        <div class="grid-2">
+          <!-- MOBILITY CHART -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">👥 Mobility ปีการศึกษา 2568</div>
+              <div class="see-all" onclick="showPage('mobility')">ดูรายละเอียด →</div>
+            </div>
+            <div class="card-body">
+              <div class="quick-stat-row">
+                <div class="qs"><div class="qs-num" style="color:var(--teal)">87</div><div class="qs-label">Inbound</div></div>
+                <div class="qs"><div class="qs-num" style="color:var(--blue)">128</div><div class="qs-label">Outbound</div></div>
+                <div class="qs"><div class="qs-num" style="color:var(--purple)">215</div><div class="qs-label">รวม</div></div>
+              </div>
+              <canvas id="mobilityChart" height="120"></canvas>
+            </div>
+          </div>
+
+          <!-- RECENT ACTIVITY -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🕐 กิจกรรมล่าสุด</div>
+            </div>
+            <div class="card-body" style="padding:12px 16px">
+              <div class="activity-item">
+                <div class="act-dot" style="background:var(--green)"></div>
+                <div class="act-content">
+                  <div class="act-title">เพิ่ม MOU ใหม่ — Shinshu University</div>
+                  <div class="act-meta">Japan · ลงนาม 28 เม.ย. 2569</div>
+                </div>
+                <div class="act-time">2 วันที่แล้ว</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot" style="background:var(--blue)"></div>
+                <div class="act-content">
+                  <div class="act-title">เพิ่ม Outbound — นายสมชาย ใจดี</div>
+                  <div class="act-meta">Exchange Program · Japan</div>
+                </div>
+                <div class="act-time">3 วันที่แล้ว</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot" style="background:var(--gold)"></div>
+                <div class="act-content">
+                  <div class="act-title">เพิ่มทุน JASSO 2026</div>
+                  <div class="act-meta">เปิดรับสมัคร · ปิด 15 มิ.ย. 69</div>
+                </div>
+                <div class="act-time">5 วันที่แล้ว</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot" style="background:var(--purple)"></div>
+                <div class="act-content">
+                  <div class="act-title">อัพเดตการเดินทาง — AUN Conference</div>
+                  <div class="act-meta">Bangkok · 28 เม.ย.–5 พ.ค.</div>
+                </div>
+                <div class="act-time">1 สัปดาห์</div>
+              </div>
+              <div class="activity-item">
+                <div class="act-dot" style="background:var(--red)"></div>
+                <div class="act-content">
+                  <div class="act-title">แจ้งเตือน — Keimyung MOU ใกล้หมด</div>
+                  <div class="act-meta">หมดอายุ ธ.ค. 2568 · ต้องต่ออายุ</div>
+                </div>
+                <div class="act-time">1 สัปดาห์</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== MOU PAGE ==================== -->
+    <div class="page" id="page-mou">
+      <iframe src="mou.html" style="flex:1;border:none;width:100%" id="frame-mou"></iframe>
+    </div>
+
+    <!-- ==================== SCHOLARSHIP ==================== -->
+    <div class="page" id="page-scholarship">
+      <iframe src="scholarship-events.html" style="flex:1;border:none;width:100%" id="frame-scholarship"></iframe>
+    </div>
+
+    <!-- ==================== TRAVEL ==================== -->
+    <div class="page" id="page-travel">
+      <iframe src="travel.html" style="flex:1;border:none;width:100%" id="frame-travel"></iframe>
+    </div>
+
+    <!-- ==================== MOBILITY ==================== -->
+    <div class="page" id="page-mobility">
+      <iframe src="mobility.html" style="flex:1;border:none;width:100%" id="frame-mobility"></iframe>
+    </div>
+
+    <!-- ==================== REPORT ==================== -->
+    <div class="page" id="page-report">
+      <div class="page-inner">
+        <div class="page-header">
+          <div class="page-title-wrap">
+            <div class="page-title">📊 รายงาน & Export</div>
+            <div class="page-subtitle">สร้างรายงานและ Export ข้อมูลในรูปแบบต่างๆ</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <!-- ANNUAL REPORT -->
+          <div class="card" style="cursor:pointer" onclick="alert('กำลังสร้างรายงานประจำปี...')">
+            <div class="card-body" style="text-align:center;padding:28px 20px">
+              <div style="font-size:36px;margin-bottom:12px">📋</div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:6px">รายงานประจำปีงบประมาณ</div>
+              <div style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-bottom:16px">สรุปภาพรวมทุก Section รายปีงบประมาณ</div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center">📥 Export PDF / Excel</button>
+            </div>
+          </div>
+
+          <!-- BY DEPT -->
+          <div class="card" style="cursor:pointer" onclick="alert('กำลังสร้างรายงานแยกตามคณะ...')">
+            <div class="card-body" style="text-align:center;padding:28px 20px">
+              <div style="font-size:36px;margin-bottom:12px">🏫</div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:6px">รายงานแยกตามคณะ / หน่วยงาน</div>
+              <div style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-bottom:16px">MOU / ทุน / Mobility แยกตามคณะ</div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center">📥 Export PDF / Excel</button>
+            </div>
+          </div>
+
+          <!-- BY COUNTRY -->
+          <div class="card" style="cursor:pointer" onclick="alert('กำลังสร้างรายงานแยกตามประเทศ...')">
+            <div class="card-body" style="text-align:center;padding:28px 20px">
+              <div style="font-size:36px;margin-bottom:12px">🌍</div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:6px">รายงานแยกตามประเทศ</div>
+              <div style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-bottom:16px">MOU / Mobility แยกตามประเทศ / ทวีป</div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center">📥 Export PDF / Excel</button>
+            </div>
+          </div>
+
+          <!-- MOU REPORT -->
+          <div class="card" style="cursor:pointer">
+            <div class="card-body" style="text-align:center;padding:28px 20px">
+              <div style="font-size:36px;margin-bottom:12px">🤝</div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:6px">รายงาน MOU</div>
+              <div style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-bottom:16px">Active / ใกล้หมด / หมดอายุ แยกตามคณะ</div>
+              <button class="btn btn-outline" style="width:100%;justify-content:center">📥 Export</button>
+            </div>
+          </div>
+
+          <!-- MOBILITY REPORT -->
+          <div class="card" style="cursor:pointer">
+            <div class="card-body" style="text-align:center;padding:28px 20px">
+              <div style="font-size:36px;margin-bottom:12px">👥</div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:6px">รายงาน Mobility</div>
+              <div style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-bottom:16px">Inbound / Outbound แยกตามคณะและประเภท</div>
+              <button class="btn btn-outline" style="width:100%;justify-content:center">📥 Export</button>
+            </div>
+          </div>
+
+          <!-- TRAVEL REPORT -->
+          <div class="card" style="cursor:pointer">
+            <div class="card-body" style="text-align:center;padding:28px 20px">
+              <div style="font-size:36px;margin-bottom:12px">✈️</div>
+              <div style="font-size:14px;font-weight:700;color:var(--navy-dark);margin-bottom:6px">รายงานการเดินทาง</div>
+              <div style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-bottom:16px">สรุปการเดินทาง งบประมาณ แยกตามคณะ</div>
+              <button class="btn btn-outline" style="width:100%;justify-content:center">📥 Export</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK EXPORT -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚡ Quick Export — เลือก Section และรูปแบบ</div></div>
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <select style="padding:8px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:12px;font-family:'Prompt',sans-serif;outline:none">
+                <option>ทุก Section</option>
+                <option>MOU</option><option>ทุนการศึกษา</option>
+                <option>การเดินทาง</option><option>Mobility</option>
+              </select>
+              <select style="padding:8px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:12px;font-family:'Prompt',sans-serif;outline:none">
+                <option>ทุกคณะ</option>
+                <option>คณะวิทยาศาสตร์</option>
+                <option>คณะแพทยศาสตร์</option>
+                <option>คณะวิศวกรรมศาสตร์</option>
+              </select>
+              <select style="padding:8px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:12px;font-family:'Prompt',sans-serif;outline:none">
+                <option>ปีงบประมาณ 2568</option>
+                <option>ปีงบประมาณ 2567</option>
+                <option>ทุกปี</option>
+              </select>
+              <button class="btn btn-green">📥 Export Excel</button>
+              <button class="btn btn-primary">📄 Export PDF</button>
+              <button class="btn btn-outline">🖨️ พิมพ์</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== PUBLIC ==================== -->
+    <div class="page" id="page-public">
+      <iframe src="public-landing.html" style="flex:1;border:none;width:100%" id="frame-public"></iframe>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// PAGE NAVIGATION
+const pageLabels = {
+  dashboard:'Dashboard',
+  mou:'MOU ต่างประเทศ',
+  scholarship:'ทุน & กิจกรรม',
+  travel:'การเดินทาง',
+  mobility:'Mobility',
+  report:'รายงาน & Export',
+  public:'Public View'
+};
+
+function showPage(name){
+  // hide all
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('active'));
+  // show target
+  const page = document.getElementById('page-'+name);
+  if(page) page.classList.add('active');
+  const sb = document.getElementById('sb-'+name);
+  if(sb) sb.classList.add('active');
+  // breadcrumb
+  document.getElementById('tnBreadcrumb').innerHTML =
+    `งานวิเทศสัมพันธ์ · <strong>${pageLabels[name]||name}</strong>`;
+}
+
+// DASHBOARD MAP
+const mapData = {"China":12,"Japan":9,"South Korea":7,"Germany":5,"Australia":4,"Taiwan":3,"USA":3,"UK":3,"France":2,"Netherlands":2,"Vietnam":4,"Myanmar":2,"Indonesia":3,"Philippines":2,"Malaysia":5,"India":3};
+const cNames = {4:"Afghanistan",36:"Australia",56:"Belgium",76:"Brazil",104:"Myanmar",116:"Cambodia",124:"Canada",156:"China",170:"Colombia",208:"Denmark",276:"Germany",300:"Greece",356:"India",360:"Indonesia",372:"Ireland",376:"Israel",380:"Italy",392:"Japan",410:"South Korea",458:"Malaysia",484:"Mexico",528:"Netherlands",554:"New Zealand",578:"Norway",586:"Pakistan",608:"Philippines",616:"Poland",620:"Portugal",643:"Russia",682:"Saudi Arabia",724:"Spain",752:"Sweden",756:"Switzerland",764:"Thailand",792:"Turkey",826:"United Kingdom",840:"USA",704:"Vietnam",158:"Taiwan",250:"France"};
+
+setTimeout(()=>{
+  const el = document.getElementById('dashMap');
+  if(!el) return;
+  const w = el.parentElement.offsetWidth||600;
+  const h = 220;
+  const svg = d3.select('#dashMap').attr('viewBox',`0 0 ${w} ${h}`).attr('preserveAspectRatio','xMidYMid meet');
+  const proj = d3.geoNaturalEarth1().scale(w/6.5).translate([w/2,h/2+8]);
+  const path = d3.geoPath().projection(proj);
+  const defs = svg.append('defs');
+  const g = defs.append('radialGradient').attr('id','dbg').attr('cx','50%').attr('cy','40%');
+  g.append('stop').attr('offset','0%').attr('stop-color','#162845');
+  g.append('stop').attr('offset','100%').attr('stop-color','#0A1525');
+  svg.append('rect').attr('width',w).attr('height',h).attr('fill','url(#dbg)');
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+    .then(r=>r.json()).then(world=>{
+      const countries = topojson.feature(world,world.objects.countries);
+      svg.selectAll('.c').data(countries.features).join('path')
+        .attr('d',path)
+        .attr('fill',d=>{const n=cNames[+d.id]||'';const c=mapData[n]||0;return c===0?'rgba(255,255,255,0.07)':c>=8?'#F5A623':c>=4?'#1A6DB5':'#4BBDE8';})
+        .attr('stroke','rgba(255,255,255,0.1)').attr('stroke-width',0.4)
+        .style('cursor',d=>mapData[cNames[+d.id]]>0?'pointer':'default')
+        .on('click',function(e,d){const n=cNames[+d.id]||'';if(mapData[n])showPage('mou');});
+    }).catch(()=>{});
+},200);
+
+// MOBILITY CHART
+setTimeout(()=>{
+  const ctx = document.getElementById('mobilityChart');
+  if(!ctx) return;
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.'],
+      datasets:[
+        {label:'Inbound',data:[8,12,6,15,10,18,18],backgroundColor:'rgba(13,148,136,0.7)',borderRadius:4},
+        {label:'Outbound',data:[12,18,8,22,15,26,27],backgroundColor:'rgba(75,189,232,0.7)',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8,boxWidth:10}}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:9}}}}}
+  });
+},200);
+
+// โหลดข้อมูลจริงจาก Sheets
+setTimeout(loadDashboardStats, 500);
+
+// LANG TOGGLE
+document.querySelectorAll('.tn-lang-btn').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tn-lang-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+<script src="iroup-config.js"></script>
+
+<script>
+// ============================================================
+// LIVE DATA — โหลดข้อมูลจริงจาก Google Sheets
+// ============================================================
+async function loadDashboardStats() {
+  try {
+    const stats = await IROUP.getStats();
+    if (!stats || !stats.mou) return;
+
+    // อัพเดต KPI Cards
+    const kpiNums = document.querySelectorAll('.kpi-num');
+    if (kpiNums[0]) kpiNums[0].textContent = stats.mou.total;
+    if (kpiNums[1]) kpiNums[1].textContent = stats.scholarship.total;
+    if (kpiNums[2]) kpiNums[2].textContent = stats.mobility.total;
+    if (kpiNums[3]) kpiNums[3].textContent = stats.travel.total;
+
+    // อัพเดต Alert Banner
+    const alertEl = document.querySelector('.alert');
+    if (alertEl && (stats.mou.soon > 0 || stats.scholarship.open > 0)) {
+      alertEl.querySelector('div').innerHTML =
+        `<strong>แจ้งเตือน:</strong> มี ${stats.mou.soon} MOU ใกล้หมดอายุใน 180 วัน และ ${stats.scholarship.open} ทุนกำลังรับสมัครอยู่ · <span style="color:var(--blue);font-weight:600;cursor:pointer">ดูรายการ →</span>`;
+    }
+
+    console.log('✅ โหลดสถิติ Dashboard สำเร็จ');
+  } catch(e) {
+    console.log('ℹ️ ใช้ข้อมูลตัวอย่างแทน (Sheets ยังไม่มีข้อมูล)');
+  }
+}
+
+// โหลดแผนที่จาก Sheets จริง
+async function loadLiveMap() {
+  try {
+    const countryData = await IROUP.getMouByCountry();
+    // ถ้ามีข้อมูลจาก Sheets ให้ใช้แทน mapData
+    if (Object.keys(countryData).length > 0) {
+      console.log('✅ โหลดข้อมูลแผนที่สำเร็จ', countryData);
+    }
+  } catch(e) {
+    console.log('ℹ️ ใช้ข้อมูลแผนที่ตัวอย่าง');
+  }
+}
+
+// รันเมื่อหน้าโหลดเสร็จ
+setTimeout(() => {
+  loadDashboardStats();
+  loadLiveMap();
+}, 800);
+</script>
+
+</body>
+</html>
