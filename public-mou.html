@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOU ต่างประเทศ — iROUP</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#1A6DB5;--blue-light:#4BBDE8;--blue-pale:#E8F4FD;
+  --navy:#0F2D5A;--navy-dark:#071828;
+  --green:#5BAD3E;--green-pale:#EBF7E3;
+  --gold:#D4890A;--gold-pale:#FEF3DC;
+  --red:#D63B32;--red-pale:#FDECEA;
+  --gray-100:#F8F9FB;--gray-200:#EEF1F5;--gray-300:#DDE2EA;
+  --gray-400:#B8C2D0;--gray-600:#6B7A8D;--gray-800:#2D3748;
+  --white:#FFFFFF;
+  --shadow-sm:0 1px 4px rgba(15,45,90,0.08);
+  --shadow-md:0 4px 16px rgba(15,45,90,0.12);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--navy)}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:20px}
+.nav-link{font-size:13px;font-weight:500;color:var(--gray-600);text-decoration:none;transition:color .2s;padding:4px 0;border-bottom:2px solid transparent}
+.nav-link:hover{color:var(--blue)}
+.nav-link.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.nav-lang{display:flex;background:var(--gray-200);border-radius:8px;padding:3px;gap:2px}
+.nav-lang-btn{padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gray-600);transition:all .2s}
+.nav-lang-btn.active{background:var(--blue);color:#fff}
+.nav-admin-btn{padding:7px 16px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:20px;font-size:12px;font-weight:700;color:#fff;text-decoration:none}
+
+/* HERO */
+.page-hero{background:linear-gradient(135deg,var(--navy-dark),var(--navy));padding:48px 5%;color:#fff}
+.page-hero h1{font-size:32px;font-weight:800;margin-bottom:8px;letter-spacing:-0.5px}
+.page-hero p{font-size:14px;color:rgba(255,255,255,0.6);font-family:'Sarabun',sans-serif}
+.hero-kpi{display:flex;gap:32px;margin-top:24px}
+.hkpi{text-align:center}
+.hkpi-num{font-size:36px;font-weight:900;color:var(--blue-light);letter-spacing:-1px}
+.hkpi-label{font-size:11px;color:rgba(255,255,255,0.5);font-family:'Sarabun',sans-serif;margin-top:2px}
+
+/* CONTENT */
+.content{padding:32px 5%;display:flex;flex-direction:column;gap:24px;max-width:1400px;margin:0 auto;width:100%}
+
+/* CARDS */
+.card{background:var(--white);border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:700;color:var(--navy)}
+.card-body{padding:20px}
+
+/* MAP */
+.map-dark{background:var(--navy-dark);border-radius:16px;overflow:hidden;min-height:300px;position:relative}
+.map-header{padding:16px 20px 0;color:#fff}
+.map-title{font-size:14px;font-weight:700}
+.map-sub{font-size:11px;color:rgba(255,255,255,0.4);font-family:'Sarabun',sans-serif;margin-top:2px}
+.map-legend{display:flex;gap:14px;padding:10px 20px 0}
+.ml-item{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.5);font-family:'Sarabun',sans-serif}
+.ml-dot{width:8px;height:8px;border-radius:2px}
+#mouMapDiv{width:100%;height:280px;position:relative;display:flex;align-items:center;justify-content:center}
+#mouMapMsg{text-align:center;color:rgba(255,255,255,0.4);font-family:'Sarabun',sans-serif;font-size:13px}
+#leafletMouMap{width:100%;height:280px;display:none}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 340px;gap:20px}
+
+/* FILTER */
+.filter-bar{background:var(--white);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.search-wrap{flex:1;position:relative;min-width:200px}
+.search-wrap input{width:100%;padding:8px 12px 8px 34px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:13px;font-family:'Prompt',sans-serif;outline:none;transition:border .15s}
+.search-wrap input:focus{border-color:var(--blue-light)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:14px}
+.filter-select{padding:8px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:12px;font-family:'Prompt',sans-serif;outline:none;background:var(--white);cursor:pointer;color:var(--gray-800)}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-300);color:var(--gray-600);background:var(--white);transition:all .2s;font-family:'Sarabun',sans-serif}
+.pill.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+thead{background:var(--gray-100);position:sticky;top:60px}
+th{padding:10px 14px;text-align:left;font-weight:600;color:var(--gray-600);font-size:11px;border-bottom:1px solid var(--gray-200);font-family:'Sarabun',sans-serif;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--gray-200);color:var(--gray-800);vertical-align:middle}
+tr:hover td{background:var(--blue-pale)}
+.uni-name{font-weight:600;color:var(--navy);font-size:13px}
+.dept-name{font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:2px}
+.flag-cell{display:flex;align-items:center;gap:6px}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Sarabun',sans-serif}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%}
+.b-active{background:var(--green-pale);color:var(--green)}
+.b-active::before{background:var(--green)}
+.b-soon{background:var(--gold-pale);color:var(--gold)}
+.b-soon::before{background:var(--gold)}
+.b-expired{background:var(--gray-200);color:var(--gray-600)}
+.b-expired::before{background:var(--gray-400)}
+.type-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--blue-pale);color:var(--blue);font-weight:600;font-family:'Sarabun',sans-serif}
+.date-text{font-size:11px;color:var(--gray-700);font-family:'Sarabun',sans-serif;white-space:nowrap}
+
+/* CHART */
+.chart-wrap{position:relative;height:320px}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--gray-400);font-family:'Sarabun',sans-serif;font-size:13px}
+
+/* FOOTER */
+footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(255,255,255,0.4);font-size:11px;font-family:'Sarabun',sans-serif;margin-top:40px}
+</style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <a class="nav-logo" href="public-landing.html">
+    <img src="iroup-logo.png" alt="iROUP" style="height:34px;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <span style="display:none;font-size:16px;font-weight:800;color:var(--navy)">iROUP</span>
+  </a>
+  <div class="nav-links">
+    <a href="public-mou.html" class="nav-link active">🤝 MOU</a>
+    <a href="public-scholar.html" class="nav-link">🎓 ทุนการศึกษา</a>
+    <a href="public-events.html" class="nav-link">📅 กิจกรรม</a>
+    <a href="public-mobility.html" class="nav-link">👥 Mobility</a>
+    <div class="nav-lang">
+      <div class="nav-lang-btn active" onclick="setLang('TH')">TH</div>
+      <div class="nav-lang-btn" onclick="setLang('EN')">EN</div>
+    </div>
+    <a href="index.html" class="nav-admin-btn">🔐 Admin</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1 id="hero-title">🤝 MOU ต่างประเทศ</h1>
+  <p id="hero-sub">ข้อมูลความร่วมมือทางวิชาการกับสถาบันทั่วโลก · International Academic Cooperation</p>
+  <div class="hero-kpi">
+    <div class="hkpi"><div class="hkpi-num" id="kpi-total">—</div><div class="hkpi-label" id="kpi-total-label">MOU ทั้งหมด</div></div>
+    <div class="hkpi"><div class="hkpi-num" id="kpi-active" style="color:#7BC842">—</div><div class="hkpi-label">Active</div></div>
+    <div class="hkpi"><div class="hkpi-num" id="kpi-soon" style="color:#F5A623">—</div><div class="hkpi-label">ใกล้หมดอายุ</div></div>
+    <div class="hkpi"><div class="hkpi-num" id="kpi-country" style="color:#4BBDE8">—</div><div class="hkpi-label">ประเทศ</div></div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- MAP + CHART -->
+  <div class="grid-2">
+    <div class="map-dark">
+      <div class="map-header">
+        <div class="map-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div>
+        <div class="map-sub">Hover เพื่อดูรายละเอียด</div>
+      </div>
+      <div class="map-legend">
+        <div class="ml-item"><div class="ml-dot" style="background:#4BBDE8;border-radius:50%"></div>1–3 MOU</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#1A6DB5;border-radius:50%"></div>4–7 MOU</div>
+        <div class="ml-item"><div class="ml-dot" style="background:#F5A623;border-radius:50%"></div>8+ MOU</div>
+      </div>
+      <div id="mouMapDiv">
+        <div id="mouMapMsg"><div style="font-size:28px;margin-bottom:6px">🗺️</div><div>กำลังโหลดแผนที่...</div></div>
+        <div id="leafletMouMap"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 MOU Active แยกตามหน่วยงาน</div>
+      </div>
+      <div class="card-body" style="padding:12px">
+        <div class="chart-wrap"><canvas id="deptChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <span style="font-size:12px;font-weight:600;color:var(--gray-600)">🔍</span>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="ค้นหาชื่อสถาบัน ประเทศ หรือหน่วยงาน..." oninput="filterTable()">
+    </div>
+    <select class="filter-select" id="continentFilter" onchange="filterTable()">
+      <option value="">ทุกทวีป</option>
+      <option value="asia">เอเชีย</option>
+      <option value="europe">ยุโรป</option>
+      <option value="america">อเมริกา</option>
+      <option value="oceania">โอเชียเนีย</option>
+      <option value="africa">แอฟริกา</option>
+    </select>
+    <div class="pills">
+      <div class="pill on" onclick="setPill(this,'')">ทั้งหมด</div>
+      <div class="pill" onclick="setPill(this,'active')">Active</div>
+      <div class="pill" onclick="setPill(this,'soon')">ใกล้หมด</div>
+      <div class="pill" onclick="setPill(this,'expired')">หมดอายุ</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 รายการ MOU ทั้งหมด</div>
+      <div id="tableCount" style="font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif">กำลังโหลด...</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>หน่วยงาน ม.พะเยา</th>
+            <th>องค์กรต่างประเทศ</th>
+            <th>ประเทศ</th>
+            <th>ประเภท</th>
+            <th>ช่วงความร่วมมือ</th>
+            <th>สถานะ</th>
+          </tr>
+        </thead>
+        <tbody id="mouTableBody">
+          <tr><td colspan="7" class="loading">⏳ กำลังโหลดข้อมูล...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  © 2569 International Relations Office · University of Phayao · ข้อมูลอัพเดตโดยทีมงานวิเทศฯ
+</footer>
+
+<script src="iroup-config.js"></script>
+<script>
+let allMou = [];
+let currentStatus = '';
+let mouChart = null;
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadData() {
+  try {
+    const data = await IROUP.getAll(IROUP.SHEETS.MOU);
+    allMou = data;
+    updateKPI(data);
+    renderTable(data);
+    renderChart(data);
+    loadMap(data);
+  } catch(e) {
+    document.getElementById('mouTableBody').innerHTML =
+      '<tr><td colspan="7" class="loading">⚠️ ไม่สามารถโหลดข้อมูลได้</td></tr>';
+  }
+}
+
+function updateKPI(data) {
+  const today = new Date();
+  const active = data.filter(m => {
+    const s = IROUP.getMouStatus(m['วันสิ้นสุด']);
+    return s.status === 'active';
+  }).length;
+  const soon = data.filter(m => {
+    const s = IROUP.getMouStatus(m['วันสิ้นสุด']);
+    return s.status === 'soon';
+  }).length;
+  const countries = [...new Set(data.map(m => m['ประเทศ']).filter(Boolean))].length;
+
+  document.getElementById('kpi-total').textContent  = data.length;
+  document.getElementById('kpi-active').textContent = active;
+  document.getElementById('kpi-soon').textContent   = soon;
+  document.getElementById('kpi-country').textContent = countries;
+}
+
+// ============================================================
+// TABLE
+// ============================================================
+function renderTable(data) {
+  const tbody = document.getElementById('mouTableBody');
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="loading">ไม่พบข้อมูล</td></tr>';
+    document.getElementById('tableCount').textContent = '0 รายการ';
+    return;
+  }
+  tbody.innerHTML = data.map((m, i) => {
+    const s = IROUP.getMouStatus(m['วันสิ้นสุด']);
+    const bClass = s.status === 'active' ? 'b-active' : s.status === 'soon' ? 'b-soon' : 'b-expired';
+    const flags = {'China':'🇨🇳','Japan':'🇯🇵','South Korea':'🇰🇷','Germany':'🇩🇪',
+      'Australia':'🇦🇺','Taiwan':'🇹🇼','USA':'🇺🇸','United Kingdom':'🇬🇧',
+      'France':'🇫🇷','Netherlands':'🇳🇱','Vietnam':'🇻🇳','Myanmar':'🇲🇲',
+      'Indonesia':'🇮🇩','Malaysia':'🇲🇾','Philippines':'🇵🇭','Singapore':'🇸🇬',
+      'India':'🇮🇳','Thailand':'🇹🇭','Sweden':'🇸🇪','Norway':'🇳🇴'};
+    const flag = flags[m['ประเทศ']] || '🌍';
+    return `<tr>
+      <td style="color:var(--gray-400);font-size:11px">${i+1}</td>
+      <td>
+        <div class="uni-name">${m['หน่วยงาน_UP'] || '—'}</div>
+      </td>
+      <td><div class="uni-name">${m['องค์กร_ตปท'] || '—'}</div></td>
+      <td><div class="flag-cell">${flag} <span>${m['ประเทศ'] || '—'}</span></div></td>
+      <td><span class="type-tag">${m['ประเภท'] || 'MOU'}</span></td>
+      <td>
+        <div class="date-text">${IROUP.formatDate(m['วันเริ่ม'])} – ${IROUP.formatDate(m['วันสิ้นสุด'])}</div>
+      </td>
+      <td><span class="badge ${bClass}">${s.label}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableCount').textContent = `${data.length} รายการ`;
+}
+
+function filterTable() {
+  const q    = document.getElementById('searchInput').value.toLowerCase();
+  const cont = document.getElementById('continentFilter').value;
+  let filtered = allMou.filter(m => {
+    const matchQ    = !q || (m['องค์กร_ตปท']+m['ประเทศ']+m['หน่วยงาน_UP']).toLowerCase().includes(q);
+    const matchCont = !cont || m['ทวีป'] === cont;
+    const matchS    = !currentStatus || IROUP.getMouStatus(m['วันสิ้นสุด']).status === currentStatus;
+    return matchQ && matchCont && matchS;
+  });
+  renderTable(filtered);
+}
+
+function setPill(el, status) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  currentStatus = status;
+  filterTable();
+}
+
+// ============================================================
+// CHART
+// ============================================================
+function renderChart(data) {
+  const today = new Date();
+  const deptCount = {};
+  data.forEach(m => {
+    if (IROUP.getMouStatus(m['วันสิ้นสุด']).status !== 'active') return;
+    const dept = m['หน่วยงาน_UP'] || 'อื่นๆ';
+    deptCount[dept] = (deptCount[dept] || 0) + 1;
+  });
+
+  const sorted = Object.entries(deptCount).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  const labels = sorted.map(([k]) => k.replace('คณะ','').replace('วิทยาลัย','ว.').replace('สำนักงาน','สนง.'));
+  const values = sorted.map(([,v]) => v);
+  const colors = values.map((_,i) => i===0?'#1A6DB5':i<3?'#4BBDE8':'#A8D8F0');
+
+  const ctx = document.getElementById('deptChart').getContext('2d');
+  if (mouChart) mouChart.destroy();
+  mouChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'MOU Active',
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => `${c.raw} MOU` } }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 10, family: "'Sarabun',sans-serif" } } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// MAP (Leaflet)
+// ============================================================
+function loadMap(data) {
+  const countryData = {};
+  data.forEach(m => {
+    if (!m['ประเทศ']) return;
+    countryData[m['ประเทศ']] = (countryData[m['ประเทศ']] || 0) + 1;
+  });
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+  document.head.appendChild(link);
+
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+  script.onload = () => {
+    const msg = document.getElementById('mouMapMsg');
+    const mapEl = document.getElementById('leafletMouMap');
+    if (msg) msg.style.display = 'none';
+    if (mapEl) mapEl.style.display = 'block';
+
+    const map = L.map('leafletMouMap', {
+      center: [20, 10], zoom: 2,
+      zoomControl: true, scrollWheelZoom: false,
+      attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+      maxZoom: 5, minZoom: 1
+    }).addTo(map);
+
+    const COORDS = {
+      'China':[35.86,104.19],'Japan':[36.2,138.2],'South Korea':[36.5,127.9],
+      'Taiwan':[23.7,121.0],'Germany':[51.2,10.4],'France':[46.2,2.2],
+      'United Kingdom':[55.4,-3.4],'Australia':[-25.3,133.8],'New Zealand':[-40.9,174.9],
+      'USA':[37.1,-95.7],'Canada':[56.1,-106.3],'Vietnam':[14.1,108.3],
+      'Myanmar':[21.9,95.9],'Indonesia':[-2.5,118.0],'Malaysia':[4.2,109.5],
+      'Philippines':[12.9,121.8],'Singapore':[1.35,103.8],'India':[20.6,78.9],
+      'Thailand':[15.9,100.9],'Netherlands':[52.1,5.3],'Sweden':[60.1,18.6],
+      'Norway':[64.5,17.9],'Finland':[61.9,25.7],'Laos':[17.9,102.5],
+      'Cambodia':[12.6,104.9],'Bangladesh':[23.7,90.4],'Mongolia':[46.9,103.8],
+      'Saudi Arabia':[24.0,45.0],'UAE':[24.0,54.0],'Italy':[41.9,12.6],
+      'Spain':[40.5,-3.7],'Russia':[61.5,105.3],'Brazil':[-10.0,-53.0],
+      'Mexico':[23.6,-102.5],'South Africa':[-29.0,25.0],
+    };
+
+    const style = document.createElement('style');
+    style.textContent = `.mou-tt{background:rgba(10,20,40,0.92)!important;border:1px solid rgba(75,189,232,0.3)!important;color:#fff!important;font-family:'Prompt',sans-serif!important;font-size:12px!important;border-radius:8px!important;padding:6px 10px!important}.mou-tt::before{display:none!important}.leaflet-container{background:#071828!important}`;
+    document.head.appendChild(style);
+
+    Object.entries(countryData).forEach(([country, count]) => {
+      const coords = COORDS[country];
+      if (!coords) return;
+      const color = count >= 8 ? '#F5A623' : count >= 4 ? '#1A6DB5' : '#4BBDE8';
+      const size  = count >= 8 ? 18 : count >= 4 ? 14 : 10;
+      const icon  = L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,0.8);box-shadow:0 0 ${size}px ${color}"></div>`,
+        iconSize: [size, size], iconAnchor: [size/2, size/2],
+      });
+      L.marker(coords, {icon})
+        .bindTooltip(`<strong>${country}</strong><br>MOU: ${count}`, { direction:'top', className:'mou-tt' })
+        .addTo(map);
+    });
+  };
+  document.head.appendChild(script);
+}
+
+// ============================================================
+// LANG
+// ============================================================
+function setLang(lang) {
+  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
+  if (lang === 'EN') {
+    document.getElementById('hero-title').textContent = '🤝 International MOUs';
+    document.getElementById('hero-sub').textContent = 'Academic cooperation data with institutions worldwide';
+    document.getElementById('kpi-total-label').textContent = 'Total MOUs';
+  } else {
+    document.getElementById('hero-title').textContent = '🤝 MOU ต่างประเทศ';
+    document.getElementById('hero-sub').textContent = 'ข้อมูลความร่วมมือทางวิชาการกับสถาบันทั่วโลก';
+    document.getElementById('kpi-total-label').textContent = 'MOU ทั้งหมด';
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
