@@ -67,7 +67,9 @@ function doPost(e) {
   let result;
 
   try {
-    if (action === 'add')    result = addRow(sheet, body.data);
+    if (action === 'uploadImage') result = uploadImage(body.base64, body.fileName, body.folderName);
+    else if (action === 'uploadFile') result = uploadFile(body.base64, body.fileName, body.folderName);
+    else if (action === 'add')    result = addRow(sheet, body.data);
     else if (action === 'edit')   result = editRow(sheet, body.id, body.data);
     else if (action === 'delete') result = deleteRow(sheet, body.id);
     else result = { error: 'Unknown action' };
@@ -310,6 +312,54 @@ function getPrefix(sheetName) {
     [SHEET_NAMES.OUTBOUND]: 'OUT',
   };
   return map[sheetName] || 'ROW';
+}
+
+
+// ============================================================
+// UPLOAD HELPERS — อัปโหลดรูป/ไฟล์เข้า Google Drive
+// ใช้ได้กับ Poster, Cover, PDF และไฟล์แนบทั่วไป
+// ============================================================
+function getOrCreateUploadFolder(folderName) {
+  const rootName = 'iROUP Uploads';
+  const rootFolders = DriveApp.getFoldersByName(rootName);
+  const root = rootFolders.hasNext() ? rootFolders.next() : DriveApp.createFolder(rootName);
+
+  const targetName = folderName || 'General';
+  const subFolders = root.getFoldersByName(targetName);
+  return subFolders.hasNext() ? subFolders.next() : root.createFolder(targetName);
+}
+
+function decodeBase64File(base64, fileName) {
+  if (!base64) throw new Error('ไม่พบข้อมูลไฟล์ base64');
+  if (!fileName) fileName = 'iroup-upload-' + new Date().getTime();
+
+  const matches = String(base64).match(/^data:(.+);base64,(.+)$/);
+  if (!matches) throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');
+
+  const contentType = matches[1];
+  const bytes = Utilities.base64Decode(matches[2]);
+  return Utilities.newBlob(bytes, contentType, fileName);
+}
+
+function uploadFile(base64, fileName, folderName) {
+  const folder = getOrCreateUploadFolder(folderName || 'Files');
+  const blob = decodeBase64File(base64, fileName);
+  const file = folder.createFile(blob);
+
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  return {
+    success: true,
+    url: file.getUrl(),
+    fileUrl: file.getUrl(),
+    id: file.getId(),
+    name: file.getName(),
+    mimeType: file.getMimeType()
+  };
+}
+
+function uploadImage(base64, fileName, folderName) {
+  return uploadFile(base64, fileName, folderName || 'Images');
 }
 
 // ============================================================
