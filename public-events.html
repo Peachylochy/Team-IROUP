@@ -226,9 +226,9 @@ const TYPE_EMOJI = {'การเดินทาง':'✈️','Inbound':'🌏','
 async function loadData() {
   try {
     const data = await IROUP.getAll(IROUP.SHEETS.EVENT);
-    allEvents = data.sort((a,b) => new Date(a['วันเริ่ม']) - new Date(b['วันเริ่ม']));
+    allEvents = data.sort((a,b) => (IROUP.parseDate(a['วันเริ่ม'])||0) - (IROUP.parseDate(b['วันเริ่ม'])||0));
     const today = new Date();
-    const upcoming = data.filter(e => new Date(e['วันเริ่ม']) > today).length;
+    const upcoming = data.filter(e => (IROUP.parseDate(e['วันเริ่ม'])||0) > today).length;
     const ongoing  = data.filter(e => {
       const s = IROUP.getStatus(e['วันเริ่ม'], e['วันสิ้นสุด']);
       return s.status === 'active';
@@ -253,8 +253,8 @@ function renderEvents() {
       (currentFilter === 'done'     && s.status === 'done');
     const matchT = !type || e['ประเภท'] === type;
     const matchD = !selectedDate || (
-      new Date(e['วันเริ่ม']) <= selectedDate &&
-      new Date(e['วันสิ้นสุด'] || e['วันเริ่ม']) >= selectedDate
+      (IROUP.parseDate(e['วันเริ่ม'])||0) <= selectedDate &&
+      (IROUP.parseDate(e['วันสิ้นสุด'] || e['วันเริ่ม'])||0) >= selectedDate
     );
     return matchS && matchT && matchD;
   });
@@ -265,7 +265,7 @@ function renderEvents() {
   }
 
   document.getElementById('eventList').innerHTML = filtered.map(e => {
-    const d    = new Date(e['วันเริ่ม']);
+    const d    = IROUP.parseDate(e['วันเริ่ม']) || new Date();
     const day  = d.getDate();
     const mon  = THAI_MONTHS[d.getMonth()].slice(0,3) + '.';
     const type = e['ประเภท'] || 'กิจกรรม';
@@ -322,8 +322,8 @@ function renderCalendar() {
   // หาวันที่มี event ในเดือนนี้
   const eventDays = new Set();
   allEvents.forEach(e => {
-    const start = new Date(e['วันเริ่ม']);
-    const end   = new Date(e['วันสิ้นสุด'] || e['วันเริ่ม']);
+    const start = IROUP.parseDate(e['วันเริ่ม']) || new Date(9999,0,1);
+    const end   = IROUP.parseDate(e['วันสิ้นสุด'] || e['วันเริ่ม']) || start;
     let cur = new Date(start);
     while (cur <= end) {
       if (cur.getFullYear() === calYear && cur.getMonth() === calMonth) {
