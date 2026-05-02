@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ทุนการศึกษา — iROUP</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#1A6DB5;--blue-light:#4BBDE8;--blue-pale:#E8F4FD;
+  --navy:#0F2D5A;--navy-dark:#071828;
+  --green:#5BAD3E;--green-pale:#EBF7E3;
+  --gold:#D4890A;--gold-pale:#FEF3DC;
+  --red:#D63B32;--red-pale:#FDECEA;
+  --gray-100:#F8F9FB;--gray-200:#EEF1F5;--gray-300:#DDE2EA;
+  --gray-400:#B8C2D0;--gray-600:#6B7A8D;--gray-800:#2D3748;
+  --white:#FFFFFF;
+  --shadow-sm:0 1px 4px rgba(15,45,90,0.08);
+  --shadow-md:0 4px 16px rgba(15,45,90,0.12);
+  --shadow-lg:0 8px 32px rgba(15,45,90,0.16);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--navy)}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:20px}
+.nav-link{font-size:13px;font-weight:500;color:var(--gray-600);text-decoration:none;transition:color .2s;padding:4px 0;border-bottom:2px solid transparent}
+.nav-link:hover{color:var(--blue)}
+.nav-link.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.nav-lang{display:flex;background:var(--gray-200);border-radius:8px;padding:3px;gap:2px}
+.nav-lang-btn{padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gray-600);transition:all .2s}
+.nav-lang-btn.active{background:var(--blue);color:#fff}
+.nav-admin-btn{padding:7px 16px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:20px;font-size:12px;font-weight:700;color:#fff;text-decoration:none}
+
+/* HERO */
+.page-hero{background:linear-gradient(135deg, #EBF7E3 0%, #E8F6FD 50%, #FEF8EC 100%);padding:48px 5%}
+.page-hero h1{font-size:32px;font-weight:800;margin-bottom:8px}
+.page-hero p{font-size:14px;color:rgba(255,255,255,0.6);font-family:'Sarabun',sans-serif}
+.hero-kpi{display:flex;gap:32px;margin-top:24px}
+.hkpi-num{font-size:36px;font-weight:900;color:#7BC842;letter-spacing:-1px}
+.hkpi-label{font-size:11px;color:rgba(255,255,255,0.5);font-family:'Sarabun',sans-serif;margin-top:2px}
+
+.content{padding:32px 5%;max-width:1400px;margin:0 auto;width:100%}
+
+/* FILTER */
+.filter-bar{background:var(--white);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.search-wrap{flex:1;position:relative;min-width:200px}
+.search-wrap input{width:100%;padding:8px 12px 8px 34px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:13px;font-family:'Prompt',sans-serif;outline:none;transition:border .15s}
+.search-wrap input:focus{border-color:var(--blue-light)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:14px}
+.filter-select{padding:8px 12px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:12px;font-family:'Prompt',sans-serif;outline:none;background:var(--white);cursor:pointer}
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-300);color:var(--gray-600);background:var(--white);transition:all .2s;font-family:'Sarabun',sans-serif}
+.pill.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+/* SECTION LABEL */
+.section-label{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:6px;padding-bottom:8px;border-bottom:2px solid var(--blue-pale)}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
+.scholar-card{background:var(--white);border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);overflow:hidden;transition:all .25s;cursor:pointer}
+.scholar-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
+.card-top{padding:16px;display:flex;align-items:flex-start;gap:12px}
+.card-flag{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.card-info{flex:1}
+.card-name{font-size:13px;font-weight:700;color:var(--navy);line-height:1.3;margin-bottom:3px}
+.card-org{font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif}
+.card-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;font-family:'Sarabun',sans-serif;white-space:nowrap;flex-shrink:0}
+.s-open{background:var(--green-pale);color:var(--green)}
+.s-upcoming{background:var(--blue-pale);color:var(--blue)}
+.s-closed{background:var(--gray-200);color:var(--gray-600)}
+.card-covers{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:4px}
+.cover-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--blue-pale);color:var(--blue);font-weight:500;font-family:'Sarabun',sans-serif}
+.card-level{font-size:10px;padding:2px 7px;border-radius:4px;background:#F0EBFF;color:#7C3AED;font-weight:600;font-family:'Sarabun',sans-serif}
+.card-footer{padding:10px 16px;background:var(--gray-100);border-top:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
+.card-deadline{font-size:11px;color:var(--gray-600);font-family:'Sarabun',sans-serif}
+.days-urgent{font-size:11px;font-weight:700;color:var(--red)}
+.days-soon{font-size:11px;font-weight:700;color:var(--gold)}
+.days-ok{font-size:11px;font-weight:700;color:var(--green)}
+
+/* PIN badge */
+.pin-badge{position:absolute;top:8px;right:8px;background:var(--gold-pale);color:var(--gold);font-size:12px;padding:2px 6px;border-radius:6px}
+
+.loading{text-align:center;padding:40px;color:var(--gray-400);font-family:'Sarabun',sans-serif}
+footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(255,255,255,0.4);font-size:11px;font-family:'Sarabun',sans-serif;margin-top:40px}
+
+
+
+
+  50%{transform:translateY(-15px) scale(1.05)}
+}
+
+
+
+
+
+100%{background-position:-200% 0}}
+
+
+
+
+
+
+
+.page-hero, 
+/* Remove dark overlay */
+.page-hero::after, 
+.page-hero::before, 
+
+/* Light glass orbs */
+
+  50%{transform:translateY(-15px) scale(1.05)}
+}
+
+
+
+/* KPI on light hero */
+
+.hkpi-label { color: rgba(15,45,90,0.6) !important; }
+.page-hero h1 { color: var(--navy-dark) !important; }
+.page-hero p { color: var(--gray-600) !important; }
+.page-hero .hkpi-num { filter: none; }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="public-landing.html">
+    <img src="iroup-logo.png" alt="iROUP" style="height:34px;object-fit:contain" onerror="this.style.display='none'">
+  </a>
+  <div class="nav-links">
+    <a href="public-mou.html" class="nav-link">🤝 MOU</a>
+    <a href="public-scholar.html" class="nav-link active">🎓 ทุนการศึกษา</a>
+    <a href="public-events.html" class="nav-link">📅 กิจกรรม</a>
+    <a href="public-mobility.html" class="nav-link">👥 Mobility</a>
+    <div class="nav-lang">
+      <div class="nav-lang-btn active" onclick="setLang('TH')">TH</div>
+      <div class="nav-lang-btn" onclick="setLang('EN')">EN</div>
+    </div>
+    <a href="index.html" class="nav-admin-btn">🔐 Admin</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>🎓 ทุนการศึกษาต่างประเทศ</h1>
+  <p>ทุนการศึกษาสำหรับนิสิตและบุคลากร มหาวิทยาลัยพะเยา · International Scholarships</p>
+  <div class="hero-kpi">
+    <div><div class="hkpi-num" id="kpi-total">—</div><div class="hkpi-label">ทุนทั้งหมด</div></div>
+    <div><div class="hkpi-num" style="color:#F5A623" id="kpi-open">—</div><div class="hkpi-label">กำลังรับสมัคร</div></div>
+    <div><div class="hkpi-num" style="color:#4BBDE8" id="kpi-upcoming">—</div><div class="hkpi-label">เร็วๆ นี้</div></div>
+  </div>
+</div>
+
+<div class="content">
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="ค้นหาชื่อทุน หรือสถาบัน..." oninput="renderCards()">
+    </div>
+    <select class="filter-select" id="countryFilter" onchange="renderCards()">
+      <option value="">ทุกประเทศ</option>
+    </select>
+    <select class="filter-select" id="levelFilter" onchange="renderCards()">
+      <option value="">ทุกระดับ</option>
+      <option>ป.ตรี</option><option>ป.โท</option><option>ป.เอก</option><option>บุคลากร</option>
+    </select>
+    <div class="pills">
+      <div class="pill on" onclick="setPill(this,'')">ทั้งหมด</div>
+      <div class="pill" onclick="setPill(this,'open')">รับสมัคร</div>
+      <div class="pill" onclick="setPill(this,'upcoming')">เร็วๆ นี้</div>
+      <div class="pill" onclick="setPill(this,'closed')">ปิดแล้ว</div>
+    </div>
+  </div>
+
+  <!-- OPEN SCHOLARSHIPS -->
+  <div id="openSection">
+    <div class="section-label">🔥 กำลังรับสมัครตอนนี้</div>
+    <div class="cards-grid" id="openCards"><div class="loading">⏳ กำลังโหลด...</div></div>
+  </div>
+
+  <!-- ALL SCHOLARSHIPS -->
+  <div id="allSection">
+    <div class="section-label">📋 ทุนทั้งหมด</div>
+    <div class="cards-grid" id="allCards"></div>
+  </div>
+</div>
+
+<footer>© 2569 International Relations Office · University of Phayao</footer>
+
+<script src="iroup-config.js"></script>
+<script>
+let allScholar = [];
+let currentFilter = '';
+const FLAGS = {'Japan':'🇯🇵','China':'🇨🇳','South Korea':'🇰🇷','Germany':'🇩🇪','Australia':'🇦🇺','France':'🇫🇷','USA':'🇺🇸','Taiwan':'🇹🇼','Thailand':'🇹🇭','Netherlands':'🇳🇱'};
+const BG = {'Japan':'#E8F4FD','China':'#FDECEA','South Korea':'#EBF7E3','Germany':'#F0EBFF','Australia':'#FEF3DC','France':'#E0F7F5','USA':'#DBEAFE','Taiwan':'#F3F0FF'};
+
+async function loadData() {
+  try {
+    const data = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
+    allScholar = data.sort((a,b) => {
+      // Pin ขึ้นก่อน
+      if (a['Pin'] === 'TRUE' && b['Pin'] !== 'TRUE') return -1;
+      if (b['Pin'] === 'TRUE' && a['Pin'] !== 'TRUE') return 1;
+      return 0;
+    });
+
+    // KPI
+    const today = new Date();
+    const open = data.filter(s => {
+      const st = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
+      return st.status === 'open';
+    }).length;
+    const upcoming = data.filter(s => {
+      const st = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
+      return st.status === 'upcoming';
+    }).length;
+
+    document.getElementById('kpi-total').textContent    = data.length;
+    document.getElementById('kpi-open').textContent     = open;
+    document.getElementById('kpi-upcoming').textContent = upcoming;
+
+    // Country filter
+    const countries = [...new Set(data.map(s => s['ประเทศ']).filter(Boolean))].sort();
+    const sel = document.getElementById('countryFilter');
+    countries.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = `${FLAGS[c]||'🌍'} ${c}`;
+      sel.appendChild(opt);
+    });
+
+    renderCards();
+  } catch(e) {
+    document.getElementById('openCards').innerHTML = '<div class="loading">⚠️ ไม่สามารถโหลดข้อมูลได้</div>';
+  }
+}
+
+function renderCards() {
+  const q       = document.getElementById('searchInput').value.toLowerCase();
+  const country = document.getElementById('countryFilter').value;
+  const level   = document.getElementById('levelFilter').value;
+
+  let filtered = allScholar.filter(s => {
+    const matchQ  = !q || (s['ชื่อทุน']+s['สถาบัน']).toLowerCase().includes(q);
+    const matchC  = !country || s['ประเทศ'] === country;
+    const matchL  = !level || (s['ระดับ']||'').includes(level);
+    const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
+    const matchS  = !currentFilter || st.status === currentFilter;
+    return matchQ && matchC && matchL && matchS;
+  });
+
+  const open   = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status === 'open');
+  const others = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status !== 'open');
+
+  document.getElementById('openSection').style.display = open.length > 0 ? 'block' : 'none';
+  document.getElementById('openCards').innerHTML = open.map(s => cardHTML(s)).join('') || '<div class="loading">ไม่มีทุนที่กำลังรับสมัคร</div>';
+  document.getElementById('allCards').innerHTML  = others.map(s => cardHTML(s)).join('') || '<div class="loading">ไม่พบข้อมูล</div>';
+}
+
+function cardHTML(s) {
+  const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
+  const flag    = FLAGS[s['ประเทศ']] || '🌍';
+  const bg      = BG[s['ประเทศ']] || '#F8F9FB';
+  const covers  = (s['ครอบคลุม']||'').split(',').filter(Boolean);
+  const isPinned = s['Pin'] === 'TRUE';
+
+  let statusClass = 's-closed', statusLabel = 'ปิดรับแล้ว';
+  if (st.status === 'open')     { statusClass = 's-open';     statusLabel = 'รับสมัคร'; }
+  if (st.status === 'upcoming') { statusClass = 's-upcoming'; statusLabel = 'เร็วๆ นี้'; }
+
+  let daysHTML = '';
+  if (st.daysLeft !== null) {
+    const cls = st.daysLeft < 30 ? 'days-urgent' : st.daysLeft < 60 ? 'days-soon' : 'days-ok';
+    daysHTML = `<span class="${cls}">⏰ เหลือ ${st.daysLeft} วัน</span>`;
+  }
+
+  return `<div class="scholar-card" style="position:relative">
+    ${isPinned ? '<div class="pin-badge">📌</div>' : ''}
+    <div class="card-top">
+      <div class="card-flag" style="background:${bg}">${flag}</div>
+      <div class="card-info">
+        <div class="card-name">${s['ชื่อทุน']||'—'}</div>
+        <div class="card-org">${s['สถาบัน']||'—'} · ${s['ประเทศ']||'—'}</div>
+      </div>
+      <span class="card-status ${statusClass}">${statusLabel}</span>
+    </div>
+    <div class="card-covers">
+      ${covers.map(c => `<span class="cover-tag">${c.trim()}</span>`).join('')}
+      ${s['ระดับ'] ? `<span class="card-level">${s['ระดับ']}</span>` : ''}
+    </div>
+    <div class="card-footer">
+      <div class="card-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>
+      ${daysHTML}
+    </div>
+  </div>`;
+}
+
+function setPill(el, status) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+  currentFilter = status;
+  renderCards();
+}
+
+function setLang(lang) {
+  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
+}
+
+loadData();
+</script>
+
+
+
+</body>
+</html>
