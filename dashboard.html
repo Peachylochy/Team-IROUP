@@ -79,6 +79,12 @@ function daysBetween(a,b){return Math.ceil((b-a)/(86400000))}
 function statusMou(r){const end=toDate(r['วันสิ้นสุด']); if(!end)return 'active'; const diff=daysBetween(new Date(),end); if(diff<0)return 'expired'; if(diff<=180)return 'soon'; return 'active';}
 function statusScholar(r){const now=new Date(), open=toDate(r['วันเปิดรับ']), close=toDate(r['วันปิดรับ']); if(close&&now>close)return 'expired'; if(open&&now<open)return 'soon'; return 'active';}
 function statusText(s){return s==='active'?'Active':s==='soon'?'ใกล้หมด/เร็วๆนี้':'หมดอายุ';}
+function fileLink(url,label='เปิด'){
+  const u = String(url || '').trim();
+  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '<span class="file-empty">-</span>';
+  return `<a href="${esc(u)}" target="_blank" rel="noopener" class="file-btn">🔗 ${esc(label)}</a>`;
+}
+
 async function safe(label, fn, fallback=[]){try{return await fn()}catch(e){console.error(label,e); return fallback}}
 async function loadCore(){
   state.stats = await safe('stats',()=>IROUP.getStats(),{stats:{}});
@@ -132,7 +138,42 @@ function renderCrudInto(el,opts){
     state.searchTimer=setTimeout(draw,180);
   });
 }
-function renderScholarEvents(){state.activeSub=state.activeSub||'scholar'; const isS=state.activeSub==='scholar'; const opts=isS?{key:'scholar',addLabel:'ทุน',title:'ทุนการศึกษาทั้งหมด',rows:state.data.scholar,cols:[{key:'ชื่อทุน',label:'ชื่อทุน'},{key:'สถาบัน',label:'สถาบัน'},{key:'ประเทศ',label:'ประเทศ'},{key:'วันปิดรับ',label:'ปิดรับ',render:r=>fmtDate(r['วันปิดรับ'])},{key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusScholar(r)}">${statusText(statusScholar(r))}</span>`}]}:{key:'event',addLabel:'กิจกรรม',title:'กิจกรรมทั้งหมด',rows:state.data.event,cols:[{key:'ชื่อกิจกรรม',label:'ชื่อกิจกรรม'},{key:'ประเภท',label:'ประเภท'},{key:'สถานที่',label:'สถานที่'},{key:'วันเริ่ม',label:'วันเริ่ม',render:r=>fmtDate(r['วันเริ่ม'])},{key:'จำนวน',label:'จำนวน'}]}; $('#content').innerHTML=`<div class="grid-kpi">${card('🎓',state.data.scholar.length,'ทุนทั้งหมด',`${state.stats.scholarship?.open||0} เปิดรับ`,'gold')}${card('📅',state.data.event.length,'กิจกรรมทั้งหมด','จากชีตกิจกรรม')}${card('🔥',state.data.scholar.filter(r=>statusScholar(r)==='active').length,'ทุนเปิดรับ','สมัครได้ตอนนี้','green')}${card('📌',state.data.event.filter(r=>toDate(r['วันเริ่ม'])>=new Date()).length,'Upcoming','กิจกรรมที่จะถึง','purple')}</div><div class="tabs"><button class="tab ${isS?'active':''}" onclick="state.activeSub='scholar';state.query='';render()">🎓 ทุนการศึกษา</button><button class="tab ${!isS?'active':''}" onclick="state.activeSub='event';state.query='';render()">📅 กิจกรรม</button></div><div id="crudArea"></div>`; renderCrudInto($('#crudArea'),opts);}
+function renderScholarEvents(){
+  state.activeSub=state.activeSub||'scholar';
+  const isS=state.activeSub==='scholar';
+  const opts=isS?{
+    key:'scholar',
+    addLabel:'ทุน',
+    title:'ทุนการศึกษาทั้งหมด',
+    rows:state.data.scholar,
+    cols:[
+      {key:'ชื่อทุน',label:'ชื่อทุน'},
+      {key:'สถาบัน',label:'สถาบัน'},
+      {key:'ประเทศ',label:'ประเทศ'},
+      {key:'วันปิดรับ',label:'ปิดรับ',render:r=>fmtDate(r['วันปิดรับ'])},
+      {key:'Poster_URL',label:'Poster',render:r=>fileLink(r['Poster_URL'],'Poster')},
+      {key:'ไฟล์_URL',label:'ไฟล์แนบ',render:r=>fileLink(r['ไฟล์_URL'],'ไฟล์')},
+      {key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusScholar(r)}">${statusText(statusScholar(r))}</span>`}
+    ]
+  }:{
+    key:'event',
+    addLabel:'กิจกรรม',
+    title:'กิจกรรมทั้งหมด',
+    rows:state.data.event,
+    cols:[
+      {key:'ชื่อกิจกรรม',label:'ชื่อกิจกรรม'},
+      {key:'ประเภท',label:'ประเภท'},
+      {key:'สถานที่',label:'สถานที่'},
+      {key:'วันเริ่ม',label:'วันเริ่ม',render:r=>fmtDate(r['วันเริ่ม'])},
+      {key:'เวลาเริ่ม',label:'เวลา',render:r=>[r['เวลาเริ่ม'],r['เวลาสิ้นสุด']].filter(Boolean).join(' - ') || '-'},
+      {key:'จำนวน',label:'จำนวน'},
+      {key:'Poster_URL',label:'Poster',render:r=>fileLink(r['Poster_URL'],'Poster')},
+      {key:'ไฟล์_URL',label:'ไฟล์แนบ',render:r=>fileLink(r['ไฟล์_URL'],'ไฟล์')}
+    ]
+  };
+  $('#content').innerHTML=`<div class="grid-kpi">${card('🎓',state.data.scholar.length,'ทุนทั้งหมด',`${state.stats.scholarship?.open||0} เปิดรับ`,'gold')}${card('📅',state.data.event.length,'กิจกรรมทั้งหมด','จากชีตกิจกรรม')}${card('🔥',state.data.scholar.filter(r=>statusScholar(r)==='active').length,'ทุนเปิดรับ','สมัครได้ตอนนี้','green')}${card('📌',state.data.event.filter(r=>toDate(r['วันเริ่ม'])>=new Date()).length,'Upcoming','กิจกรรมที่จะถึง','purple')}</div><div class="tabs"><button class="tab ${isS?'active':''}" onclick="state.activeSub='scholar';state.query='';render()">🎓 ทุนการศึกษา</button><button class="tab ${!isS?'active':''}" onclick="state.activeSub='event';state.query='';render()">📅 กิจกรรม</button></div><div id="crudArea"></div>`;
+  renderCrudInto($('#crudArea'),opts);
+}
 function renderTravel(){renderCrudPage({key:'travel',addLabel:'การเดินทาง',title:'รายการเดินทางต่างประเทศ',rows:state.data.travel,cols:[{key:'ชื่อโครงการ',label:'ชื่อโครงการ'},{key:'ประเทศ',label:'ประเทศ'},{key:'เมือง',label:'เมือง'},{key:'ชื่อผู้เดินทาง',label:'ผู้เดินทาง'},{key:'วันเริ่ม',label:'เริ่ม',render:r=>fmtDate(r['วันเริ่ม'])},{key:'วันสิ้นสุด',label:'สิ้นสุด',render:r=>fmtDate(r['วันสิ้นสุด'])},{key:'จำนวน',label:'จำนวน'}]});}
 function renderMobility(){state.activeSub=state.activeSub||'inbound'; const isIn=state.activeSub==='inbound'; const opts=isIn?{key:'inbound',addLabel:'Inbound',title:'Inbound Mobility',rows:state.data.inbound,cols:[{key:'ชื่อ',label:'ชื่อ'},{key:'สกุล',label:'สกุล'},{key:'สถาบัน',label:'สถาบัน'},{key:'ประเทศ',label:'ประเทศ'},{key:'วันมาถึง',label:'มาถึง',render:r=>fmtDate(r['วันมาถึง'])},{key:'วันกลับ',label:'กลับ',render:r=>fmtDate(r['วันกลับ'])}]}:{key:'outbound',addLabel:'Outbound',title:'Outbound Mobility',rows:state.data.outbound,cols:[{key:'ชื่อ_สกุล',label:'ชื่อ-สกุล'},{key:'คณะ',label:'คณะ'},{key:'สถาบัน_ปลายทาง',label:'สถาบันปลายทาง'},{key:'ประเทศ',label:'ประเทศ'},{key:'วันออก',label:'วันออก',render:r=>fmtDate(r['วันออก'])},{key:'วันกลับ',label:'กลับ',render:r=>fmtDate(r['วันกลับ'])}]}; $('#content').innerHTML=`<div class="grid-kpi">${card('👥',state.data.inbound.length+state.data.outbound.length,'Mobility รวม',`In ${state.data.inbound.length} / Out ${state.data.outbound.length}`,'purple')}${card('🌏',state.data.inbound.length,'Inbound','ชาวต่างชาติเข้ามา','green')}${card('✈️',state.data.outbound.length,'Outbound','บุคลากร/นิสิตออกไป')}${card('📊',new Set([...state.data.inbound,...state.data.outbound].map(r=>r['ประเทศ']).filter(Boolean)).size,'ประเทศ','จาก Mobility','gold')}</div><div class="tabs"><button class="tab ${isIn?'active':''}" onclick="state.activeSub='inbound';state.query='';render()">🌏 Inbound</button><button class="tab ${!isIn?'active':''}" onclick="state.activeSub='outbound';state.query='';render()">✈️ Outbound</button></div><div id="crudArea"></div>`; renderCrudInto($('#crudArea'),opts);}
 function renderReports(){ $('#content').innerHTML=`<div class="panel"><div class="panel-head"><div><div class="panel-title">รายงาน & Export</div><div class="panel-sub">ดาวน์โหลดข้อมูลจากชีตจริงเป็น CSV</div></div></div><div class="panel-body"><div class="toolbar"><button class="btn" onclick="exportCsv('mou')">MOU CSV</button><button class="btn" onclick="exportCsv('scholar')">Scholarship CSV</button><button class="btn" onclick="exportCsv('event')">Events CSV</button><button class="btn" onclick="exportCsv('travel')">Travel CSV</button><button class="btn" onclick="exportCsv('inbound')">Inbound CSV</button><button class="btn" onclick="exportCsv('outbound')">Outbound CSV</button></div></div></div>`;}
