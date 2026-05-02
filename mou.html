@@ -137,6 +137,29 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 .tbl-btn{padding:6px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:'Prompt',sans-serif;display:flex;align-items:center;gap:5px;transition:all .2s}
 .tbl-btn-export{background:var(--green-pale);color:var(--green)}
 .tbl-btn-export:hover{background:#d4efbd}
+
+.file-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:6px 10px;
+  border-radius:10px;
+  background:var(--blue-pale);
+  color:var(--blue);
+  font-weight:700;
+  text-decoration:none;
+  font-size:11px;
+  white-space:nowrap;
+  font-family:'Prompt',sans-serif;
+}
+.file-btn:hover{background:#d7ecfb;transform:translateY(-1px)}
+.file-empty{font-size:11px;color:var(--gray-400);font-family:'Inter',sans-serif}
+.file-upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.file-link-input{flex:1;min-width:260px}
+.file-pick-btn{padding:9px 14px;border-radius:8px;border:none;background:var(--blue-pale);color:var(--blue);font-weight:700;cursor:pointer;font-family:'Prompt',sans-serif}
+.file-pick-btn:hover{background:#d7ecfb}
+.file-upload-status{font-size:11px;color:var(--gray-600);font-family:'Prompt',sans-serif;margin-top:6px}
+
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 thead{background:var(--gray-100);position:sticky;top:0}
@@ -385,6 +408,7 @@ tr:hover td{background:var(--blue-pale)}
               <th>ปีงบประมาณ</th>
               <th>สถานะ</th>
               <th>หมายเหตุ</th>
+              <th>ไฟล์แนบ</th>
               <th>จัดการ</th>
             </tr>
           </thead>
@@ -488,6 +512,15 @@ tr:hover td{background:var(--blue-pale)}
         <label>หมายเหตุ</label>
         <textarea id="f_note" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
       </div>
+      <div class="form-group form-full">
+        <label>ไฟล์แนบ</label>
+        <div class="file-upload-row">
+          <input class="file-link-input" type="url" id="f_file_url" placeholder="วางลิงก์ไฟล์ หรือแนบไฟล์จากเครื่อง">
+          <input type="file" id="f_file_input" style="display:none" onchange="uploadMouFile(this)">
+          <button type="button" class="file-pick-btn" onclick="document.getElementById('f_file_input').click()">📎 แนบไฟล์</button>
+        </div>
+        <div id="fileUploadStatus" class="file-upload-status">ยังไม่มีไฟล์แนบ</div>
+      </div>
     </div>
     <!-- SAVE STATUS -->
     <div id="saveStatus" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;margin-top:8px;display:none;align-items:center;gap:8px"></div>
@@ -549,6 +582,7 @@ function renderTable(data){
       <td><span class="date-year">${m.fy}</span></td>
       <td><span class="badge ${badgeClass}">${badgeText}</span></td>
       <td><div class="note-text" title="${m.note}">${m.note||'—'}</div></td>
+      <td>${m.file ? `<a href="${m.file}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>` : '<span class="file-empty">-</span>'}</td>
       <td><div class="action-btns">
         <button class="act-btn act-edit" title="แก้ไข" onclick="openModal(${m.id})">✏️</button>
         <button class="act-btn act-file" title="เอกสาร">📎</button>
@@ -743,6 +777,7 @@ async function saveMOU() {
   const start   = document.getElementById('f_start').value;
   const end     = document.getElementById('f_end').value;
   const note    = document.getElementById('f_note').value;
+  const fileUrl = document.getElementById('f_file_url')?.value || window.currentMouFileUrl || '';
 
   // Validate
   if (!dept || !uni || !country || !start || !end) {
@@ -764,7 +799,7 @@ async function saveMOU() {
     'วันเริ่ม':    start,
     'วันสิ้นสุด':  end,
     'หมายเหตุ':    note,
-    'ไฟล์_URL':    '',
+    'ไฟล์_URL': fileUrl,
   };
 
   // Show loading
@@ -831,11 +866,79 @@ window.openModal = function(id) {
     document.getElementById('f_fy').value = '2569';
     document.getElementById('f_start').value = '';
     document.getElementById('f_end').value = '';
+    const fileInput = document.getElementById('f_file_input');
+    const fileUrlInput = document.getElementById('f_file_url');
+    const fileStatus = document.getElementById('fileUploadStatus');
+    if (fileInput) fileInput.value = '';
+    if (fileUrlInput) fileUrlInput.value = '';
+    if (fileStatus) fileStatus.textContent = 'ยังไม่มีไฟล์แนบ';
+    window.currentMouFileUrl = '';
   }
   document.getElementById('modalOverlay').classList.add('show');
 };
 </script>
 
+
+<script>
+// ============================================================
+// FILE UPLOAD — MOU attachment to Apps Script / Google Drive
+// ============================================================
+window.currentMouFileUrl = window.currentMouFileUrl || '';
+
+function setFileUploadStatus(message, type = 'info') {
+  const el = document.getElementById('fileUploadStatus');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = type === 'error' ? 'var(--red)' : type === 'success' ? 'var(--green)' : 'var(--gray-600)';
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      resolve(result.includes(',') ? result.split(',')[1] : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadMouFile(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  try {
+    setFileUploadStatus(`⏳ กำลังอัปโหลด ${file.name}...`);
+    const base64 = await readFileAsBase64(file);
+    const payload = {
+      action: 'uploadFile',
+      fileName: file.name,
+      filename: file.name,
+      mimeType: file.type || 'application/octet-stream',
+      contentType: file.type || 'application/octet-stream',
+      data: base64,
+      base64: base64,
+      folderName: 'iROUP MOU Files'
+    };
+    const res = await fetch(IROUP.SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || json.message || 'อัปโหลดไฟล์ไม่สำเร็จ');
+    const url = json.url || json.fileUrl || json.webViewLink || json.link || '';
+    if (!url) throw new Error('อัปโหลดสำเร็จแต่ไม่ได้รับ URL กลับมา');
+    window.currentMouFileUrl = url;
+    const fileUrlInput = document.getElementById('f_file_url');
+    if (fileUrlInput) fileUrlInput.value = url;
+    setFileUploadStatus(`✅ แนบไฟล์แล้ว: ${file.name}`, 'success');
+  } catch (err) {
+    console.error('uploadMouFile error:', err);
+    setFileUploadStatus(`❌ ${err.message}`, 'error');
+    alert('อัปโหลดไฟล์ไม่สำเร็จ: ' + err.message);
+  }
+}
+</script>
 
 <script>
 // ============================================================
@@ -873,6 +976,10 @@ function renderLiveMouTable(data) {
   tbody.innerHTML = data.map((m, i) => {
     const s = IROUP.getMouStatus(m['วันสิ้นสุด']);
     const badgeClass = s.status === 'active' ? 'badge-active' : s.status === 'soon' ? 'badge-soon' : 'badge-expired';
+    const fileUrl = m['ไฟล์_URL'] || m.fileUrl || m.file || '';
+    const fileCell = fileUrl
+      ? `<a href="${fileUrl}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>`
+      : '<span class="file-empty">-</span>';
     return `<tr>
       <td style="color:var(--gray-400);font-size:11px">${String(i+1).padStart(2,'0')}</td>
       <td><div class="td-uni">${m['หน่วยงาน_UP'] || '—'}</div></td>
@@ -883,9 +990,10 @@ function renderLiveMouTable(data) {
       <td><span class="date-year">${m['ปีงบ'] || '—'}</span></td>
       <td><span class="badge ${badgeClass}">${s.label}</span></td>
       <td><div class="note-text">${m['หมายเหตุ'] || '—'}</div></td>
+      <td>${fileCell}</td>
       <td><div class="action-btns">
         <button class="act-btn act-edit" onclick="openModal('${m['ID']}')">✏️</button>
-        <button class="act-btn act-file">📎</button>
+        <button class="act-btn act-file" title="เปิดไฟล์" onclick="${fileUrl ? `window.open('${fileUrl}','_blank')` : `alert('ไม่มีไฟล์แนบ')`}">📎</button>
         <button class="act-btn act-del" onclick="deleteMou('${m['ID']}')">🗑️</button>
       </div></td>
     </tr>`;
