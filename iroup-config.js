@@ -124,13 +124,47 @@ const IROUP = {
   },
 
   // ============================================================
+  // HELPER — อ่านวันที่ให้เสถียรจาก Sheet / Apps Script
+  // รองรับ ISO, dd/mm/yyyy, dd-mm-yyyy, พ.ศ. และ Date object
+  // ============================================================
+  parseDate(value) {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    if (typeof value === 'number') return new Date(Math.round((value - 25569) * 86400 * 1000));
+
+    const raw = String(value).trim();
+    if (!raw) return null;
+
+    const dmy = raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+    if (dmy) {
+      let d = Number(dmy[1]);
+      let m = Number(dmy[2]);
+      let y = Number(dmy[3]);
+      if (y < 100) y += 2000;
+      if (y > 2400) y -= 543;
+      const dt = new Date(y, m - 1, d);
+      return Number.isNaN(dt.getTime()) ? null : dt;
+    }
+
+    const parsed = new Date(raw);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  },
+
+  daysBetween(endDate, startDate = new Date()) {
+    const end = this.parseDate(endDate);
+    const start = this.parseDate(startDate) || new Date();
+    if (!end) return null;
+    return Math.floor((end - start) / (1000 * 60 * 60 * 24));
+  },
+
+  // ============================================================
   // HELPER — คำนวณสถานะจากวันที่อัตโนมัติ
   // ============================================================
   getStatus(startDate, endDate) {
     const today = new Date();
-    const start = new Date(startDate);
-    const end   = new Date(endDate);
-    const diff  = Math.floor((end - today) / (1000 * 60 * 60 * 24));
+    const start = this.parseDate(startDate);
+    const end   = this.parseDate(endDate);
+    if (!start || !end) return { status: 'unknown', label: 'ไม่ระบุวันที่', color: '#6B7A8D' };
 
     if (today < start) return { status: 'upcoming', label: 'รอเดินทาง',     color: '#D4890A' };
     if (today > end)   return { status: 'done',     label: 'เสร็จสิ้น',     color: '#6B7A8D' };
@@ -138,32 +172,32 @@ const IROUP = {
   },
 
   getMouStatus(endDate) {
-    const today = new Date();
-    const end   = new Date(endDate);
-    const diff  = Math.floor((end - today) / (1000 * 60 * 60 * 24));
-
-    if (diff < 0)   return { status: 'expired', label: 'หมดอายุ',   color: '#D63B32' };
-    if (diff <= 180) return { status: 'soon',    label: 'ใกล้หมด',   color: '#D4890A' };
-    return            { status: 'active',   label: 'Active',     color: '#5BAD3E' };
+    const diff = this.daysBetween(endDate);
+    if (diff === null) return { status: 'unknown', label: 'ไม่ระบุวันหมดอายุ', color: '#6B7A8D' };
+    if (diff < 0)    return { status: 'expired', label: 'หมดอายุ', color: '#D63B32' };
+    if (diff <= 180) return { status: 'soon',    label: 'ใกล้หมด', color: '#D4890A' };
+    return             { status: 'active',  label: 'Active',   color: '#5BAD3E' };
   },
 
   getScholarStatus(openDate, closeDate) {
     const today = new Date();
-    const open  = new Date(openDate);
-    const close = new Date(closeDate);
+    const open  = this.parseDate(openDate);
+    const close = this.parseDate(closeDate);
+    if (!open || !close) return { status: 'unknown', label: 'ไม่ระบุวันที่', daysLeft: null };
     const diff  = Math.floor((close - today) / (1000 * 60 * 60 * 24));
 
-    if (today < open)  return { status: 'upcoming', label: 'เร็วๆ นี้',        daysLeft: null };
-    if (today > close) return { status: 'closed',   label: 'ปิดรับแล้ว',       daysLeft: null };
-    return              { status: 'open',     label: 'กำลังรับสมัคร',   daysLeft: diff };
+    if (today < open)  return { status: 'upcoming', label: 'เร็วๆ นี้',  daysLeft: null };
+    if (today > close) return { status: 'closed',   label: 'ปิดรับแล้ว', daysLeft: null };
+    return              { status: 'open',     label: 'กำลังรับสมัคร', daysLeft: diff };
   },
 
   // ============================================================
   // HELPER — Format วันที่เป็นภาษาไทย
   // ============================================================
   formatDate(dateStr) {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('th-TH', {
+    const dt = this.parseDate(dateStr);
+    if (!dt) return '—';
+    return dt.toLocaleDateString('th-TH', {
       day: 'numeric', month: 'short', year: '2-digit'
     });
   },
