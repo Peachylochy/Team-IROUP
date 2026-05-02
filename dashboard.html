@@ -63,7 +63,7 @@ const SHEETS = {
 const FIELDS = {
   mou:['หน่วยงาน_UP','องค์กร_ตปท','ประเทศ','ทวีป','ประเภท','วันเริ่ม','วันสิ้นสุด','ปีงบ','หมายเหตุ','ไฟล์_URL'],
   scholar:['ชื่อทุน','สถาบัน','ประเทศ','ระดับ','วันประชาสัมพันธ์','วันเปิดรับ','วันปิดรับ','ครอบคลุม','Link','Poster_URL','ไฟล์_URL','Pin','หมายเหตุ'],
-  event:['ชื่อกิจกรรม','ประเภท','วันเริ่ม','วันสิ้นสุด','สถานที่','หน่วยงาน','จำนวน','รายละเอียด','ไฟล์_URL','Pin'],
+  event:['ชื่อกิจกรรม','ประเภท','วันเริ่ม','วันสิ้นสุด','เวลาเริ่ม','เวลาสิ้นสุด','สถานที่','หน่วยงาน','จำนวน','รายละเอียด','Poster_URL','ไฟล์_URL'],
   travel:['ชื่อโครงการ','วัตถุประสงค์','วันเริ่ม','วันสิ้นสุด','ประเทศ','เมือง','จำนวน','รหัสผู้เดินทาง','ชื่อผู้เดินทาง','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ'],
   inbound:['ชื่อ','ชื่อกลาง','สกุล','เพศ','ประเภท','สถาบัน','ประเทศ','ระดับ','หน่วยงาน_UP','ภาษา','วันมาถึง','วันกลับ','โครงการ','วัตถุประสงค์','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ'],
   outbound:['รหัส','ชื่อ_สกุล','คณะ','สาขา','ประเภท','เพศ','สถาบัน_ปลายทาง','ประเทศ','วันออก','วันกลับ','โครงการ','วัตถุประสงค์','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ']
@@ -79,13 +79,6 @@ function daysBetween(a,b){return Math.ceil((b-a)/(86400000))}
 function statusMou(r){const end=toDate(r['วันสิ้นสุด']); if(!end)return 'active'; const diff=daysBetween(new Date(),end); if(diff<0)return 'expired'; if(diff<=180)return 'soon'; return 'active';}
 function statusScholar(r){const now=new Date(), open=toDate(r['วันเปิดรับ']), close=toDate(r['วันปิดรับ']); if(close&&now>close)return 'expired'; if(open&&now<open)return 'soon'; return 'active';}
 function statusText(s){return s==='active'?'Active':s==='soon'?'ใกล้หมด/เร็วๆนี้':'หมดอายุ';}
-  function fileLink(url){
-  if(!url || url === '-') {
-    return '<span class="file-empty">-</span>';
-  }
-
-  return `<a href="${url}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>`;
-}
 async function safe(label, fn, fallback=[]){try{return await fn()}catch(e){console.error(label,e); return fallback}}
 async function loadCore(){
   state.stats = await safe('stats',()=>IROUP.getStats(),{stats:{}});
@@ -182,7 +175,24 @@ function optionPool(field){
 function fieldInput(f,row){
   let raw=row?.[f]||''; if(/วัน|date/i.test(f)){const d=toDate(raw); if(d){raw=d.toISOString().slice(0,10);}} const val=esc(raw);
   if(['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)) return `<textarea name="${esc(f)}">${val}</textarea>`;
-  const type=/วัน|date/i.test(f)?'date':'text';
+
+  if(f === 'Poster_URL'){
+    return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="url" name="${esc(f)}" value="${val}" placeholder="Poster/Cover URL" style="flex:1;min-width:220px">
+      <input type="file" accept="image/*" onchange="uploadAssetFromInput(this,'image')" style="flex:1;min-width:190px">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:5px">แนะนำ 1200 × 630 px · ระบบจะอัปโหลดแล้วใส่ URL ให้อัตโนมัติ</div>`;
+  }
+
+  if(f === 'ไฟล์_URL'){
+    return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="url" name="${esc(f)}" value="${val}" placeholder="File URL / PDF URL" style="flex:1;min-width:220px">
+      <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*" onchange="uploadAssetFromInput(this,'file')" style="flex:1;min-width:190px">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:5px">แนบ PDF/เอกสารได้ · ระบบจะอัปโหลดแล้วใส่ URL ให้อัตโนมัติ</div>`;
+  }
+
+  const type=/วัน|date/i.test(f)?'date':(/เวลา/.test(f)?'time':'text');
   const opts=optionPool(f);
   const listId=opts.length?`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`:'';
   const extra=f==='ประเทศ'?' oninput="onCountryInput(this)" onchange="onCountryInput(this)"':(f==='ทวีป'?' placeholder="เลือกประเทศแล้วระบบจะเติมให้อัตโนมัติ"':'');
@@ -191,6 +201,42 @@ function fieldInput(f,row){
 function dataListsForFields(fields){return fields.map(f=>{const opts=optionPool(f); if(!opts.length)return ''; const id=`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`; return `<datalist id="${id}">${opts.map(o=>`<option value="${esc(o)}"></option>`).join('')}</datalist>`;}).join('');}
 function openForm(key,id=null){const rows=state.data[key]||[]; const row=id?rows.find(r=>String(r.ID)===String(id)):null; state.editing={key,id,row}; $('#modalTitle').textContent=(id?'แก้ไข':'เพิ่ม')+' '+({mou:'MOU',scholar:'ทุน',event:'กิจกรรม',travel:'การเดินทาง',inbound:'Inbound',outbound:'Outbound'}[key]||key); const fields=FIELDS[key]||[]; $('#formFields').innerHTML=fields.map(f=>`<div class="field ${['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)?'full':''}"><label>${esc(f)}</label>${fieldInput(f,row)}</div>`).join('')+dataListsForFields(fields); $('#modalBackdrop').classList.add('show');}
 function closeModal(){ $('#modalBackdrop').classList.remove('show'); state.editing=null; }
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadAssetFromInput(input, kind='file'){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const urlInput = input.parentElement.querySelector('input[type="url"]');
+  const oldText = input.dataset.status || '';
+  input.disabled = true;
+  try{
+    const base64 = await fileToBase64(file);
+    const res = await fetch(IROUP.SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({
+        action: kind === 'image' ? 'uploadImage' : 'uploadFile',
+        base64,
+        fileName:file.name
+      })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    const url = data.url || data.fileUrl || data.webViewLink || '';
+    if(!url) throw new Error('อัปโหลดแล้วแต่ไม่ได้รับ URL กลับมา');
+    urlInput.value = url;
+    alert(kind === 'image' ? 'อัปโหลด Poster สำเร็จ' : 'อัปโหลดไฟล์สำเร็จ');
+  }catch(err){
+    alert('อัปโหลดไม่สำเร็จ: ' + err.message);
+  }finally{
+    input.disabled = false;
+  }
+}
 async function submitForm(e){e.preventDefault(); const {key,id}=state.editing; const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v);
   if(data['หน่วยงาน_UP']) data['หน่วยงาน_UP']=normalizeFaculty(data['หน่วยงาน_UP']);
   if(data['คณะ']) data['คณะ']=normalizeFaculty(data['คณะ']);
