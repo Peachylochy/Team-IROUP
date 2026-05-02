@@ -15,11 +15,9 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
 @media(max-width:1100px){.app{grid-template-columns:86px 1fr}.brand{justify-content:center;padding:0}.brand img{width:58px}.brand-title,.nav-section,.nav-label,.user-info,.nav-badge{display:none}.nav-btn{justify-content:center;padding:14px 0}.nav-icon{font-size:22px}.userbox{justify-content:center}.grid-kpi{grid-template-columns:repeat(2,1fr)}.layout-2{grid-template-columns:1fr}.sidebar{width:86px}}
 @media(max-width:760px){.app{display:block}.sidebar{position:fixed;left:-280px;width:260px;transition:.25s;box-shadow:0 20px 80px rgba(0,0,0,.25)}.sidebar.open{left:0}.brand-title,.nav-section,.nav-label,.user-info,.nav-badge{display:block}.nav-btn{justify-content:flex-start;padding:12px 14px}.topbar{height:64px;padding:0 14px}.mobile-menu{display:inline-flex}.content{padding:14px}.grid-kpi{grid-template-columns:1fr}.kpi{padding:14px}.kpi .num{font-size:28px}.toolbar{align-items:stretch}.search,.input,.select,.btn{width:100%;min-width:0}.form{grid-template-columns:1fr}.layout-2{gap:12px}.map-card{padding:12px;min-height:340px}.map-wrap{height:250px}.event-item{grid-template-columns:48px 1fr}.event-item .btn{grid-column:1/-1}.top-actions .pill:not(.primary),.lang{display:none}.page-title{font-size:14px}.crumb{display:none}.table-wrap{margin:0 -14px;padding:0 14px}.panel-head{align-items:flex-start;flex-direction:column}.sidebar{height:100dvh}.userbox{justify-content:flex-start}.brand{justify-content:flex-start;padding:0 22px}.brand img{width:70px}}
 
-.file-upload{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.file-upload input[type="url"],.file-upload input[type="text"]{flex:1;min-width:220px}
-.file-upload input[type="file"]{display:none}
-.file-note{font-size:11px;color:var(--muted);width:100%;margin-top:4px}
-.file-upload.uploading .file-note{color:var(--blue);font-weight:700}
+.file-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:10px;background:#E8F4FD;color:#1A6DB5;font-weight:800;text-decoration:none;font-size:12px;white-space:nowrap}
+.file-btn:hover{background:#D7ECFB}
+.file-empty{color:#9AA8B8;font-weight:700}
 </style>
 </head>
 <body>
@@ -71,7 +69,7 @@ const FIELDS = {
   outbound:['รหัส','ชื่อ_สกุล','คณะ','สาขา','ประเภท','เพศ','สถาบัน_ปลายทาง','ประเทศ','วันออก','วันกลับ','โครงการ','วัตถุประสงค์','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ']
 };
 const labels = {home:'Dashboard',mou:'MOU ต่างประเทศ',scholar:'ทุน & กิจกรรม',travel:'การเดินทาง',mobility:'Mobility',reports:'รายงาน & Export',settings:'ตั้งค่า',public:'Public View'};
-let state={page:'home', stats:null, data:{}, master:{faculty:[], country:[]}, lang:'th', activeSub:null, editing:null, query:'', searchTimer:null, uploading:false};
+let state={page:'home', stats:null, data:{}, master:{faculty:[], country:[]}, lang:'th', activeSub:null, editing:null, query:'', searchTimer:null};
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
 function asArr(res){return Array.isArray(res) ? res : (res?.data || [])}
@@ -118,7 +116,7 @@ function matchCountryName(mapName, data){let n=String(mapName).toLowerCase(); fo
 async function renderMap(id){const el=document.getElementById(id); if(!el)return; el.innerHTML='<div class="loading" style="color:#fff">กำลังโหลดแผนที่...</div>'; const data=countryCount(); try{const world=await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'); const countries=topojson.feature(world,world.objects.countries).features; el.innerHTML='<svg></svg><div class="map-tooltip" id="mapTip"></div>'; const svg=d3.select(el).select('svg'); const w=el.clientWidth||800,h=el.clientHeight||330; const projection=d3.geoNaturalEarth1().fitSize([w,h],{type:'Sphere'}); const path=d3.geoPath(projection); const tip=el.querySelector('.map-tooltip'); svg.attr('viewBox',`0 0 ${w} ${h}`); svg.append('path').datum({type:'Sphere'}).attr('d',path).attr('fill','#081d31'); svg.selectAll('path.country').data(countries).join('path').attr('class',d=>{const v=matchCountryName(d.properties.name,data);return 'country '+(v>=8?'active-high':v>=4?'active-mid':v>=1?'active-low':'')}).attr('d',path).on('mousemove',(ev,d)=>{const v=matchCountryName(d.properties.name,data); if(!v)return; tip.style.display='block'; tip.style.left=(ev.offsetX+12)+'px'; tip.style.top=(ev.offsetY+12)+'px'; tip.innerHTML=`<b>${d.properties.name}</b><br>${v} MOU Active`;}).on('mouseleave',()=>tip.style.display='none'); }catch(e){console.error(e); el.innerHTML='<div class="empty" style="color:#b8c9da">โหลดแผนที่ไม่ได้ แต่ข้อมูลยังใช้งานได้</div>';}}
 function filterRows(rows,q){q=(q||'').toLowerCase().trim(); if(!q)return rows; return rows.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q));}
 function renderCrudPage(opts){const rows=filterRows(opts.rows,state.query); $('#content').innerHTML=`<div class="toolbar"><input class="input search" id="searchInput" placeholder="🔍 ค้นหาจากทุกคอลัมน์..." value="${esc(state.query)}"><button class="btn primary" onclick="openForm('${opts.key}')">＋ เพิ่ม${opts.addLabel}</button><button class="btn" onclick="exportCsv('${opts.key}')">⬇ Export CSV</button><button class="btn" onclick="loadCore().then(render)">↻ โหลดใหม่</button></div><div class="panel"><div class="panel-head"><div><div class="panel-title">${opts.title}</div><div class="panel-sub">แสดง ${rows.length} รายการจาก Google Sheet จริง</div></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${opts.cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th>จัดการ</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${opts.cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key]||'-')}</td>`).join('')}<td><div class="actions"><button class="iconbtn" onclick="openForm('${opts.key}','${esc(r.ID)}')">✏️</button><button class="iconbtn" onclick="removeRow('${opts.key}','${esc(r.ID)}')">🗑️</button></div></td></tr>`).join(''):`<tr><td colspan="${opts.cols.length+1}"><div class="empty">ไม่พบข้อมูล</div></td></tr>`}</tbody></table></div></div>`; $('#searchInput').addEventListener('input',e=>{state.query=e.target.value; render();});}
-function renderMou(){const s=state.stats; $('#content').innerHTML=`<div class="notice">⚠️ MOU ใกล้หมดอายุ ${s.mou?.soon||0} รายการ · ข้อมูลมาจากชีต MOU โดยตรง</div><div class="grid-kpi">${card('🤝',s.mou?.total||0,'MOU ทั้งหมด',`${s.mou?.active||0} Active`)}${card('✅',s.mou?.active||0,'Active','ยังไม่หมดอายุ','green')}${card('⏰',s.mou?.soon||0,'ใกล้หมดอายุ','ภายใน 180 วัน','gold')}${card('🌐',s.mou?.countries||0,'ประเทศ','เครือข่ายทั่วโลก')}</div><div class="layout-2"><div class="map-card"><div class="panel-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div><div class="panel-sub" style="color:rgba(255,255,255,.68)">คลิก/hover เพื่อดูรายละเอียด</div><div class="map-wrap" id="mouMap"></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">MOU Active แยกตามประเทศ</div><div class="panel-sub">จากข้อมูลจริง</div></div></div><div class="panel-body">${countryBars()}</div></div></div><div id="mouTable"></div>`; renderMap('mouMap'); const old=$('#content').innerHTML; const tmp=document.createElement('div'); document.body.appendChild(tmp); state.page='mouTableOnly'; const content=$('#content'); const holder=document.createElement('div'); content.appendChild(holder); renderCrudInto(holder,{key:'mou',addLabel:' MOU',title:'รายการ MOU ทั้งหมด',rows:state.data.mou,cols:[{key:'หน่วยงาน_UP',label:'หน่วยงาน ม.พะเยา'},{key:'องค์กร_ตปท',label:'องค์กรต่างประเทศ'},{key:'ประเทศ',label:'ประเทศ'},{key:'ประเภท',label:'ประเภท'},{key:'วันสิ้นสุด',label:'สิ้นสุด',render:r=>fmtDate(r['วันสิ้นสุด'])},{key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusMou(r)}">${statusText(statusMou(r))}</span>`}]}); state.page='mou';}
+function renderMou(){const s=state.stats; $('#content').innerHTML=`<div class="notice">⚠️ MOU ใกล้หมดอายุ ${s.mou?.soon||0} รายการ · ข้อมูลมาจากชีต MOU โดยตรง</div><div class="grid-kpi">${card('🤝',s.mou?.total||0,'MOU ทั้งหมด',`${s.mou?.active||0} Active`)}${card('✅',s.mou?.active||0,'Active','ยังไม่หมดอายุ','green')}${card('⏰',s.mou?.soon||0,'ใกล้หมดอายุ','ภายใน 180 วัน','gold')}${card('🌐',s.mou?.countries||0,'ประเทศ','เครือข่ายทั่วโลก')}</div><div class="layout-2"><div class="map-card"><div class="panel-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div><div class="panel-sub" style="color:rgba(255,255,255,.68)">คลิก/hover เพื่อดูรายละเอียด</div><div class="map-wrap" id="mouMap"></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">MOU Active แยกตามประเทศ</div><div class="panel-sub">จากข้อมูลจริง</div></div></div><div class="panel-body">${countryBars()}</div></div></div><div id="mouTable"></div>`; renderMap('mouMap'); const old=$('#content').innerHTML; const tmp=document.createElement('div'); document.body.appendChild(tmp); state.page='mouTableOnly'; const content=$('#content'); const holder=document.createElement('div'); content.appendChild(holder); renderCrudInto(holder,{key:'mou',addLabel:' MOU',title:'รายการ MOU ทั้งหมด',rows:state.data.mou,cols:[{key:'หน่วยงาน_UP',label:'หน่วยงาน ม.พะเยา'},{key:'องค์กร_ตปท',label:'องค์กรต่างประเทศ'},{key:'ประเทศ',label:'ประเทศ'},{key:'ประเภท',label:'ประเภท'},{key:'วันสิ้นสุด',label:'สิ้นสุด',render:r=>fmtDate(r['วันสิ้นสุด'])},{key:'ไฟล์_URL',label:'ไฟล์แนบ',render:r=>fileLink(r['ไฟล์_URL'])},{key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusMou(r)}">${statusText(statusMou(r))}</span>`}]}); state.page='mou';}
 function renderCrudInto(el,opts){
   const qid='searchInput2';
   const draw=()=>{
@@ -175,19 +173,7 @@ function optionPool(field){
   return uniq([...(base[field]||[]), ...all.map(r=>r[field])]);
 }
 function fieldInput(f,row){
-  let raw=row?.[f]||'';
-  if(/วัน|date/i.test(f)){const d=toDate(raw); if(d){raw=d.toISOString().slice(0,10);}}
-  const val=esc(raw);
-  if(f==='ไฟล์_URL') {
-    const uid='fileUpload_'+Math.random().toString(36).slice(2);
-    return `<div class="file-upload">
-      <input type="url" name="ไฟล์_URL" value="${val}" placeholder="วางลิงก์ไฟล์ หรือกดแนบไฟล์">
-      <label class="btn" for="${uid}">📎 แนบไฟล์</label>
-      <input id="${uid}" type="file" onchange="uploadFileToDrive(this)">
-      ${val?`<a class="btn green" href="${val}" target="_blank">เปิดไฟล์</a>`:''}
-      <div class="file-note">รองรับการอัปโหลดไป Google Drive ผ่าน Apps Script</div>
-    </div>`;
-  }
+  let raw=row?.[f]||''; if(/วัน|date/i.test(f)){const d=toDate(raw); if(d){raw=d.toISOString().slice(0,10);}} const val=esc(raw);
   if(['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)) return `<textarea name="${esc(f)}">${val}</textarea>`;
   const type=/วัน|date/i.test(f)?'date':'text';
   const opts=optionPool(f);
@@ -196,43 +182,9 @@ function fieldInput(f,row){
   return `<input type="${type}" name="${esc(f)}" value="${val}" placeholder="${esc(f)}" ${listId?`list="${listId}"`:''}${extra}>`;
 }
 function dataListsForFields(fields){return fields.map(f=>{const opts=optionPool(f); if(!opts.length)return ''; const id=`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`; return `<datalist id="${id}">${opts.map(o=>`<option value="${esc(o)}"></option>`).join('')}</datalist>`;}).join('');}
-
-function fileToBase64(file){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>resolve(String(reader.result).split(',')[1]||'');
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
-  });
-}
-async function uploadFileToDrive(input){
-  const file=input.files && input.files[0];
-  if(!file) return;
-  const box=input.closest('.file-upload');
-  const urlInput=box?.querySelector('input[name="ไฟล์_URL"]');
-  const note=box?.querySelector('.file-note');
-  try{
-    state.uploading=true;
-    if(box) box.classList.add('uploading');
-    if(note) note.textContent='กำลังอัปโหลดไฟล์ไป Google Drive...';
-    const base64=await fileToBase64(file);
-    const res=await fetch(IROUP.SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'uploadFile',data:{filename:file.name,mimeType:file.type||'application/octet-stream',base64,folderName:'iROUP Attachments'}})});
-    const out=await res.json();
-    if(out.error) throw new Error(out.error);
-    if(urlInput) urlInput.value=out.url || out.fileUrl || '';
-    if(note) note.innerHTML='อัปโหลดสำเร็จ · <a href="'+(out.url||out.fileUrl)+'" target="_blank">เปิดไฟล์</a>';
-  }catch(err){
-    console.error(err);
-    if(note) note.textContent='อัปโหลดไม่สำเร็จ: '+err.message;
-    alert('อัปโหลดไฟล์ไม่สำเร็จ: '+err.message);
-  }finally{
-    state.uploading=false;
-    if(box) box.classList.remove('uploading');
-  }
-}
 function openForm(key,id=null){const rows=state.data[key]||[]; const row=id?rows.find(r=>String(r.ID)===String(id)):null; state.editing={key,id,row}; $('#modalTitle').textContent=(id?'แก้ไข':'เพิ่ม')+' '+({mou:'MOU',scholar:'ทุน',event:'กิจกรรม',travel:'การเดินทาง',inbound:'Inbound',outbound:'Outbound'}[key]||key); const fields=FIELDS[key]||[]; $('#formFields').innerHTML=fields.map(f=>`<div class="field ${['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)?'full':''}"><label>${esc(f)}</label>${fieldInput(f,row)}</div>`).join('')+dataListsForFields(fields); $('#modalBackdrop').classList.add('show');}
 function closeModal(){ $('#modalBackdrop').classList.remove('show'); state.editing=null; }
-async function submitForm(e){e.preventDefault(); if(state.uploading) return alert('กำลังอัปโหลดไฟล์อยู่ กรุณารอสักครู่'); const {key,id}=state.editing; const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v);
+async function submitForm(e){e.preventDefault(); const {key,id}=state.editing; const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v);
   if(data['หน่วยงาน_UP']) data['หน่วยงาน_UP']=normalizeFaculty(data['หน่วยงาน_UP']);
   if(data['คณะ']) data['คณะ']=normalizeFaculty(data['คณะ']);
   if(data['ประเทศ']) { data['ประเทศ']=normalizeCountry(data['ประเทศ']); const cont=continentOfCountry(data['ประเทศ']); if(cont) data['ทวีป']=cont; }
