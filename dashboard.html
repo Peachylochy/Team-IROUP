@@ -79,6 +79,13 @@ function daysBetween(a,b){return Math.ceil((b-a)/(86400000))}
 function statusMou(r){const end=toDate(r['วันสิ้นสุด']); if(!end)return 'active'; const diff=daysBetween(new Date(),end); if(diff<0)return 'expired'; if(diff<=180)return 'soon'; return 'active';}
 function statusScholar(r){const now=new Date(), open=toDate(r['วันเปิดรับ']), close=toDate(r['วันปิดรับ']); if(close&&now>close)return 'expired'; if(open&&now<open)return 'soon'; return 'active';}
 function statusText(s){return s==='active'?'Active':s==='soon'?'ใกล้หมด/เร็วๆนี้':'หมดอายุ';}
+  function fileLink(url){
+  if(!url || url === '-') {
+    return '<span class="file-empty">-</span>';
+  }
+
+  return `<a href="${url}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>`;
+}
 async function safe(label, fn, fallback=[]){try{return await fn()}catch(e){console.error(label,e); return fallback}}
 async function loadCore(){
   state.stats = await safe('stats',()=>IROUP.getStats(),{stats:{}});
