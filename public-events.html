@@ -133,6 +133,28 @@ footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(
 .page-hero p { color: var(--gray-600) !important; }
 .page-hero .hkpi-num { filter: none; }
 
+
+
+/* ============================================================
+   ROUND 7 — MOBILE RESPONSIVE FIXES
+   ============================================================ */
+@media (max-width: 960px){
+  nav{height:auto;min-height:60px;padding:10px 4%;gap:10px;flex-wrap:wrap;position:sticky;background:rgba(255,255,255,.96);box-shadow:0 1px 16px rgba(15,45,90,.08)}
+  .nav-logo{min-width:0}.nav-logo-text{font-size:15px}.nav-links{order:3;width:100%;display:flex;gap:10px;overflow-x:auto;padding:4px 0 2px;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}
+  .nav-link{font-size:12px;white-space:nowrap;padding:6px 10px;border-radius:999px;background:var(--gray-100, #F8F9FB)}
+  .nav-lang{margin-left:auto}.nav-admin-btn{padding:7px 12px;font-size:11px}
+  .page-hero{padding:34px 5% 28px!important;text-align:center}.page-hero h1{font-size:30px!important}.page-hero p{font-size:13px!important}
+  .hero-kpi{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:12px!important;justify-content:stretch!important}.hkpi{padding:12px;background:rgba(255,255,255,.52);border-radius:14px}
+  .content{padding:18px 4%!important}.grid-2,.grid-3{grid-template-columns:1fr!important}.filter-bar{align-items:stretch!important}.search-wrap{min-width:100%!important}.filter-select{width:100%}.status-pills{width:100%;overflow-x:auto;padding-bottom:2px}
+  .cards-grid,.scholar-grid,.features-grid{grid-template-columns:1fr!important}.map-stats-row{grid-template-columns:repeat(2,1fr)!important}.table-wrap{border-radius:12px;overflow-x:auto}.table-wrap table{min-width:760px}
+  .event-item,.event-row{align-items:flex-start!important}.map-dark,.card{min-width:0}.chart-wrap{min-height:240px}.hero-btns{justify-content:center}.hero-stats{justify-content:center;flex-wrap:wrap}
+}
+@media (max-width: 640px){
+  .hero{min-height:auto!important;display:block!important;padding:90px 5% 40px!important;text-align:center}.hero-title{font-size:34px!important}.hero-title .accent2{font-size:24px!important}.hero-sub{font-size:14px!important}.hero-btns a{width:100%;justify-content:center}.hero-stats{display:grid!important;grid-template-columns:repeat(2,1fr);gap:10px}.stat-divider{display:none}.hero-visual{margin-top:18px}.globy-wrap{width:min(310px,90vw)!important;height:min(310px,90vw)!important;margin:auto}.globy-bubble{font-size:10px;transform:scale(.9)}.gb1{left:0!important}.gb2{right:0!important}.gb3{left:0!important}.gb4{right:0!important}
+  section{padding:46px 5%!important}.section-title{font-size:26px!important}.section-sub{font-size:13px!important}.about-strip{display:block!important;text-align:center;padding:36px 5%!important}.about-globy{margin-bottom:18px}.about-contact{justify-content:center}footer{display:block!important;text-align:center}.footer-logo{justify-content:center;margin-bottom:10px}.footer-admin{margin-top:12px}
+  .page-hero h1{font-size:26px!important}.hero-kpi{grid-template-columns:1fr 1fr!important}.hkpi-num{font-size:26px!important}.event-item,.event-row{display:grid!important;grid-template-columns:auto 1fr;gap:10px!important}.event-item .ev-arrow,.event-row .ev-arrow{display:none}
+}
+
 </style>
 </head>
 <body>

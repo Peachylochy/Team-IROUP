@@ -164,6 +164,19 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 
 /* SCROLLBAR */
 .sidebar::-webkit-scrollbar{width:0}
+
+
+/* ============================================================
+   ROUND 7 — DASHBOARD / ADMIN MOBILE & TABLET FIXES
+   ============================================================ */
+.mobile-admin-note{display:none;background:#FEF3DC;color:#8A5A00;border:1px solid rgba(245,166,35,.35);padding:10px 14px;font-size:12px;font-family:'Sarabun',sans-serif}
+@media (max-width: 1024px){
+  html,body{overflow:auto}.topnav{height:auto;min-height:52px;flex-wrap:wrap;padding:10px 12px}.tn-breadcrumb{display:none}.tn-right{margin-left:auto}.shell{display:block;overflow:visible}.sidebar{position:sticky;top:0;z-index:90;width:100%;height:auto;display:flex;flex-direction:row;overflow-x:auto;border-right:none;border-bottom:1px solid var(--gray-200);padding:6px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px)}.sb-section,.sb-footer,.sb-spacer{display:none}.sb-item{min-width:58px;flex:0 0 auto;justify-content:center;margin:0;padding:8px}.sb-label{display:none}.sb-icon{font-size:20px}.sb-badge{position:absolute;top:2px;right:2px;margin:0}.sb-item.active::after{display:none}.page-container{height:calc(100vh - 112px);min-height:620px}.page-inner{padding:14px}.page-header{align-items:flex-start;gap:10px}.page-actions{flex-wrap:wrap}.kpi-row,.grid-3,.grid-cols-6-4{grid-template-columns:1fr 1fr!important}.dash-map{min-height:300px}.mobile-admin-note{display:block}.page iframe{min-height:680px}
+}
+@media (max-width: 680px){
+  .tn-logo-text{font-size:13px}.tn-divider,.tn-public-btn{display:none}.tn-avatar{width:28px;height:28px}.tn-lang-btn{padding:3px 8px}.page-container{height:auto;min-height:calc(100vh - 104px);overflow:visible}.page{overflow:visible}.page-inner{padding:12px}.page-title{font-size:16px}.page-subtitle{font-size:11px}.kpi-row,.grid-3,.grid-cols-6-4{grid-template-columns:1fr!important}.kpi-card{padding:12px}.card-body{padding:14px!important}.dash-map svg{height:220px}.alert{align-items:flex-start}.page iframe{min-height:780px}.card{overflow:hidden}
+}
+
 </style>
 </head>
 <body>
@@ -189,6 +202,7 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 </div>
 
 <!-- SHELL -->
+<div class="mobile-admin-note">📱 Dashboard/Admin ใช้บนมือถือได้สำหรับดูข้อมูลและตรวจสอบเบื้องต้น แต่การเพิ่ม/แก้ไขข้อมูลจำนวนมากแนะนำใช้ Desktop หรือ Tablet แนวนอน</div>
 <div class="shell">
 
   <!-- SIDEBAR -->
@@ -676,8 +690,8 @@ setTimeout(()=>{
   });
 },200);
 
-// โหลดข้อมูลจริงจาก Sheets
-setTimeout(loadDashboardStats, 500);
+// โหลดข้อมูลจริงจาก Sheets (guarded: IROUP loads after this block)
+setTimeout(()=>{ if (typeof loadDashboardStats === 'function') loadDashboardStats(); }, 500);
 
 // LANG TOGGLE
 document.querySelectorAll('.tn-lang-btn').forEach(btn=>{
