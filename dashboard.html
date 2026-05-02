@@ -738,5 +738,63 @@ setTimeout(() => {
 }, 800);
 </script>
 
+<script>
+// ============================================================
+// iROUP DASHBOARD — Live Sync Override
+// ใช้ API เดียวกับ public view และแทนที่ mock values หลังโหลดหน้า
+// ============================================================
+async function iroupDashboardLiveSync(){
+  try{
+    const [stats,countryData] = await Promise.all([IROUP.getStats(), IROUP.getMouByCountry()]);
+    const kpiNums=document.querySelectorAll('.kpi-num');
+    if(kpiNums[0]) kpiNums[0].textContent=stats?.mou?.total||0;
+    if(kpiNums[1]) kpiNums[1].textContent=stats?.scholarship?.total||0;
+    if(kpiNums[2]) kpiNums[2].textContent=stats?.mobility?.total||0;
+    if(kpiNums[3]) kpiNums[3].textContent=stats?.travel?.total||0;
+
+    const mapInner=document.querySelector('.map-inner-sub');
+    if(mapInner) mapInner.textContent=`${stats?.mou?.active||0} MOU Active · ${stats?.mou?.countries||0} ประเทศ · คลิกเพื่อดูรายละเอียด`;
+
+    // Quick stat cards ใน dashboard ถ้ามี
+    document.querySelectorAll('.qs-num').forEach((el,i)=>{
+      const vals=[stats?.mobility?.total||0, stats?.inbound?.total||0, stats?.outbound?.total||0];
+      if(vals[i]!==undefined) el.textContent=vals[i];
+    });
+
+    // Re-render dashboard map with live country data when D3/topojson are available
+    const el=document.getElementById('dashMap');
+    if(el && window.d3 && window.topojson){
+      const liveMapData=countryData||{};
+      const w=el.parentElement.offsetWidth||600, h=220;
+      const svg=d3.select('#dashMap');
+      svg.selectAll('*').remove();
+      svg.attr('viewBox',`0 0 ${w} ${h}`).attr('preserveAspectRatio','xMidYMid meet');
+      const proj=d3.geoNaturalEarth1().scale(w/6.5).translate([w/2,h/2+8]);
+      const path=d3.geoPath().projection(proj);
+      const defs=svg.append('defs');
+      const g=defs.append('radialGradient').attr('id','dbgLive').attr('cx','50%').attr('cy','40%');
+      g.append('stop').attr('offset','0%').attr('stop-color','#162845');
+      g.append('stop').attr('offset','100%').attr('stop-color','#0A1525');
+      svg.append('rect').attr('width',w).attr('height',h).attr('fill','url(#dbgLive)');
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(r=>r.json()).then(world=>{
+          const countries=topojson.feature(world,world.objects.countries);
+          svg.selectAll('.c').data(countries.features).join('path')
+            .attr('d',path)
+            .attr('fill',d=>{const n=cNames[+d.id]||'';const c=liveMapData[n]||0;return c===0?'rgba(255,255,255,0.07)':c>=8?'#F5A623':c>=4?'#1A6DB5':'#4BBDE8';})
+            .attr('stroke','rgba(255,255,255,0.1)').attr('stroke-width',0.4)
+            .style('cursor',d=>(liveMapData[cNames[+d.id]]||0)>0?'pointer':'default')
+            .append('title').text(d=>{const n=cNames[+d.id]||''; return liveMapData[n]?`${n}: ${liveMapData[n]} MOU`:n;});
+        });
+    }
+    console.log('✅ Dashboard live sync complete', stats, countryData);
+  }catch(e){
+    console.error('❌ Dashboard live sync failed', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(iroupDashboardLiveSync, 900));
+</script>
+
 </body>
 </html>
