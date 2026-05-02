@@ -571,24 +571,29 @@ function renderTable(data){
     if(m.status==='soon'||diff<180&&diff>0){badgeClass='badge-soon';badgeText='ใกล้หมด';}
     if(diff<=0){badgeClass='badge-expired';badgeText='หมดอายุ';}
     const fromStr = new Date(m.from).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-    const toStr = new Date(m.to).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-    return `<tr>
-      <td style="color:var(--gray-400);font-size:11px;font-family:'Inter',sans-serif">${String(i+1).padStart(2,'0')}</td>
-      <td><div class="td-uni">${m.dept}</div></td>
-      <td><div class="td-uni" style="font-size:12px">${m.uni}</div></td>
-      <td><div class="country-flag"><span class="flag-emoji">${m.flag}</span><span class="country-name">${m.country}</span></div></td>
-      <td><span class="badge-type">${m.type}</span></td>
-      <td><div class="date-range">${fromStr} – ${toStr}</div></td>
-      <td><span class="date-year">${m.fy}</span></td>
-      <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-      <td><div class="note-text" title="${m.note}">${m.note||'—'}</div></td>
-      <td>${m.file ? `<a href="${m.file}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>` : '<span class="file-empty">-</span>'}</td>
-      <td><div class="action-btns">
-        <button class="act-btn act-edit" title="แก้ไข" onclick="openModal(${m.id})">✏️</button>
-        <button class="act-btn act-file" title="เอกสาร">📎</button>
-        <button class="act-btn act-del" title="ลบ">🗑️</button>
-      </div></td>
-    </tr>`;
+const toStr = new Date(m.to).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
+
+const fileLink = m.fileUrl || m.file || m['ไฟล์_URL']
+  ? `<a href="${m.fileUrl || m.file || m['ไฟล์_URL']}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>`
+  : '<span class="file-empty">-</span>';
+
+return `<tr>
+  <td style="color:var(--gray-400);font-size:11px;font-family:'Inter',sans-serif">${String(i+1).padStart(2,'0')}</td>
+  <td><div class="td-uni">${m.dept}</div></td>
+  <td><div class="td-uni" style="font-size:12px">${m.uni}</div></td>
+  <td><div class="country-flag"><span class="flag-emoji">${m.flag}</span><span class="country-name">${m.country}</span></div></td>
+  <td><span class="badge-type">${m.type}</span></td>
+  <td><div class="date-range">${fromStr} – ${toStr}</div></td>
+  <td><span class="date-year">${m.fy}</span></td>
+  <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+  <td><div class="note-text" title="${m.note}">${m.note||'—'}</div></td>
+  <td>${fileLink}</td>
+  <td><div class="action-btns">
+    <button class="act-btn act-edit" title="แก้ไข" onclick="openModal(${m.id})">✏️</button>
+    <button class="act-btn act-file" title="เอกสาร">📎</button>
+    <button class="act-btn act-del" title="ลบ">🗑️</button>
+  </div></td>
+</tr>`;
   }).join('');
   document.getElementById('tableCount').textContent=`แสดง ${data.length} รายการ จาก 142`;
 }
