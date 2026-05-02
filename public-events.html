@@ -219,7 +219,10 @@ let currentFilter = '';
 let selectedDate  = null;
 let calYear  = new Date().getFullYear();
 let calMonth = new Date().getMonth();
-const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function eventMonths(){ return currentLang === 'EN' ? MONTHS_EN : MONTHS_TH; }
+function eventYearLabel(y){ return currentLang === 'EN' ? y : y + 543; }
 const TYPE_CLASS = {'การเดินทาง':'t-travel','Inbound':'t-inbound','ประชุม':'t-meet','อบรม':'t-train','Exchange':'t-exchange'};
 const TYPE_EMOJI = {'การเดินทาง':'✈️','Inbound':'🌏','ประชุม':'🤝','อบรม':'📚','Exchange':'🔄'};
 
@@ -260,14 +263,14 @@ function renderEvents() {
   });
 
   if (filtered.length === 0) {
-    document.getElementById('eventList').innerHTML = '<div class="loading">ไม่พบกิจกรรม</div>';
+    document.getElementById('eventList').innerHTML = `<div class="loading">${(EVENT_PAGE_TEXT?.[currentLang]?.notFound)||'ไม่พบกิจกรรม'}</div>`;
     return;
   }
 
   document.getElementById('eventList').innerHTML = filtered.map(e => {
     const d    = IROUP.parseDate(e['วันเริ่ม']) || new Date();
     const day  = d.getDate();
-    const mon  = THAI_MONTHS[d.getMonth()].slice(0,3) + '.';
+    const mon  = eventMonths()[d.getMonth()].slice(0,3) + '.';
     const type = e['ประเภท'] || 'กิจกรรม';
     const cls  = TYPE_CLASS[type] || 't-meet';
     const emo  = TYPE_EMOJI[type] || '📅';
@@ -317,7 +320,7 @@ function renderCalendar() {
   const grid  = document.getElementById('calDays');
   const today = new Date();
 
-  label.textContent = `${THAI_MONTHS[calMonth]} ${calYear + 543}`;
+  label.textContent = `${eventMonths()[calMonth]} ${eventYearLabel(calYear)}`;
 
   // หาวันที่มี event ในเดือนนี้
   const eventDays = new Set();
@@ -386,11 +389,31 @@ function setPill(el, status) {
   renderEvents();
 }
 
+let currentLang = localStorage.getItem('iroup_lang') || 'TH';
+const EVENT_PAGE_TEXT = {
+  TH:{nav:['🤝 MOU','🎓 ทุนการศึกษา','📅 กิจกรรม','👥 Mobility'],admin:'🔐 Admin',title:'📅 กิจกรรม & โครงการ',sub:'ปฏิทินกิจกรรมนานาชาติ การเดินทาง Exchange และโปรแกรมพิเศษ',kpi:['กิจกรรมทั้งหมด','กำลังจะมาถึง','กำลังดำเนินการ'],days:['อา','จ','อ','พ','พฤ','ศ','ส'],legend:['การเดินทาง','Inbound','ประชุม','อบรม'],pills:['ทั้งหมด','Upcoming','Ongoing','เสร็จสิ้น'],allType:'ทุกประเภท',loading:'⏳ กำลังโหลด...',notFound:'ไม่พบกิจกรรม',footer:'© 2569 International Relations Office · University of Phayao'},
+  EN:{nav:['🤝 MOU','🎓 Scholarships','📅 Events','👥 Mobility'],admin:'🔐 Admin',title:'📅 Events & Programs',sub:'International events calendar, travel, exchange programs, and special activities.',kpi:['Total events','Upcoming','Ongoing'],days:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],legend:['Travel','Inbound','Meeting','Training'],pills:['All','Upcoming','Ongoing','Done'],allType:'All types',loading:'⏳ Loading...',notFound:'No events found',footer:'© 2026 International Relations Office · University of Phayao'}
+};
 function setLang(lang) {
-  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
+  currentLang = lang; localStorage.setItem('iroup_lang', lang); document.documentElement.lang = lang === 'EN' ? 'en' : 'th';
+  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang));
+  const t = EVENT_PAGE_TEXT[lang];
+  document.querySelectorAll('.nav-link').forEach((el,i)=>{ if(t.nav[i]) el.textContent=t.nav[i]; });
+  const admin=document.querySelector('.nav-admin-btn'); if(admin) admin.textContent=t.admin;
+  const h1=document.querySelector('.page-hero h1'); if(h1) h1.textContent=t.title;
+  const sub=document.querySelector('.page-hero p'); if(sub) sub.textContent=t.sub;
+  document.querySelectorAll('.hkpi-label').forEach((el,i)=>{ if(t.kpi[i]) el.textContent=t.kpi[i]; });
+  document.querySelectorAll('.cal-day-label').forEach((el,i)=>{ if(t.days[i]) el.textContent=t.days[i]; });
+  document.querySelectorAll('.legend-item').forEach((el,i)=>{ const dot=el.querySelector('.legend-dot'); if(t.legend[i]) el.innerHTML=(dot?dot.outerHTML:'')+t.legend[i]; });
+  document.querySelectorAll('.pill').forEach((el,i)=>{ if(t.pills[i]) el.textContent=t.pills[i]; });
+  const sel=document.getElementById('typeFilter'); if(sel && sel.options[0]) sel.options[0].textContent=t.allType;
+  const loading=document.querySelector('#eventList .loading'); if(loading && loading.textContent.includes('โหลด')) loading.textContent=t.loading;
+  const footer=document.querySelector('footer'); if(footer) footer.textContent=t.footer;
+  renderCalendar?.();
 }
 
-loadData();
+loadData().then?.(()=>setLang(currentLang));
+document.addEventListener('DOMContentLoaded',()=>setLang(currentLang));
 </script>
 
 

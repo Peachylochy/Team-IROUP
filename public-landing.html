@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iROUP — International Relations · University of Phayao</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -379,8 +381,8 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
     <a href="public-events.html" class="nav-link">📅 กิจกรรม</a>
     <a href="public-mobility.html" class="nav-link">👥 Mobility</a>
     <div class="nav-lang">
-      <div class="nav-lang-btn active">TH</div>
-      <div class="nav-lang-btn">EN</div>
+      <div class="nav-lang-btn active" onclick="setLang('TH')">TH</div>
+      <div class="nav-lang-btn" onclick="setLang('EN')">EN</div>
     </div>
     <a href="index.html" class="nav-admin-btn">🔐 เข้าสู่ระบบ Admin</a>
   </div>
@@ -568,6 +570,14 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
               <line x1="180" y1="0" x2="180" y2="450"/><line x1="360" y1="0" x2="360" y2="450"/><line x1="540" y1="0" x2="540" y2="450"/><line x1="720" y1="0" x2="720" y2="450"/>
             </g>
             <line x1="0" y1="225" x2="900" y2="225" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
+            <g id="worldShapes" fill="rgba(75,189,232,0.09)" stroke="rgba(75,189,232,0.18)" stroke-width="1">
+              <path d="M115,125 C155,85 235,80 292,118 C330,142 314,198 268,208 C226,218 205,250 163,238 C123,226 85,174 115,125 Z"/>
+              <path d="M260,260 C310,240 360,272 360,322 C360,378 304,410 262,382 C220,354 218,280 260,260 Z"/>
+              <path d="M390,112 C450,82 538,103 570,152 C600,198 560,240 505,225 C460,212 420,230 384,202 C350,176 348,132 390,112 Z"/>
+              <path d="M505,218 C552,230 590,272 580,324 C570,374 520,394 482,365 C450,340 456,278 505,218 Z"/>
+              <path d="M570,135 C650,78 775,112 805,190 C833,262 735,315 650,278 C583,248 520,178 570,135 Z"/>
+              <path d="M715,325 C760,300 825,320 842,365 C858,410 790,425 735,402 C698,386 685,345 715,325 Z"/>
+            </g>
             <g id="countryDots"></g>
           </svg>
           <div style="position:absolute;bottom:10px;left:14px;display:flex;gap:14px">
@@ -651,7 +661,7 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
     </div>
 
   </div>
-  <a href="public-scholar.html" class="view-all-btn" style="background:var(--navy)">ดูกิจกรรมทั้งหมด →</a>
+  <a href="public-events.html" class="view-all-btn" style="background:var(--navy)" id="viewAllEventsBtn">ดูกิจกรรมทั้งหมด →</a>
 </section>
 
 <!-- ABOUT STRIP -->
@@ -709,7 +719,12 @@ const IROUP_COUNTRY_META = {
   'Canada':{x:215,y:115,flag:'🇨🇦',continent:'america'}, 'Mexico':{x:205,y:230,flag:'🇲🇽',continent:'america'},
   'Brazil':{x:310,y:315,flag:'🇧🇷',continent:'america'}, 'Australia':{x:735,y:348,flag:'🇦🇺',continent:'oceania'},
   'New Zealand':{x:805,y:385,flag:'🇳🇿',continent:'oceania'}, 'South Africa':{x:470,y:365,flag:'🇿🇦',continent:'africa'},
-  'Egypt':{x:482,y:222,flag:'🇪🇬',continent:'africa'}
+  'Egypt':{x:482,y:222,flag:'🇪🇬',continent:'africa'},
+  'จีน':{x:678,y:178,flag:'🇨🇳',continent:'asia'}, 'ญี่ปุ่น':{x:744,y:178,flag:'🇯🇵',continent:'asia'},
+  'เกาหลีใต้':{x:724,y:166,flag:'🇰🇷',continent:'asia'}, 'ไต้หวัน':{x:722,y:205,flag:'🇹🇼',continent:'asia'},
+  'ไทย':{x:657,y:240,flag:'🇹🇭',continent:'asia'}, 'ประเทศไทย':{x:657,y:240,flag:'🇹🇭',continent:'asia'},
+  'เวียดนาม':{x:682,y:242,flag:'🇻🇳',continent:'asia'}, 'เยอรมนี':{x:440,y:144,flag:'🇩🇪',continent:'europe'},
+  'สหรัฐอเมริกา':{x:210,y:175,flag:'🇺🇸',continent:'america'}, 'ออสเตรเลีย':{x:735,y:348,flag:'🇦🇺',continent:'oceania'}
 };
 
 function iroupSetText(id, value){ const el=document.getElementById(id); if(el) el.textContent=value; }
@@ -722,37 +737,127 @@ function iroupAnimateNumber(el, target){
 }
 
 function renderPublicMap(countryData){
-  const g=document.getElementById('countryDots'); if(!g) return;
-  g.innerHTML='';
-  const entries=Object.entries(countryData||{}).filter(([,v])=>Number(v)>0);
-  if(!entries.length){
-    g.innerHTML='<text x="450" y="230" fill="rgba(255,255,255,.55)" text-anchor="middle" style="font-family:Prompt,sans-serif;font-size:16px">ยังไม่มีข้อมูล MOU Active</text>';
-  }
+  const svgEl = document.getElementById('svgWorldMap');
+  if(!svgEl) return;
+
+  const rawEntries = Object.entries(countryData || {}).filter(([,v]) => Number(v) > 0);
+  const alias = {
+    'จีน':'China','ญี่ปุ่น':'Japan','เกาหลีใต้':'South Korea','เกาหลี':'South Korea','ไต้หวัน':'Taiwan',
+    'ไทย':'Thailand','ประเทศไทย':'Thailand','เวียดนาม':'Vietnam','พม่า':'Myanmar','เมียนมา':'Myanmar',
+    'มาเลเซีย':'Malaysia','สิงคโปร์':'Singapore','อินโดนีเซีย':'Indonesia','ฟิลิปปินส์':'Philippines',
+    'อินเดีย':'India','กัมพูชา':'Cambodia','ลาว':'Laos','ฮ่องกง':'Hong Kong',
+    'เยอรมนี':'Germany','เยอรมัน':'Germany','ฝรั่งเศส':'France','สหราชอาณาจักร':'United Kingdom','อังกฤษ':'United Kingdom',
+    'เนเธอร์แลนด์':'Netherlands','สวีเดน':'Sweden','นอร์เวย์':'Norway','สเปน':'Spain','อิตาลี':'Italy','ออสเตรีย':'Austria',
+    'สหรัฐอเมริกา':'USA','สหรัฐฯ':'USA','อเมริกา':'USA','แคนาดา':'Canada','เม็กซิโก':'Mexico','บราซิล':'Brazil',
+    'ออสเตรเลีย':'Australia','นิวซีแลนด์':'New Zealand','แอฟริกาใต้':'South Africa','อียิปต์':'Egypt',
+    'United States':'USA','United States of America':'USA','UK':'United Kingdom','Korea':'South Korea'
+  };
+  const countryMeta = {
+    'China':{flag:'🇨🇳',continent:'asia'}, 'Japan':{flag:'🇯🇵',continent:'asia'}, 'South Korea':{flag:'🇰🇷',continent:'asia'},
+    'Taiwan':{flag:'🇹🇼',continent:'asia'}, 'Thailand':{flag:'🇹🇭',continent:'asia'}, 'Vietnam':{flag:'🇻🇳',continent:'asia'},
+    'Myanmar':{flag:'🇲🇲',continent:'asia'}, 'Malaysia':{flag:'🇲🇾',continent:'asia'}, 'Singapore':{flag:'🇸🇬',continent:'asia'},
+    'Indonesia':{flag:'🇮🇩',continent:'asia'}, 'Philippines':{flag:'🇵🇭',continent:'asia'}, 'India':{flag:'🇮🇳',continent:'asia'},
+    'Cambodia':{flag:'🇰🇭',continent:'asia'}, 'Laos':{flag:'🇱🇦',continent:'asia'}, 'Hong Kong':{flag:'🇭🇰',continent:'asia'},
+    'Germany':{flag:'🇩🇪',continent:'europe'}, 'France':{flag:'🇫🇷',continent:'europe'}, 'United Kingdom':{flag:'🇬🇧',continent:'europe'},
+    'Netherlands':{flag:'🇳🇱',continent:'europe'}, 'Sweden':{flag:'🇸🇪',continent:'europe'}, 'Norway':{flag:'🇳🇴',continent:'europe'},
+    'Spain':{flag:'🇪🇸',continent:'europe'}, 'Italy':{flag:'🇮🇹',continent:'europe'}, 'Austria':{flag:'🇦🇹',continent:'europe'},
+    'USA':{flag:'🇺🇸',continent:'america'}, 'Canada':{flag:'🇨🇦',continent:'america'}, 'Mexico':{flag:'🇲🇽',continent:'america'}, 'Brazil':{flag:'🇧🇷',continent:'america'},
+    'Australia':{flag:'🇦🇺',continent:'oceania'}, 'New Zealand':{flag:'🇳🇿',continent:'oceania'},
+    'South Africa':{flag:'🇿🇦',continent:'africa'}, 'Egypt':{flag:'🇪🇬',continent:'africa'}
+  };
+  const cNames = {4:'Afghanistan',36:'Australia',56:'Belgium',76:'Brazil',104:'Myanmar',116:'Cambodia',124:'Canada',156:'China',170:'Colombia',208:'Denmark',276:'Germany',300:'Greece',356:'India',360:'Indonesia',372:'Ireland',376:'Israel',380:'Italy',392:'Japan',410:'South Korea',458:'Malaysia',484:'Mexico',528:'Netherlands',554:'New Zealand',578:'Norway',586:'Pakistan',608:'Philippines',616:'Poland',620:'Portugal',643:'Russia',682:'Saudi Arabia',724:'Spain',752:'Sweden',756:'Switzerland',764:'Thailand',792:'Turkey',826:'United Kingdom',840:'USA',704:'Vietnam',158:'Taiwan',250:'France'};
+  const mapData = {};
+  const displayName = {};
+  rawEntries.forEach(([country,count]) => {
+    const key = alias[country] || country;
+    mapData[key] = (mapData[key] || 0) + Number(count || 0);
+    displayName[key] = country;
+  });
+
   const cont={asia:0,europe:0,america:0,oceania:0,africa:0};
-  entries.forEach(([country,count])=>{
-    const meta=IROUP_COUNTRY_META[country] || {x:450+Math.random()*80-40,y:225+Math.random()*60-30,flag:'🌍',continent:'asia'};
-    cont[meta.continent]=(cont[meta.continent]||0)+Number(count);
-    const color=count>=8?'#F5A623':count>=4?'#1A6DB5':'#4BBDE8';
-    const r=Math.min(22, 7 + Number(count)*1.6);
-    const item=document.createElementNS('http://www.w3.org/2000/svg','g');
-    item.style.cursor='pointer';
-    item.innerHTML=`
-      <circle cx="${meta.x}" cy="${meta.y}" r="${r+7}" fill="${color}" opacity="0.12"><animate attributeName="r" values="${r+2};${r+13};${r+2}" dur="2.8s" repeatCount="indefinite"/></circle>
-      <circle cx="${meta.x}" cy="${meta.y}" r="${r}" fill="${color}" opacity="0.92" stroke="white" stroke-opacity="0.7" stroke-width="1.5"/>
-      <text x="${meta.x}" y="${meta.y+4}" text-anchor="middle" fill="white" style="font-family:Prompt,sans-serif;font-size:11px;font-weight:800">${count}</text>`;
-    item.addEventListener('mousemove',ev=>{
-      const tip=document.getElementById('mapTooltipPub'); if(!tip) return;
-      tip.innerHTML=`${meta.flag} ${country} · <strong>${count}</strong> MOU Active`;
-      tip.style.left=(ev.offsetX+14)+'px'; tip.style.top=(ev.offsetY+14)+'px'; tip.style.opacity='1';
-    });
-    item.addEventListener('mouseleave',()=>{const tip=document.getElementById('mapTooltipPub'); if(tip) tip.style.opacity='0';});
-    item.addEventListener('click',()=>{ window.location.href='public-mou.html?country='+encodeURIComponent(country); });
-    g.appendChild(item);
+  Object.entries(mapData).forEach(([country,count])=>{
+    const meta = countryMeta[country] || IROUP_COUNTRY_META?.[country];
+    if(meta?.continent) cont[meta.continent]=(cont[meta.continent]||0)+Number(count||0);
   });
   iroupSetText('ms-asia', cont.asia||0); iroupSetText('ms-europe', cont.europe||0); iroupSetText('ms-america', cont.america||0);
   iroupSetText('ms-oceania', cont.oceania||0); iroupSetText('ms-africa', cont.africa||0);
-}
 
+  const wrap = document.getElementById('svgMapWrap');
+  const w = Math.max(700, wrap?.clientWidth || 900);
+  const h = 330;
+  const svg = d3.select(svgEl);
+  svg.selectAll('*').remove();
+  svg.attr('viewBox',`0 0 ${w} ${h}`).attr('preserveAspectRatio','xMidYMid meet').style('height','330px');
+
+  const defs = svg.append('defs');
+  const grad = defs.append('radialGradient').attr('id','pubMapGrad').attr('cx','50%').attr('cy','40%');
+  grad.append('stop').attr('offset','0%').attr('stop-color','#162845');
+  grad.append('stop').attr('offset','100%').attr('stop-color','#071828');
+  svg.append('rect').attr('width',w).attr('height',h).attr('fill','url(#pubMapGrad)');
+
+  const projection = d3.geoNaturalEarth1().scale(w/6.5).translate([w/2, h/2 + 12]);
+  const path = d3.geoPath().projection(projection);
+  const grid = svg.append('g').attr('stroke','rgba(255,255,255,0.045)').attr('stroke-width',0.5);
+  for(let x=w/6; x<w; x+=w/6) grid.append('line').attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',h);
+  for(let y=h/4; y<h; y+=h/4) grid.append('line').attr('x1',0).attr('x2',w).attr('y1',y).attr('y2',y);
+
+  const tip=document.getElementById('mapTooltipPub');
+  const setTip=(html,x,y)=>{ if(!tip) return; tip.innerHTML=html; tip.style.left=(x+14)+'px'; tip.style.top=(y+14)+'px'; tip.style.opacity='1'; };
+  const hideTip=()=>{ if(tip) tip.style.opacity='0'; };
+
+  if(!rawEntries.length){
+    svg.append('text').attr('x',w/2).attr('y',h/2).attr('fill','rgba(255,255,255,.55)').attr('text-anchor','middle')
+      .style('font-family','Prompt,sans-serif').style('font-size','16px').text('ยังไม่มีข้อมูล MOU Active');
+    return;
+  }
+
+  function colorScale(c){ return c >= 8 ? '#F5A623' : c >= 4 ? '#1A6DB5' : '#4BBDE8'; }
+
+  const drawFallbackDots = () => {
+    const g = svg.append('g');
+    Object.entries(mapData).forEach(([country,count])=>{
+      const meta = IROUP_COUNTRY_META[country] || countryMeta[country];
+      if(!meta || meta.x === undefined) return;
+      const r=Math.min(22, 7 + Number(count)*1.6);
+      const color=colorScale(count);
+      const item=g.append('g').style('cursor','pointer');
+      item.append('circle').attr('cx',meta.x/900*w).attr('cy',meta.y/450*h).attr('r',r+7).attr('fill',color).attr('opacity',.12);
+      item.append('circle').attr('cx',meta.x/900*w).attr('cy',meta.y/450*h).attr('r',r).attr('fill',color).attr('opacity',.92).attr('stroke','#fff').attr('stroke-opacity',.7).attr('stroke-width',1.5);
+      item.append('text').attr('x',meta.x/900*w).attr('y',meta.y/450*h+4).attr('text-anchor','middle').attr('fill','#fff').style('font-family','Prompt,sans-serif').style('font-size','11px').style('font-weight',800).text(count);
+      item.on('mousemove',ev=>setTip(`${meta.flag||'🌍'} ${displayName[country]||country} · <strong>${count}</strong> MOU Active`, ev.offsetX, ev.offsetY))
+          .on('mouseleave',hideTip).on('click',()=>{ window.location.href='public-mou.html?country='+encodeURIComponent(displayName[country]||country); });
+    });
+  };
+
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+    .then(r=>r.json())
+    .then(world=>{
+      const countries = topojson.feature(world, world.objects.countries);
+      svg.append('g').selectAll('path').data(countries.features).join('path')
+        .attr('d', path)
+        .attr('fill', d => {
+          const name = cNames[+d.id] || '';
+          const c = mapData[name] || 0;
+          return c === 0 ? 'rgba(255,255,255,0.075)' : colorScale(c);
+        })
+        .attr('stroke','rgba(255,255,255,0.12)')
+        .attr('stroke-width',0.45)
+        .style('cursor', d => mapData[cNames[+d.id]] ? 'pointer' : 'default')
+        .on('mousemove', function(ev,d){
+          const name = cNames[+d.id] || '';
+          const count = mapData[name] || 0;
+          if(!count) return hideTip();
+          const meta = countryMeta[name] || {};
+          setTip(`${meta.flag||'🌍'} ${displayName[name]||name} · <strong>${count}</strong> MOU Active`, ev.offsetX, ev.offsetY);
+        })
+        .on('mouseleave', hideTip)
+        .on('click', function(ev,d){
+          const name = cNames[+d.id] || '';
+          if(mapData[name]) window.location.href='public-mou.html?country='+encodeURIComponent(displayName[name]||name);
+        });
+    })
+    .catch(drawFallbackDots);
+}
 async function renderPublicScholarships(){
   try{
     const data=await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
@@ -808,7 +913,64 @@ async function initPublicLanding(){
   renderPublicScholarships();
 }
 
+
+let currentLang = localStorage.getItem('iroup_lang') || 'TH';
+const IROUP_LANDING_TEXT = {
+  TH: {
+    nav:['บริการ','ทุนการศึกษา','📅 กิจกรรม','👥 Mobility'], admin:'🎁 เข้าสู่ระบบ Admin',
+    tag:'● International Relations Office · University of Phayao',
+    title:'มหาวิทยาลัยสร้างปัญญา<br>และนวัตกรรมชุมชน<br><span class="accent2">สู่สากล อย่างยั่งยืน</span>',
+    sub:'รวบรวมข้อมูล <strong>MOU</strong> ทุนการศึกษา กิจกรรม และความเคลื่อนไหวนานาชาติของมหาวิทยาลัยพะเยาไว้ในที่เดียว',
+    btn1:'🎓 ดูทุนการศึกษา', btn2:'🤝 ดู MOU ทั้งหมด', stats:['MOU ทั้งหมด','ประเทศ','ทุนเปิดรับ','Mobility ปีนี้'],
+    featuresTag:'SERVICES', featuresTitle:'บริการและข้อมูล<br><span>นานาชาติ</span>', featuresSub:'เข้าถึงข้อมูลสำคัญของงานวิเทศสัมพันธ์ได้อย่างรวดเร็ว',
+    scholarTag:'SCHOLARSHIPS', scholarTitle:'ทุนการศึกษา<br><span>ที่กำลังเปิดรับ</span>', scholarSub:'โอกาสทุนต่างประเทศสำหรับนิสิต อาจารย์ และบุคลากร', scholarBtn:'ดูทุนการศึกษาทั้งหมด',
+    mapTag:'GLOBAL NETWORK', mapSub:'ดูแผนที่ความร่วมมือและ MOU ที่ Active ทั่วโลก',
+    eventsTag:'EVENTS', eventsTitle:'กิจกรรมที่<span>กำลังจะมาถึง</span>', eventsSub:'ติดตามกิจกรรมนานาชาติ โปรแกรม Exchange และการเดินทางของมหาวิทยาลัย', eventsBtn:'ดูกิจกรรมทั้งหมด →',
+    contact:'International Relations Office, University of Phayao (iROUP) ทำหน้าที่ประสานงานความร่วมมือนานาชาติ ดูแลการแลกเปลี่ยนนิสิต อาจารย์ และบุคลากร รวมถึงการทำ MOU กับสถาบันทั่วโลก'
+  },
+  EN: {
+    nav:['Services','Scholarships','📅 Events','👥 Mobility'], admin:'🎁 Admin Login',
+    tag:'● International Relations Office · University of Phayao',
+    title:'Wisdom and Community<br>Innovation for<br><span class="accent2">Sustainable Global Impact</span>',
+    sub:'A central hub for <strong>MOU</strong>, scholarships, events, and international mobility at the University of Phayao.',
+    btn1:'🎓 View Scholarships', btn2:'🤝 View all MOUs', stats:['Total MOUs','Countries','Open Scholarships','Mobility this year'],
+    featuresTag:'SERVICES', featuresTitle:'International<br><span>Services & Information</span>', featuresSub:'Quick access to key information from the International Relations Office.',
+    scholarTag:'SCHOLARSHIPS', scholarTitle:'Currently Open<br><span>Scholarships</span>', scholarSub:'International scholarship opportunities for students, lecturers, and staff.', scholarBtn:'View all scholarships',
+    mapTag:'GLOBAL NETWORK', mapSub:'Explore active partnerships and MOUs around the world.',
+    eventsTag:'EVENTS', eventsTitle:'Upcoming <span>Events</span>', eventsSub:'Follow international events, exchange programs, and university travel activities.', eventsBtn:'View all events →',
+    contact:'The International Relations Office, University of Phayao (iROUP), coordinates international partnerships, student and staff mobility, and MOU collaboration with institutions worldwide.'
+  }
+};
+function setLang(lang){
+  currentLang = lang; localStorage.setItem('iroup_lang', lang); document.documentElement.lang = lang === 'EN' ? 'en' : 'th';
+  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang));
+  const t=IROUP_LANDING_TEXT[lang];
+  const nav=document.querySelectorAll('.nav-links .nav-link'); nav.forEach((el,i)=>{ if(t.nav[i]) el.textContent=t.nav[i]; });
+  const admin=document.querySelector('.nav-admin-btn'); if(admin) admin.textContent=t.admin;
+  const tag=document.querySelector('.hero-tag'); if(tag) tag.innerHTML=t.tag;
+  const title=document.querySelector('.hero-title'); if(title) title.innerHTML=t.title;
+  const sub=document.querySelector('.hero-sub'); if(sub) sub.innerHTML=t.sub;
+  const buttons=document.querySelectorAll('.hero-btns a'); if(buttons[0]) buttons[0].textContent=t.btn1; if(buttons[1]) buttons[1].textContent=t.btn2;
+  document.querySelectorAll('.hero-stat-label').forEach((el,i)=>{ if(t.stats[i]) el.textContent=t.stats[i]; });
+  const sections=document.querySelectorAll('section');
+  const ft=document.querySelector('.features .section-tag'); if(ft) ft.textContent=t.featuresTag;
+  const ftitle=document.querySelector('.features .section-title'); if(ftitle) ftitle.innerHTML=t.featuresTitle;
+  const fsub=document.querySelector('.features .section-sub'); if(fsub) fsub.textContent=t.featuresSub;
+  const st=document.querySelector('.scholarships .section-tag'); if(st) st.textContent=t.scholarTag;
+  const stitle=document.querySelector('.scholarships .section-title'); if(stitle) stitle.innerHTML=t.scholarTitle;
+  const ssub=document.querySelector('.scholarships .section-sub'); if(ssub) ssub.textContent=t.scholarSub;
+  const sbtn=document.querySelector('.scholarships .view-all-btn'); if(sbtn) sbtn.textContent=`${t.scholarBtn} →`;
+  const mt=document.querySelector('.map-header .section-tag'); if(mt) mt.textContent=t.mapTag;
+  const msub=document.querySelector('.map-header .section-sub'); if(msub) msub.textContent=t.mapSub;
+  const et=document.querySelector('.events-section .section-tag'); if(et) et.textContent=t.eventsTag;
+  const etitle=document.querySelector('.events-section .section-title'); if(etitle) etitle.innerHTML=t.eventsTitle;
+  const esub=document.querySelector('.events-section .section-sub'); if(esub) esub.textContent=t.eventsSub;
+  const ebtn=document.getElementById('viewAllEventsBtn'); if(ebtn) ebtn.textContent=t.eventsBtn;
+  const about=document.querySelector('.about-text p'); if(about) about.textContent=t.contact;
+}
+
 document.addEventListener('DOMContentLoaded', initPublicLanding);
+document.addEventListener('DOMContentLoaded',()=>setLang(currentLang));
 </script>
 
 </body>
