@@ -65,7 +65,7 @@ const FIELDS = {
   outbound:['รหัส','ชื่อ_สกุล','คณะ','สาขา','ประเภท','เพศ','สถาบัน_ปลายทาง','ประเทศ','วันออก','วันกลับ','โครงการ','วัตถุประสงค์','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ']
 };
 const labels = {home:'Dashboard',mou:'MOU ต่างประเทศ',scholar:'ทุน & กิจกรรม',travel:'การเดินทาง',mobility:'Mobility',reports:'รายงาน & Export',settings:'ตั้งค่า',public:'Public View'};
-let state={page:'home', stats:null, data:{}, lang:'th', activeSub:null, editing:null, query:''};
+let state={page:'home', stats:null, data:{}, master:{faculty:[], country:[]}, lang:'th', activeSub:null, editing:null, query:'', searchTimer:null};
 const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
 function asArr(res){return Array.isArray(res) ? res : (res?.data || [])}
@@ -81,6 +81,9 @@ async function loadCore(){
   state.stats = state.stats.stats ? state.stats.stats : state.stats;
   const keys=['mou','scholar','event','travel','inbound','outbound'];
   await Promise.all(keys.map(async k=>{state.data[k]=asArr(await safe(k,()=>IROUP.getAll(SHEETS[k]),{data:[]}));}));
+  // Master data: ใช้ sheet ที่ผู้ใช้สร้างเอง ถ้าโหลดไม่ได้จะ fallback เป็นข้อมูลจากรายการที่เคยกรอก
+  state.master.faculty = asArr(await safe('FACULTY',()=>IROUP.getAll('FACULTY'),{data:[]}));
+  state.master.country = asArr(await safe('COUNTRY',()=>IROUP.getAll('COUNTRY'),{data:[]}));
   $('#badgeMou').textContent = state.data.mou.length;
 }
 function setPage(p){ if(p==='public'){window.open('public-landing.html','_blank');return} state.page=p; state.query=''; $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===p)); $('#pageTitle').textContent=labels[p]; $('#crumbPage').textContent=labels[p]; $('#sidebar').classList.remove('open'); render(); }
@@ -110,25 +113,56 @@ async function renderMap(id){const el=document.getElementById(id); if(!el)return
 function filterRows(rows,q){q=(q||'').toLowerCase().trim(); if(!q)return rows; return rows.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q));}
 function renderCrudPage(opts){const rows=filterRows(opts.rows,state.query); $('#content').innerHTML=`<div class="toolbar"><input class="input search" id="searchInput" placeholder="🔍 ค้นหาจากทุกคอลัมน์..." value="${esc(state.query)}"><button class="btn primary" onclick="openForm('${opts.key}')">＋ เพิ่ม${opts.addLabel}</button><button class="btn" onclick="exportCsv('${opts.key}')">⬇ Export CSV</button><button class="btn" onclick="loadCore().then(render)">↻ โหลดใหม่</button></div><div class="panel"><div class="panel-head"><div><div class="panel-title">${opts.title}</div><div class="panel-sub">แสดง ${rows.length} รายการจาก Google Sheet จริง</div></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${opts.cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th>จัดการ</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${opts.cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key]||'-')}</td>`).join('')}<td><div class="actions"><button class="iconbtn" onclick="openForm('${opts.key}','${esc(r.ID)}')">✏️</button><button class="iconbtn" onclick="removeRow('${opts.key}','${esc(r.ID)}')">🗑️</button></div></td></tr>`).join(''):`<tr><td colspan="${opts.cols.length+1}"><div class="empty">ไม่พบข้อมูล</div></td></tr>`}</tbody></table></div></div>`; $('#searchInput').addEventListener('input',e=>{state.query=e.target.value; render();});}
 function renderMou(){const s=state.stats; $('#content').innerHTML=`<div class="notice">⚠️ MOU ใกล้หมดอายุ ${s.mou?.soon||0} รายการ · ข้อมูลมาจากชีต MOU โดยตรง</div><div class="grid-kpi">${card('🤝',s.mou?.total||0,'MOU ทั้งหมด',`${s.mou?.active||0} Active`)}${card('✅',s.mou?.active||0,'Active','ยังไม่หมดอายุ','green')}${card('⏰',s.mou?.soon||0,'ใกล้หมดอายุ','ภายใน 180 วัน','gold')}${card('🌐',s.mou?.countries||0,'ประเทศ','เครือข่ายทั่วโลก')}</div><div class="layout-2"><div class="map-card"><div class="panel-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div><div class="panel-sub" style="color:rgba(255,255,255,.68)">คลิก/hover เพื่อดูรายละเอียด</div><div class="map-wrap" id="mouMap"></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">MOU Active แยกตามประเทศ</div><div class="panel-sub">จากข้อมูลจริง</div></div></div><div class="panel-body">${countryBars()}</div></div></div><div id="mouTable"></div>`; renderMap('mouMap'); const old=$('#content').innerHTML; const tmp=document.createElement('div'); document.body.appendChild(tmp); state.page='mouTableOnly'; const content=$('#content'); const holder=document.createElement('div'); content.appendChild(holder); renderCrudInto(holder,{key:'mou',addLabel:' MOU',title:'รายการ MOU ทั้งหมด',rows:state.data.mou,cols:[{key:'หน่วยงาน_UP',label:'หน่วยงาน ม.พะเยา'},{key:'องค์กร_ตปท',label:'องค์กรต่างประเทศ'},{key:'ประเทศ',label:'ประเทศ'},{key:'ประเภท',label:'ประเภท'},{key:'วันสิ้นสุด',label:'สิ้นสุด',render:r=>fmtDate(r['วันสิ้นสุด'])},{key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusMou(r)}">${statusText(statusMou(r))}</span>`}]}); state.page='mou';}
-function renderCrudInto(el,opts){const rows=filterRows(opts.rows,state.query); el.innerHTML=`<div class="toolbar"><input class="input search" id="searchInput2" placeholder="🔍 ค้นหา..." value="${esc(state.query)}"><button class="btn primary" onclick="openForm('${opts.key}')">＋ เพิ่ม${opts.addLabel}</button><button class="btn" onclick="exportCsv('${opts.key}')">⬇ Export CSV</button></div><div class="panel"><div class="panel-head"><div><div class="panel-title">${opts.title}</div><div class="panel-sub">แสดง ${rows.length} รายการ</div></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${opts.cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th>จัดการ</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${opts.cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key]||'-')}</td>`).join('')}<td><div class="actions"><button class="iconbtn" onclick="openForm('${opts.key}','${esc(r.ID)}')">✏️</button><button class="iconbtn" onclick="removeRow('${opts.key}','${esc(r.ID)}')">🗑️</button></div></td></tr>`).join(''):`<tr><td colspan="${opts.cols.length+1}"><div class="empty">ไม่พบข้อมูล</div></td></tr>`}</tbody></table></div></div>`; el.querySelector('#searchInput2').addEventListener('input',e=>{state.query=e.target.value; render();});}
+function renderCrudInto(el,opts){
+  const qid='searchInput2';
+  const draw=()=>{
+    const rows=filterRows(opts.rows,state.query);
+    const table=`<div class="panel"><div class="panel-head"><div><div class="panel-title">${opts.title}</div><div class="panel-sub">แสดง ${rows.length} รายการ</div></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${opts.cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th>จัดการ</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${opts.cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key]||'-')}</td>`).join('')}<td><div class="actions"><button class="iconbtn" onclick="openForm('${opts.key}','${esc(r.ID)}')">✏️</button><button class="iconbtn" onclick="removeRow('${opts.key}','${esc(r.ID)}')">🗑️</button></div></td></tr>`).join(''):`<tr><td colspan="${opts.cols.length+1}"><div class="empty">ไม่พบข้อมูล</div></td></tr>`}</tbody></table></div></div>`;
+    const area=el.querySelector('.crud-table-area'); if(area) area.innerHTML=table;
+  };
+  el.innerHTML=`<div class="toolbar"><input class="input search" id="${qid}" placeholder="🔍 ค้นหา..." value="${esc(state.query)}"><button class="btn primary" onclick="openForm('${opts.key}')">＋ เพิ่ม${opts.addLabel}</button><button class="btn" onclick="exportCsv('${opts.key}')">⬇ Export CSV</button></div><div class="crud-table-area"></div>`;
+  draw();
+  el.querySelector('#'+qid).addEventListener('input',e=>{
+    state.query=e.target.value;
+    clearTimeout(state.searchTimer);
+    state.searchTimer=setTimeout(draw,180);
+  });
+}
 function renderScholarEvents(){state.activeSub=state.activeSub||'scholar'; const isS=state.activeSub==='scholar'; const opts=isS?{key:'scholar',addLabel:'ทุน',title:'ทุนการศึกษาทั้งหมด',rows:state.data.scholar,cols:[{key:'ชื่อทุน',label:'ชื่อทุน'},{key:'สถาบัน',label:'สถาบัน'},{key:'ประเทศ',label:'ประเทศ'},{key:'วันปิดรับ',label:'ปิดรับ',render:r=>fmtDate(r['วันปิดรับ'])},{key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusScholar(r)}">${statusText(statusScholar(r))}</span>`}]}:{key:'event',addLabel:'กิจกรรม',title:'กิจกรรมทั้งหมด',rows:state.data.event,cols:[{key:'ชื่อกิจกรรม',label:'ชื่อกิจกรรม'},{key:'ประเภท',label:'ประเภท'},{key:'สถานที่',label:'สถานที่'},{key:'วันเริ่ม',label:'วันเริ่ม',render:r=>fmtDate(r['วันเริ่ม'])},{key:'จำนวน',label:'จำนวน'}]}; $('#content').innerHTML=`<div class="grid-kpi">${card('🎓',state.data.scholar.length,'ทุนทั้งหมด',`${state.stats.scholarship?.open||0} เปิดรับ`,'gold')}${card('📅',state.data.event.length,'กิจกรรมทั้งหมด','จากชีตกิจกรรม')}${card('🔥',state.data.scholar.filter(r=>statusScholar(r)==='active').length,'ทุนเปิดรับ','สมัครได้ตอนนี้','green')}${card('📌',state.data.event.filter(r=>toDate(r['วันเริ่ม'])>=new Date()).length,'Upcoming','กิจกรรมที่จะถึง','purple')}</div><div class="tabs"><button class="tab ${isS?'active':''}" onclick="state.activeSub='scholar';state.query='';render()">🎓 ทุนการศึกษา</button><button class="tab ${!isS?'active':''}" onclick="state.activeSub='event';state.query='';render()">📅 กิจกรรม</button></div><div id="crudArea"></div>`; renderCrudInto($('#crudArea'),opts);}
 function renderTravel(){renderCrudPage({key:'travel',addLabel:'การเดินทาง',title:'รายการเดินทางต่างประเทศ',rows:state.data.travel,cols:[{key:'ชื่อโครงการ',label:'ชื่อโครงการ'},{key:'ประเทศ',label:'ประเทศ'},{key:'เมือง',label:'เมือง'},{key:'ชื่อผู้เดินทาง',label:'ผู้เดินทาง'},{key:'วันเริ่ม',label:'เริ่ม',render:r=>fmtDate(r['วันเริ่ม'])},{key:'วันสิ้นสุด',label:'สิ้นสุด',render:r=>fmtDate(r['วันสิ้นสุด'])},{key:'จำนวน',label:'จำนวน'}]});}
 function renderMobility(){state.activeSub=state.activeSub||'inbound'; const isIn=state.activeSub==='inbound'; const opts=isIn?{key:'inbound',addLabel:'Inbound',title:'Inbound Mobility',rows:state.data.inbound,cols:[{key:'ชื่อ',label:'ชื่อ'},{key:'สกุล',label:'สกุล'},{key:'สถาบัน',label:'สถาบัน'},{key:'ประเทศ',label:'ประเทศ'},{key:'วันมาถึง',label:'มาถึง',render:r=>fmtDate(r['วันมาถึง'])},{key:'วันกลับ',label:'กลับ',render:r=>fmtDate(r['วันกลับ'])}]}:{key:'outbound',addLabel:'Outbound',title:'Outbound Mobility',rows:state.data.outbound,cols:[{key:'ชื่อ_สกุล',label:'ชื่อ-สกุล'},{key:'คณะ',label:'คณะ'},{key:'สถาบัน_ปลายทาง',label:'สถาบันปลายทาง'},{key:'ประเทศ',label:'ประเทศ'},{key:'วันออก',label:'วันออก',render:r=>fmtDate(r['วันออก'])},{key:'วันกลับ',label:'กลับ',render:r=>fmtDate(r['วันกลับ'])}]}; $('#content').innerHTML=`<div class="grid-kpi">${card('👥',state.data.inbound.length+state.data.outbound.length,'Mobility รวม',`In ${state.data.inbound.length} / Out ${state.data.outbound.length}`,'purple')}${card('🌏',state.data.inbound.length,'Inbound','ชาวต่างชาติเข้ามา','green')}${card('✈️',state.data.outbound.length,'Outbound','บุคลากร/นิสิตออกไป')}${card('📊',new Set([...state.data.inbound,...state.data.outbound].map(r=>r['ประเทศ']).filter(Boolean)).size,'ประเทศ','จาก Mobility','gold')}</div><div class="tabs"><button class="tab ${isIn?'active':''}" onclick="state.activeSub='inbound';state.query='';render()">🌏 Inbound</button><button class="tab ${!isIn?'active':''}" onclick="state.activeSub='outbound';state.query='';render()">✈️ Outbound</button></div><div id="crudArea"></div>`; renderCrudInto($('#crudArea'),opts);}
 function renderReports(){ $('#content').innerHTML=`<div class="panel"><div class="panel-head"><div><div class="panel-title">รายงาน & Export</div><div class="panel-sub">ดาวน์โหลดข้อมูลจากชีตจริงเป็น CSV</div></div></div><div class="panel-body"><div class="toolbar"><button class="btn" onclick="exportCsv('mou')">MOU CSV</button><button class="btn" onclick="exportCsv('scholar')">Scholarship CSV</button><button class="btn" onclick="exportCsv('event')">Events CSV</button><button class="btn" onclick="exportCsv('travel')">Travel CSV</button><button class="btn" onclick="exportCsv('inbound')">Inbound CSV</button><button class="btn" onclick="exportCsv('outbound')">Outbound CSV</button></div></div></div>`;}
 function renderSettings(){ $('#content').innerHTML=`<div class="panel"><div class="panel-head"><div><div class="panel-title">ตั้งค่า</div><div class="panel-sub">ระบบใช้ Apps Script URL จาก iroup-config.js</div></div></div><div class="panel-body"><p><b>API:</b> ${esc(IROUP.SCRIPT_URL)}</p><p style="margin-top:10px;color:var(--muted)">ถ้าแก้ Code.gs ต้อง Deploy เป็น New version ทุกครั้ง</p></div></div>`;}
 
+
+function getFacultyOptions(){
+  const masters=(state.master.faculty||[]).flatMap(f=>[f.en_name,f.th_name,f.code]).filter(Boolean);
+  const used=[...state.data.mou,...state.data.travel,...state.data.inbound,...state.data.outbound].flatMap(r=>[r['หน่วยงาน_UP'],r['คณะ']]).filter(Boolean);
+  return uniq([...masters,...used]);
+}
+function getCountryOptions(){
+  const masters=(state.master.country||[]).flatMap(c=>[c.en_name,c.th_name,c.code]).filter(Boolean);
+  const used=[...state.data.mou,...state.data.scholar,...state.data.travel,...state.data.inbound,...state.data.outbound].map(r=>r['ประเทศ']).filter(Boolean);
+  return uniq([...masters,...used]);
+}
+function findFaculty(v){const x=String(v||'').trim().toLowerCase(); return (state.master.faculty||[]).find(f=>[f.code,f.th_name,f.en_name].some(a=>String(a||'').trim().toLowerCase()===x));}
+function findCountry(v){const x=String(v||'').trim().toLowerCase(); return (state.master.country||[]).find(c=>[c.code,c.th_name,c.en_name].some(a=>String(a||'').trim().toLowerCase()===x));}
+function normalizeFaculty(v){const f=findFaculty(v); return f ? (f.en_name || f.th_name || v) : v;}
+function normalizeCountry(v){const c=findCountry(v); return c ? (c.en_name || c.th_name || v) : v;}
+function continentOfCountry(v){const c=findCountry(v); return c ? (c.continent || '') : '';}
+function onCountryInput(el){const cont=continentOfCountry(el.value); const input=document.querySelector('#modalForm [name="ทวีป"]'); if(cont&&input) input.value=cont;}
 function uniq(arr){return [...new Set(arr.map(x=>String(x||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));}
 function optionPool(field){
   const all=[...state.data.mou,...state.data.scholar,...state.data.event,...state.data.travel,...state.data.inbound,...state.data.outbound];
   const base={
-    'ประเทศ':['Thailand','China','Japan','South Korea','Germany','France','Australia','United States','Malaysia','Indonesia','Singapore','Vietnam','Taiwan','India'],
+    'ประเทศ':getCountryOptions(),
     'เมือง':['Phayao','Bangkok','Shanghai','Beijing','Tokyo','Nagano','Seoul','Daegu','Daejeon','Deggendorf','Paris','Sydney'],
-    'คณะ':['คณะแพทยศาสตร์','คณะวิทยาศาสตร์','คณะวิศวกรรมศาสตร์','คณะวิทยาการจัดการและสารสนเทศศาสตร์','คณะสาธารณสุขศาสตร์','คณะนิติศาสตร์','คณะรัฐศาสตร์และสังคมศาสตร์','วิทยาลัยการศึกษา','สำนักงานอธิการบดี'],
-    'หน่วยงาน_UP':['คณะแพทยศาสตร์','คณะวิทยาศาสตร์','คณะวิศวกรรมศาสตร์','วิทยาลัยการศึกษา','สำนักงานอธิการบดี'],
-    'ประเภท':['MOU','MOA','Exchange','Inbound','Outbound','อบรม','ประชุม','ทุน','นักศึกษา','บุคลากร'],
+    'คณะ':getFacultyOptions(),
+    'หน่วยงาน_UP':getFacultyOptions(),
+    'ประเภท':['MOU','MOA','LOI','Agreement','Exchange','Research','Training','Award','รับรางวัล','Inbound','Outbound','อบรม','ประชุม','ทุน','นักศึกษา','บุคลากร'],
     'ระดับ':['ป.ตรี','ป.โท','ป.เอก','บุคลากร','อาจารย์'],
     'เพศ':['ชาย','หญิง','ไม่ระบุ'],
-    'ทวีป':['เอเชีย','ยุโรป','อเมริกาเหนือ','อเมริกาใต้','โอเชียเนีย','แอฟริกา'],
+    'ทวีป':['Asia','Europe','North America','South America','Oceania','Africa'],
     'ปีงบ':['2568','2569','2570','2571'],
     'งบประเภท':['งบประมาณแผ่นดิน','เงินรายได้','ทุนภายนอก','ไม่มีงบประมาณ']
   };
@@ -140,12 +174,17 @@ function fieldInput(f,row){
   const type=/วัน|date/i.test(f)?'date':'text';
   const opts=optionPool(f);
   const listId=opts.length?`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`:'';
-  return `<input type="${type}" name="${esc(f)}" value="${val}" placeholder="${esc(f)}" ${listId?`list="${listId}"`:''}>`;
+  const extra=f==='ประเทศ'?' oninput="onCountryInput(this)" onchange="onCountryInput(this)"':(f==='ทวีป'?' placeholder="เลือกประเทศแล้วระบบจะเติมให้อัตโนมัติ"':'');
+  return `<input type="${type}" name="${esc(f)}" value="${val}" placeholder="${esc(f)}" ${listId?`list="${listId}"`:''}${extra}>`;
 }
 function dataListsForFields(fields){return fields.map(f=>{const opts=optionPool(f); if(!opts.length)return ''; const id=`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`; return `<datalist id="${id}">${opts.map(o=>`<option value="${esc(o)}"></option>`).join('')}</datalist>`;}).join('');}
 function openForm(key,id=null){const rows=state.data[key]||[]; const row=id?rows.find(r=>String(r.ID)===String(id)):null; state.editing={key,id,row}; $('#modalTitle').textContent=(id?'แก้ไข':'เพิ่ม')+' '+({mou:'MOU',scholar:'ทุน',event:'กิจกรรม',travel:'การเดินทาง',inbound:'Inbound',outbound:'Outbound'}[key]||key); const fields=FIELDS[key]||[]; $('#formFields').innerHTML=fields.map(f=>`<div class="field ${['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)?'full':''}"><label>${esc(f)}</label>${fieldInput(f,row)}</div>`).join('')+dataListsForFields(fields); $('#modalBackdrop').classList.add('show');}
 function closeModal(){ $('#modalBackdrop').classList.remove('show'); state.editing=null; }
-async function submitForm(e){e.preventDefault(); const {key,id}=state.editing; const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v); $('#modalSubmit').disabled=true; $('#modalSubmit').textContent='กำลังบันทึก...'; try{let res=id?await IROUP.edit(SHEETS[key],id,data):await IROUP.add(SHEETS[key],data); if(res.error)throw new Error(res.error); closeModal(); await loadCore(); render(); alert('บันทึกสำเร็จ');}catch(err){alert('บันทึกไม่สำเร็จ: '+err.message);}finally{$('#modalSubmit').disabled=false; $('#modalSubmit').textContent='บันทึก';}}
+async function submitForm(e){e.preventDefault(); const {key,id}=state.editing; const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v);
+  if(data['หน่วยงาน_UP']) data['หน่วยงาน_UP']=normalizeFaculty(data['หน่วยงาน_UP']);
+  if(data['คณะ']) data['คณะ']=normalizeFaculty(data['คณะ']);
+  if(data['ประเทศ']) { data['ประเทศ']=normalizeCountry(data['ประเทศ']); const cont=continentOfCountry(data['ประเทศ']); if(cont) data['ทวีป']=cont; }
+  $('#modalSubmit').disabled=true; $('#modalSubmit').textContent='กำลังบันทึก...'; try{let res=id?await IROUP.edit(SHEETS[key],id,data):await IROUP.add(SHEETS[key],data); if(res.error)throw new Error(res.error); closeModal(); await loadCore(); render(); alert('บันทึกสำเร็จ');}catch(err){alert('บันทึกไม่สำเร็จ: '+err.message);}finally{$('#modalSubmit').disabled=false; $('#modalSubmit').textContent='บันทึก';}}
 async function removeRow(key,id){if(!id)return alert('ไม่พบ ID'); if(!confirm('ยืนยันลบรายการนี้?'))return; try{const res=await IROUP.delete(SHEETS[key],id); if(res.error)throw new Error(res.error); await loadCore(); render();}catch(e){alert('ลบไม่สำเร็จ: '+e.message)}}
 function exportCsv(key){const rows=state.data[key]||[]; if(!rows.length)return alert('ไม่มีข้อมูล'); const headers=Object.keys(rows[0]); const csv=[headers.join(','),...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'); const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`iroup-${key}.csv`; a.click(); URL.revokeObjectURL(a.href);}
 $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page))); $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open')); $('#modalClose').addEventListener('click',closeModal); $('#modalCancel').addEventListener('click',closeModal); $('#modalForm').addEventListener('submit',submitForm); $$('.lang button').forEach(b=>b.addEventListener('click',()=>{$$('.lang button').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.lang=b.dataset.lang;}));
