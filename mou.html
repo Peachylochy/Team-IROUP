@@ -561,60 +561,124 @@ const deptData = {
 
 // ============ TABLE ============
 let currentStatus = 'all';
+let liveMouList = [];
+
+function htmlSafe(value){
+  return String(value ?? '').replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+function getFileUrl(m){
+  return (m && (m['ไฟล์_URL'] || m.fileUrl || m.file || m['ไฟล์ URL'] || m['file_url'])) || '';
+}
+function renderFileCell(m){
+  const url = getFileUrl(m);
+  return url
+    ? `<a href="${htmlSafe(url)}" target="_blank" rel="noopener" class="file-btn">📎 เปิดไฟล์</a>`
+    : '<span class="file-empty">-</span>';
+}
+function parseMouDate(value){
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  const s = String(value).trim();
+  const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+  if (m) {
+    let y = Number(m[3]);
+    if (y > 2400) y -= 543;
+    if (y < 100) y += 2000;
+    return new Date(y, Number(m[2])-1, Number(m[1]));
+  }
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+function formatMouDate(value){
+  const d = parseMouDate(value);
+  return d ? d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}) : '—';
+}
+function getRowStatus(row){
+  if (window.IROUP && IROUP.getMouStatus && row['วันสิ้นสุด']) return IROUP.getMouStatus(row['วันสิ้นสุด']);
+  const end = parseMouDate(row.to || row['วันสิ้นสุด']);
+  if (!end) return {status:'active', label:'Active'};
+  const diff = Math.floor((end - new Date())/(1000*60*60*24));
+  if (diff <= 0) return {status:'expired', label:'หมดอายุ'};
+  if (diff <= 180 || row.status === 'soon') return {status:'soon', label:'ใกล้หมด'};
+  return {status:'active', label:'Active'};
+}
+function badgeClassOf(status){
+  return status === 'active' ? 'badge-active' : status === 'soon' ? 'badge-soon' : 'badge-expired';
+}
+function normalizeRow(m){
+  return {
+    id: m.ID || m.id || '',
+    dept: m['หน่วยงาน_UP'] || m.dept || '—',
+    uni: m['องค์กร_ตปท'] || m.uni || '—',
+    country: m['ประเทศ'] || m.country || '—',
+    flag: m.flag || '',
+    continent: String(m['ทวีป'] || m.continent || '').toLowerCase(),
+    type: m['ประเภท'] || m.type || 'MOU',
+    from: m['วันเริ่ม'] || m.from || '',
+    to: m['วันสิ้นสุด'] || m.to || '',
+    fy: m['ปีงบ'] || m.fy || '—',
+    note: m['หมายเหตุ'] || m.note || '',
+    raw: m
+  };
+}
 function renderTable(data){
   const tbody = document.getElementById('mouBody');
-  const today = new Date();
-  tbody.innerHTML = data.map((m,i)=>{
-    const end = new Date(m.to);
-    const diff = Math.floor((end-today)/(1000*60*60*24));
-    let badgeClass='badge-active',badgeText='Active';
-    if(m.status==='soon'||diff<180&&diff>0){badgeClass='badge-soon';badgeText='ใกล้หมด';}
-    if(diff<=0){badgeClass='badge-expired';badgeText='หมดอายุ';}
-    const fromStr = new Date(m.from).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-const toStr = new Date(m.to).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
-
-const fileLink = m.fileUrl || m.file || m['ไฟล์_URL']
-  ? `<a href="${m.fileUrl || m.file || m['ไฟล์_URL']}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>`
-  : '<span class="file-empty">-</span>';
-
-return `<tr>
-  <td style="color:var(--gray-400);font-size:11px;font-family:'Inter',sans-serif">${String(i+1).padStart(2,'0')}</td>
-  <td><div class="td-uni">${m.dept}</div></td>
-  <td><div class="td-uni" style="font-size:12px">${m.uni}</div></td>
-  <td><div class="country-flag"><span class="flag-emoji">${m.flag}</span><span class="country-name">${m.country}</span></div></td>
-  <td><span class="badge-type">${m.type}</span></td>
-  <td><div class="date-range">${fromStr} – ${toStr}</div></td>
-  <td><span class="date-year">${m.fy}</span></td>
-  <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-  <td><div class="note-text" title="${m.note}">${m.note||'—'}</div></td>
-  <td>${fileLink}</td>
-  <td><div class="action-btns">
-    <button class="act-btn act-edit" title="แก้ไข" onclick="openModal(${m.id})">✏️</button>
-    <button class="act-btn act-file" title="เอกสาร">📎</button>
-    <button class="act-btn act-del" title="ลบ">🗑️</button>
-  </div></td>
-</tr>`;
+  if (!tbody) return;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--gray-500);padding:28px">ไม่พบข้อมูล</td></tr>';
+    const c = document.getElementById('tableCount'); if (c) c.textContent = 'แสดง 0 รายการ';
+    return;
+  }
+  tbody.innerHTML = data.map((item,i)=>{
+    const r = normalizeRow(item);
+    const s = getRowStatus(item);
+    const fileCell = renderFileCell(item);
+    const safeId = htmlSafe(r.id);
+    return `<tr>
+      <td style="color:var(--gray-400);font-size:11px;font-family:'Inter',sans-serif">${String(i+1).padStart(2,'0')}</td>
+      <td><div class="td-uni">${htmlSafe(r.dept)}</div></td>
+      <td><div class="td-uni" style="font-size:12px">${htmlSafe(r.uni)}</div></td>
+      <td><div class="country-flag"><span class="flag-emoji">${r.flag || ''}</span><span class="country-name">${htmlSafe(r.country)}</span></div></td>
+      <td><span class="badge-type">${htmlSafe(r.type)}</span></td>
+      <td><div class="date-range">${formatMouDate(r.from)} – ${formatMouDate(r.to)}</div></td>
+      <td><span class="date-year">${htmlSafe(r.fy)}</span></td>
+      <td><span class="badge ${badgeClassOf(s.status)}">${htmlSafe(s.label)}</span></td>
+      <td><div class="note-text" title="${htmlSafe(r.note)}">${htmlSafe(r.note || '—')}</div></td>
+      <td>${fileCell}</td>
+      <td><div class="action-btns">
+        <button class="act-btn act-edit" title="แก้ไข" onclick="openModal('${safeId}')">✏️</button>
+        <button class="act-btn act-file" title="เปิดไฟล์" onclick="openMouFile('${safeId}')">📎</button>
+        <button class="act-btn act-del" title="ลบ" onclick="deleteMou('${safeId}')">🗑️</button>
+      </div></td>
+    </tr>`;
   }).join('');
-  document.getElementById('tableCount').textContent=`แสดง ${data.length} รายการ จาก 142`;
+  const c = document.getElementById('tableCount');
+  if (c) c.textContent = `แสดง ${data.length} รายการ`;
+}
+function getCurrentMouSource(){
+  return liveMouList && liveMouList.length ? liveMouList : mouData;
 }
 function filterTable(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  const cont=document.getElementById('continentFilter').value;
-  let filtered=mouData.filter(m=>{
-    const matchQ=!q||(m.uni+m.country+m.dept).toLowerCase().includes(q);
-    const matchCont=!cont||m.continent===cont;
-    const matchStatus=currentStatus==='all'||m.status===currentStatus;
-    return matchQ&&matchCont&&matchStatus;
+  const input = document.getElementById('searchInput');
+  const q = (input?.value || '').toLowerCase().trim();
+  const cont = document.getElementById('continentFilter')?.value || '';
+  const source = getCurrentMouSource();
+  const filtered = source.filter(m=>{
+    const r = normalizeRow(m);
+    const searchable = [r.dept,r.uni,r.country,r.type,r.fy,r.note,getFileUrl(m)].join(' ').toLowerCase();
+    const matchQ = !q || searchable.includes(q);
+    const matchCont = !cont || r.continent === cont;
+    const matchStatus = currentStatus === 'all' || getRowStatus(m).status === currentStatus;
+    return matchQ && matchCont && matchStatus;
   });
   renderTable(filtered);
 }
-function setStatus(s,el){
-  currentStatus=s;
-  document.querySelectorAll('.pill').forEach(p=>p.style.opacity='0.5');
-  el.style.opacity='1';
-  filterTable();
+function openMouFile(id){
+  const m = getCurrentMouSource().find(x => String(x.ID || x.id || '') === String(id));
+  const url = getFileUrl(m);
+  if (url) window.open(url, '_blank', 'noopener');
+  else alert('ไม่มีไฟล์แนบ');
 }
-renderTable(mouData);
 
 // ============ CHART ============
 const ctx = document.getElementById('deptChart').getContext('2d');
@@ -951,72 +1015,43 @@ async function uploadMouFile(input) {
 // ============================================================
 async function loadMouData() {
   try {
-    // โหลดข้อมูล MOU
-    const mouList = await IROUP.getAll(IROUP.SHEETS.MOU);
-    if (!mouList || mouList.length === 0) return;
+    const result = await IROUP.getAll(IROUP.SHEETS.MOU);
+    const mouList = Array.isArray(result) ? result : (result?.data || []);
+    liveMouList = mouList || [];
 
-    // อัพเดต KPI
-    const active = mouList.filter(m => IROUP.getMouStatus(m['วันสิ้นสุด']).status === 'active').length;
-    const soon   = mouList.filter(m => IROUP.getMouStatus(m['วันสิ้นสุด']).status === 'soon').length;
-    const countries = [...new Set(mouList.map(m => m['ประเทศ']))].filter(Boolean).length;
+    // อัปเดต KPI
+    const active = liveMouList.filter(m => IROUP.getMouStatus(m['วันสิ้นสุด']).status === 'active').length;
+    const soon   = liveMouList.filter(m => IROUP.getMouStatus(m['วันสิ้นสุด']).status === 'soon').length;
+    const countries = [...new Set(liveMouList.map(m => m['ประเทศ']))].filter(Boolean).length;
 
     const kpis = document.querySelectorAll('.kpi-num');
-    if (kpis[0]) kpis[0].textContent = mouList.length;
+    if (kpis[0]) kpis[0].textContent = liveMouList.length;
     if (kpis[1]) kpis[1].textContent = active;
     if (kpis[2]) kpis[2].textContent = soon;
     if (kpis[3]) kpis[3].textContent = countries;
 
-    // อัพเดตตาราง
-    renderLiveMouTable(mouList);
-    console.log('✅ โหลดข้อมูล MOU สำเร็จ', mouList.length, 'รายการ');
+    renderTable(liveMouList);
+    console.log('✅ โหลดข้อมูล MOU สำเร็จ', liveMouList.length, 'รายการ');
   } catch(e) {
+    console.error('loadMouData error:', e);
     console.log('ℹ️ ใช้ข้อมูลตัวอย่าง MOU');
+    liveMouList = [];
+    renderTable(mouData);
   }
 }
 
-function renderLiveMouTable(data) {
-  const tbody = document.getElementById('mouBody');
-  if (!tbody || data.length === 0) return;
-
-  tbody.innerHTML = data.map((m, i) => {
-    const s = IROUP.getMouStatus(m['วันสิ้นสุด']);
-    const badgeClass = s.status === 'active' ? 'badge-active' : s.status === 'soon' ? 'badge-soon' : 'badge-expired';
-    const fileUrl = m['ไฟล์_URL'] || m.fileUrl || m.file || '';
-    const fileCell = fileUrl
-      ? `<a href="${fileUrl}" target="_blank" class="file-btn">📎 เปิดไฟล์</a>`
-      : '<span class="file-empty">-</span>';
-    return `<tr>
-      <td style="color:var(--gray-400);font-size:11px">${String(i+1).padStart(2,'0')}</td>
-      <td><div class="td-uni">${m['หน่วยงาน_UP'] || '—'}</div></td>
-      <td><div class="td-uni" style="font-size:12px">${m['องค์กร_ตปท'] || '—'}</div></td>
-      <td>${m['ประเทศ'] || '—'}</td>
-      <td><span class="badge-type">${m['ประเภท'] || 'MOU'}</span></td>
-      <td><div class="date-range">${IROUP.formatDate(m['วันเริ่ม'])} – ${IROUP.formatDate(m['วันสิ้นสุด'])}</div></td>
-      <td><span class="date-year">${m['ปีงบ'] || '—'}</span></td>
-      <td><span class="badge ${badgeClass}">${s.label}</span></td>
-      <td><div class="note-text">${m['หมายเหตุ'] || '—'}</div></td>
-      <td>${fileCell}</td>
-      <td><div class="action-btns">
-        <button class="act-btn act-edit" onclick="openModal('${m['ID']}')">✏️</button>
-        <button class="act-btn act-file" title="เปิดไฟล์" onclick="${fileUrl ? `window.open('${fileUrl}','_blank')` : `alert('ไม่มีไฟล์แนบ')`}">📎</button>
-        <button class="act-btn act-del" onclick="deleteMou('${m['ID']}')">🗑️</button>
-      </div></td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('tableCount').textContent = `แสดง ${data.length} รายการจาก Sheets จริง`;
-}
-
 async function deleteMou(id) {
+  if (!id) return alert('ไม่พบ ID สำหรับลบ');
   if (!confirm('ต้องการลบ MOU นี้ใช่ไหม?')) return;
   const result = await IROUP.delete(IROUP.SHEETS.MOU, id);
   if (result.success) {
     alert('ลบสำเร็จ');
     loadMouData();
+  } else {
+    alert('ลบไม่สำเร็จ: ' + (result.error || 'กรุณาลองใหม่'));
   }
 }
 
-// โหลดเมื่อเปิดหน้า
 setTimeout(loadMouData, 600);
 </script>
 
@@ -1174,6 +1209,59 @@ window.openModal = function(id) {
     document.getElementById('modalOverlay').classList.add('show');
   }
 };
+</script>
+
+
+<script>
+// ============================================================
+// FINAL MOU MODAL PATCH — edit mode + attachment + country display
+// ============================================================
+(function(){
+  function setValue(id, value){ const el=document.getElementById(id); if(el) el.value=value || ''; }
+  function resetCountryDisplay(country){
+    const placeholder = document.getElementById('countryPlaceholder');
+    if (!placeholder) return;
+    const c = (typeof COUNTRIES !== 'undefined') ? COUNTRIES.find(x => x.en === country || x.th === country) : null;
+    placeholder.className = c ? 'country-selected-text' : 'country-placeholder';
+    placeholder.textContent = c ? `${c.flag} ${c.th} (${c.en})` : '🔍 พิมพ์ชื่อประเทศ (ไทย/อังกฤษ)...';
+    if (c) selectedCountry = c;
+  }
+  window.openModal = function(id){
+    const isEdit = !!id;
+    const item = isEdit ? getCurrentMouSource().find(x => String(x.ID || x.id || '') === String(id)) : null;
+    setValue('editId', id || '');
+    const title = document.getElementById('modalTitle');
+    if (title) title.textContent = isEdit ? 'แก้ไข MOU' : 'เพิ่ม MOU ใหม่';
+    const status = document.getElementById('saveStatus');
+    if (status) status.style.display = 'none';
+
+    if (item) {
+      setValue('f_dept', item['หน่วยงาน_UP'] || item.dept);
+      setValue('f_uni', item['องค์กร_ตปท'] || item.uni);
+      setValue('f_country', item['ประเทศ'] || item.country);
+      setValue('f_continent', item['ทวีป'] || item.continent);
+      setValue('f_type', item['ประเภท'] || item.type || 'MOU');
+      setValue('f_fy', item['ปีงบ'] || item.fy);
+      setValue('f_start', item['วันเริ่ม'] || item.from);
+      setValue('f_end', item['วันสิ้นสุด'] || item.to);
+      setValue('f_note', item['หมายเหตุ'] || item.note);
+      const url = getFileUrl(item);
+      setValue('f_file_url', url);
+      window.currentMouFileUrl = url || '';
+      resetCountryDisplay(item['ประเทศ'] || item.country);
+      const fs = document.getElementById('fileUploadStatus');
+      if (fs) fs.textContent = url ? 'มีไฟล์แนบอยู่แล้ว' : 'ยังไม่มีไฟล์แนบ';
+    } else {
+      ['f_dept','f_uni','f_country','f_continent','f_type','f_note','f_file_url'].forEach(f => setValue(f, ''));
+      setValue('f_fy','2569'); setValue('f_start',''); setValue('f_end','');
+      window.currentMouFileUrl = '';
+      const fi = document.getElementById('f_file_input'); if (fi) fi.value='';
+      const fs = document.getElementById('fileUploadStatus'); if (fs) fs.textContent='ยังไม่มีไฟล์แนบ';
+      resetCountryDisplay('');
+    }
+    document.getElementById('modalOverlay')?.classList.add('show');
+  };
+})();
 </script>
 
 </body>
