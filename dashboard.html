@@ -177,6 +177,28 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
   .tn-logo-text{font-size:13px}.tn-divider,.tn-public-btn{display:none}.tn-avatar{width:28px;height:28px}.tn-lang-btn{padding:3px 8px}.page-container{height:auto;min-height:calc(100vh - 104px);overflow:visible}.page{overflow:visible}.page-inner{padding:12px}.page-title{font-size:16px}.page-subtitle{font-size:11px}.kpi-row,.grid-3,.grid-cols-6-4{grid-template-columns:1fr!important}.kpi-card{padding:12px}.card-body{padding:14px!important}.dash-map svg{height:220px}.alert{align-items:flex-start}.page iframe{min-height:780px}.card{overflow:hidden}
 }
 
+
+
+/* ROUND 8 — Dashboard live/mobile polish */
+.kpi-card > div:last-child{min-width:0}
+.kpi-label,.kpi-change{overflow-wrap:anywhere}
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .grid-2{grid-template-columns:1fr!important}
+}
+@media(max-width:560px){
+  body{overflow-x:hidden}
+  .page-inner{max-width:100vw;overflow-x:hidden}
+  .kpi-grid{grid-template-columns:1fr!important}
+  .kpi-card{width:100%;align-items:center}
+  .kpi-num{font-size:24px}
+  .dash-map{border-radius:18px;overflow:hidden}
+  .dash-map svg{height:230px!important}
+  .quick-stat-row{grid-template-columns:repeat(3,1fr)}
+  .activity-item,.upcoming-item{align-items:flex-start}
+  .act-time{font-size:10px;white-space:nowrap}
+}
+
 </style>
 </head>
 <body>
@@ -273,7 +295,7 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
         <div class="page-header">
           <div class="page-title-wrap">
             <div class="page-title">⊞ Dashboard <span style="font-size:13px;font-weight:500;color:var(--gray-600);letter-spacing:0">ภาพรวมงานวิเทศสัมพันธ์</span></div>
-            <div class="page-subtitle">University of Phayao · International Relations Division · อัพเดต 1 พ.ค. 2569</div>
+            <div class="page-subtitle">University of Phayao · International Relations Division · กำลังโหลดข้อมูลล่าสุด</div>
           </div>
           <div class="page-actions">
             <button class="btn btn-outline">📥 Export ภาพรวม</button>
@@ -284,7 +306,7 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
         <!-- ALERT -->
         <div class="alert alert-warn">
           <span class="alert-icon">⚠️</span>
-          <div><strong>แจ้งเตือน:</strong> มี 3 MOU ใกล้หมดอายุใน 180 วัน และ 2 ทุนปิดรับสมัครใน 30 วัน · <span style="color:var(--blue);font-weight:600;cursor:pointer">ดูรายการ →</span></div>
+          <div><strong>กำลังโหลด:</strong> ตรวจสอบ MOU ใกล้หมดอายุและทุนที่กำลังรับสมัคร…</div>
         </div>
 
         <!-- KPI ROW -->
@@ -292,33 +314,33 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
           <div class="kpi-card" onclick="showPage('mou')">
             <div class="kpi-icon" style="background:var(--blue-pale)">🤝</div>
             <div>
-              <div class="kpi-num" style="color:var(--blue)">142</div>
+              <div class="kpi-num" style="color:var(--blue)">…</div>
               <div class="kpi-label">MOU ทั้งหมด</div>
-              <div class="kpi-change ch-up">▲ +8 ปีนี้ · 38 ประเทศ</div>
+              <div class="kpi-change ch-up">กำลังโหลดประเทศ</div>
             </div>
           </div>
           <div class="kpi-card" onclick="showPage('scholarship')">
             <div class="kpi-icon" style="background:var(--gold-pale)">🎓</div>
             <div>
-              <div class="kpi-num" style="color:var(--gold)">24</div>
+              <div class="kpi-num" style="color:var(--gold)">…</div>
               <div class="kpi-label">ทุนการศึกษา</div>
-              <div class="kpi-change ch-warn">⏰ 8 กำลังรับสมัคร</div>
+              <div class="kpi-change ch-warn">กำลังโหลดทุน</div>
             </div>
           </div>
           <div class="kpi-card" onclick="showPage('mobility')">
             <div class="kpi-icon" style="background:var(--purple-pale)">👥</div>
             <div>
-              <div class="kpi-num" style="color:var(--purple)">215</div>
+              <div class="kpi-num" style="color:var(--purple)">…</div>
               <div class="kpi-label">Mobility ปีนี้</div>
-              <div class="kpi-change ch-up">▲ +18% · In 87 / Out 128</div>
+              <div class="kpi-change ch-up">กำลังโหลด Inbound / Outbound</div>
             </div>
           </div>
           <div class="kpi-card" onclick="showPage('travel')">
             <div class="kpi-icon" style="background:var(--teal-pale)">✈️</div>
             <div>
-              <div class="kpi-num" style="color:var(--teal)">48</div>
+              <div class="kpi-num" style="color:var(--teal)">…</div>
               <div class="kpi-label">การเดินทาง</div>
-              <div class="kpi-change" style="color:var(--green)">🟢 3 กำลังเดินทางอยู่</div>
+              <div class="kpi-change" style="color:var(--green)">กำลังโหลดการเดินทาง</div>
             </div>
           </div>
         </div>
@@ -330,7 +352,7 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
             <div class="map-inner-header">
               <div>
                 <div class="map-inner-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div>
-                <div class="map-inner-sub">142 MOU · 38 ประเทศ · คลิกเพื่อดูรายละเอียด</div>
+                <div class="map-inner-sub">กำลังโหลดข้อมูล MOU จากฐานข้อมูลจริง</div>
               </div>
             </div>
             <svg id="dashMap"></svg>
@@ -349,38 +371,14 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
                 <div class="card-title">📅 กำลังจะมาถึง</div>
                 <div class="see-all" onclick="showPage('scholarship')">ดูทั้งหมด →</div>
               </div>
-              <div class="card-body" style="padding:12px 16px">
+              <div class="card-body" id="upcomingLiveList" style="padding:12px 16px">
                 <div class="upcoming-item">
-                  <div class="upc-date"><div class="upc-day">20</div><div class="upc-month">พ.ค.</div></div>
+                  <div class="upc-date"><div class="upc-day">…</div><div class="upc-month">...</div></div>
                   <div class="upc-info">
-                    <div class="upc-title">OCSC ทุนรัฐบาลไทย</div>
-                    <div class="upc-sub">ปิดรับสมัคร · เหลือ 19 วัน</div>
+                    <div class="upc-title">กำลังโหลดข้อมูลจากชีตจริง</div>
+                    <div class="upc-sub">Scholarship / Events / Travel / Mobility</div>
                   </div>
-                  <span class="upc-type" style="background:var(--gold-pale);color:var(--gold)">ทุน</span>
-                </div>
-                <div class="upcoming-item">
-                  <div class="upc-date"><div class="upc-day">3</div><div class="upc-month">มิ.ย.</div></div>
-                  <div class="upc-info">
-                    <div class="upc-title">Keimyung Univ. เยือน UP</div>
-                    <div class="upc-sub">Inbound Visit · 3–5 มิ.ย.</div>
-                  </div>
-                  <span class="upc-type" style="background:var(--purple-pale);color:var(--purple)">Inbound</span>
-                </div>
-                <div class="upcoming-item">
-                  <div class="upc-date"><div class="upc-day">15</div><div class="upc-month">มิ.ย.</div></div>
-                  <div class="upc-info">
-                    <div class="upc-title">JASSO Scholarship</div>
-                    <div class="upc-sub">ปิดรับสมัคร · เหลือ 45 วัน</div>
-                  </div>
-                  <span class="upc-type" style="background:var(--gold-pale);color:var(--gold)">ทุน</span>
-                </div>
-                <div class="upcoming-item">
-                  <div class="upc-date"><div class="upc-day">29</div><div class="upc-month">มิ.ย.</div></div>
-                  <div class="upc-info">
-                    <div class="upc-title">Immersion Hub @ SOU</div>
-                    <div class="upc-sub">Shanghai · 27 คน</div>
-                  </div>
-                  <span class="upc-type" style="background:var(--blue-pale);color:var(--blue)">เดินทาง</span>
+                  <span class="upc-type" style="background:var(--blue-pale);color:var(--blue)">Live</span>
                 </div>
               </div>
             </div>
@@ -397,9 +395,9 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
             </div>
             <div class="card-body">
               <div class="quick-stat-row">
-                <div class="qs"><div class="qs-num" style="color:var(--teal)">87</div><div class="qs-label">Inbound</div></div>
-                <div class="qs"><div class="qs-num" style="color:var(--blue)">128</div><div class="qs-label">Outbound</div></div>
-                <div class="qs"><div class="qs-num" style="color:var(--purple)">215</div><div class="qs-label">รวม</div></div>
+                <div class="qs"><div class="qs-num" style="color:var(--teal)">…</div><div class="qs-label">Inbound</div></div>
+                <div class="qs"><div class="qs-num" style="color:var(--blue)">…</div><div class="qs-label">Outbound</div></div>
+                <div class="qs"><div class="qs-num" style="color:var(--purple)">…</div><div class="qs-label">รวม</div></div>
               </div>
               <canvas id="mobilityChart" height="120"></canvas>
             </div>
@@ -410,46 +408,14 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
             <div class="card-header">
               <div class="card-title">🕐 กิจกรรมล่าสุด</div>
             </div>
-            <div class="card-body" style="padding:12px 16px">
-              <div class="activity-item">
-                <div class="act-dot" style="background:var(--green)"></div>
-                <div class="act-content">
-                  <div class="act-title">เพิ่ม MOU ใหม่ — Shinshu University</div>
-                  <div class="act-meta">Japan · ลงนาม 28 เม.ย. 2569</div>
-                </div>
-                <div class="act-time">2 วันที่แล้ว</div>
-              </div>
+            <div class="card-body" id="recentLiveList" style="padding:12px 16px">
               <div class="activity-item">
                 <div class="act-dot" style="background:var(--blue)"></div>
                 <div class="act-content">
-                  <div class="act-title">เพิ่ม Outbound — นายสมชาย ใจดี</div>
-                  <div class="act-meta">Exchange Program · Japan</div>
+                  <div class="act-title">กำลังโหลดกิจกรรมล่าสุดจากฐานข้อมูลจริง</div>
+                  <div class="act-meta">ไม่ใช้ mock data แล้ว</div>
                 </div>
-                <div class="act-time">3 วันที่แล้ว</div>
-              </div>
-              <div class="activity-item">
-                <div class="act-dot" style="background:var(--gold)"></div>
-                <div class="act-content">
-                  <div class="act-title">เพิ่มทุน JASSO 2026</div>
-                  <div class="act-meta">เปิดรับสมัคร · ปิด 15 มิ.ย. 69</div>
-                </div>
-                <div class="act-time">5 วันที่แล้ว</div>
-              </div>
-              <div class="activity-item">
-                <div class="act-dot" style="background:var(--purple)"></div>
-                <div class="act-content">
-                  <div class="act-title">อัพเดตการเดินทาง — AUN Conference</div>
-                  <div class="act-meta">Bangkok · 28 เม.ย.–5 พ.ค.</div>
-                </div>
-                <div class="act-time">1 สัปดาห์</div>
-              </div>
-              <div class="activity-item">
-                <div class="act-dot" style="background:var(--red)"></div>
-                <div class="act-content">
-                  <div class="act-title">แจ้งเตือน — Keimyung MOU ใกล้หมด</div>
-                  <div class="act-meta">หมดอายุ ธ.ค. 2568 · ต้องต่ออายุ</div>
-                </div>
-                <div class="act-time">1 สัปดาห์</div>
+                <div class="act-time">Live</div>
               </div>
             </div>
           </div>
@@ -643,7 +609,7 @@ function showPage(name){
 }
 
 // DASHBOARD MAP
-const mapData = {"China":12,"Japan":9,"South Korea":7,"Germany":5,"Australia":4,"Taiwan":3,"USA":3,"UK":3,"France":2,"Netherlands":2,"Vietnam":4,"Myanmar":2,"Indonesia":3,"Philippines":2,"Malaysia":5,"India":3};
+const mapData = {};
 const cNames = {4:"Afghanistan",36:"Australia",56:"Belgium",76:"Brazil",104:"Myanmar",116:"Cambodia",124:"Canada",156:"China",170:"Colombia",208:"Denmark",276:"Germany",300:"Greece",356:"India",360:"Indonesia",372:"Ireland",376:"Israel",380:"Italy",392:"Japan",410:"South Korea",458:"Malaysia",484:"Mexico",528:"Netherlands",554:"New Zealand",578:"Norway",586:"Pakistan",608:"Philippines",616:"Poland",620:"Portugal",643:"Russia",682:"Saudi Arabia",724:"Spain",752:"Sweden",756:"Switzerland",764:"Thailand",792:"Turkey",826:"United Kingdom",840:"USA",704:"Vietnam",158:"Taiwan",250:"France"};
 
 setTimeout(()=>{
@@ -675,13 +641,13 @@ setTimeout(()=>{
 setTimeout(()=>{
   const ctx = document.getElementById('mobilityChart');
   if(!ctx) return;
-  new Chart(ctx,{
+  window.iroupMobilityChart = new Chart(ctx,{
     type:'bar',
     data:{
-      labels:['ต.ค.','พ.ย.','ธ.ค.','ม.ค.','ก.พ.','มี.ค.','เม.ย.'],
+      labels:['ข้อมูลจริง'],
       datasets:[
-        {label:'Inbound',data:[8,12,6,15,10,18,18],backgroundColor:'rgba(13,148,136,0.7)',borderRadius:4},
-        {label:'Outbound',data:[12,18,8,22,15,26,27],backgroundColor:'rgba(75,189,232,0.7)',borderRadius:4}
+        {label:'Inbound',data:[0],backgroundColor:'rgba(13,148,136,0.7)',borderRadius:4},
+        {label:'Outbound',data:[0],backgroundColor:'rgba(75,189,232,0.7)',borderRadius:4}
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
@@ -754,31 +720,104 @@ setTimeout(() => {
 
 <script>
 // ============================================================
-// iROUP DASHBOARD — Live Sync Override
-// ใช้ API เดียวกับ public view และแทนที่ mock values หลังโหลดหน้า
+// iROUP DASHBOARD — Live Sync Override ROUND 8
+// Dashboard ใช้ข้อมูลจริงแทน mock: KPI, alert, upcoming, recent, chart, map
 // ============================================================
+function irParseDate(v){
+  if(!v) return null;
+  if(v instanceof Date) return v;
+  const raw=String(v).trim();
+  let m=raw.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if(m){ let y=+m[3]; if(y>2400)y-=543; if(y<100)y+=2500; if(y>2400)y-=543; return new Date(y,+m[2]-1,+m[1]); }
+  const d=new Date(raw); return isNaN(d)?null:d;
+}
+function irFmtDate(v){
+  const d=irParseDate(v); if(!d) return '';
+  return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});
+}
+function irMonth(v){ const d=irParseDate(v); return d?d.toLocaleDateString('th-TH',{month:'short'}):'...'; }
+function irDay(v){ const d=irParseDate(v); return d?String(d.getDate()):'…'; }
+function irText(row,keys){ for(const k of keys){ if(row && row[k]!==undefined && row[k]!==null && String(row[k]).trim()!=='') return String(row[k]).trim(); } return ''; }
+function irTypeStyle(type){
+  const t=String(type||'').toLowerCase();
+  if(t.includes('ทุน')||t.includes('scholar')) return 'background:var(--gold-pale);color:var(--gold)';
+  if(t.includes('inbound')) return 'background:var(--purple-pale);color:var(--purple)';
+  if(t.includes('travel')||t.includes('เดินทาง')) return 'background:var(--blue-pale);color:var(--blue)';
+  return 'background:var(--green-pale);color:var(--green)';
+}
+function irCountryAliases(data){
+  const out={...data};
+  if(out['South Korea']) out['Korea, Republic of']=out['South Korea'];
+  if(out['USA']) out['United States of America']=out['USA'];
+  if(out['UK']) out['United Kingdom']=out['UK'];
+  return out;
+}
+
 async function iroupDashboardLiveSync(){
   try{
-    const [stats,countryData] = await Promise.all([IROUP.getStats(), IROUP.getMouByCountry()]);
+    const [stats,countryRaw,scholars,events,travel,inbound,outbound,mous] = await Promise.all([
+      IROUP.getStats(), IROUP.getMouByCountry(),
+      IROUP.getAll(IROUP.SHEETS.SCHOLAR), IROUP.getAll(IROUP.SHEETS.EVENT), IROUP.getAll(IROUP.SHEETS.TRAVEL),
+      IROUP.getAll(IROUP.SHEETS.INBOUND), IROUP.getAll(IROUP.SHEETS.OUTBOUND), IROUP.getAll(IROUP.SHEETS.MOU)
+    ]);
+    const countryData=irCountryAliases(countryRaw||{});
     const kpiNums=document.querySelectorAll('.kpi-num');
-    if(kpiNums[0]) kpiNums[0].textContent=stats?.mou?.total||0;
-    if(kpiNums[1]) kpiNums[1].textContent=stats?.scholarship?.total||0;
-    if(kpiNums[2]) kpiNums[2].textContent=stats?.mobility?.total||0;
-    if(kpiNums[3]) kpiNums[3].textContent=stats?.travel?.total||0;
+    if(kpiNums[0]) kpiNums[0].textContent=stats?.mou?.total??0;
+    if(kpiNums[1]) kpiNums[1].textContent=stats?.scholarship?.total??0;
+    if(kpiNums[2]) kpiNums[2].textContent=stats?.mobility?.total??0;
+    if(kpiNums[3]) kpiNums[3].textContent=stats?.travel?.total??0;
 
+    const kpiChanges=document.querySelectorAll('.kpi-change');
+    if(kpiChanges[0]) kpiChanges[0].textContent=`${stats?.mou?.active||0} Active · ${stats?.mou?.countries||0} ประเทศ`;
+    if(kpiChanges[1]) kpiChanges[1].textContent=`⏰ ${stats?.scholarship?.open||0} กำลังรับสมัคร`;
+    if(kpiChanges[2]) kpiChanges[2].textContent=`In ${stats?.inbound?.total||0} / Out ${stats?.outbound?.total||0}`;
+    if(kpiChanges[3]) kpiChanges[3].textContent=`🟢 ${stats?.travel?.active||0} กำลังเดินทางอยู่`;
+
+    const subtitle=document.querySelector('.page-subtitle');
+    if(subtitle) subtitle.textContent='University of Phayao · International Relations Division · อัปเดตจากฐานข้อมูลจริงล่าสุด';
     const mapInner=document.querySelector('.map-inner-sub');
     if(mapInner) mapInner.textContent=`${stats?.mou?.active||0} MOU Active · ${stats?.mou?.countries||0} ประเทศ · คลิกเพื่อดูรายละเอียด`;
 
-    // Quick stat cards ใน dashboard ถ้ามี
-    document.querySelectorAll('.qs-num').forEach((el,i)=>{
-      const vals=[stats?.mobility?.total||0, stats?.inbound?.total||0, stats?.outbound?.total||0];
-      if(vals[i]!==undefined) el.textContent=vals[i];
-    });
+    const alertEl=document.querySelector('.alert div');
+    if(alertEl) alertEl.innerHTML=`<strong>แจ้งเตือน:</strong> มี ${stats?.mou?.soon||0} MOU ใกล้หมดอายุใน 180 วัน และ ${stats?.scholarship?.open||0} ทุนกำลังรับสมัครอยู่ · <span style="color:var(--blue);font-weight:600;cursor:pointer" onclick="showPage('scholarship')">ดูรายการ →</span>`;
 
-    // Re-render dashboard map with live country data when D3/topojson are available
+    const qs=document.querySelectorAll('.qs-num');
+    if(qs[0]) qs[0].textContent=stats?.inbound?.total||0;
+    if(qs[1]) qs[1].textContent=stats?.outbound?.total||0;
+    if(qs[2]) qs[2].textContent=stats?.mobility?.total||0;
+    if(window.iroupMobilityChart){
+      window.iroupMobilityChart.data.labels=['ข้อมูลจริง'];
+      window.iroupMobilityChart.data.datasets[0].data=[stats?.inbound?.total||0];
+      window.iroupMobilityChart.data.datasets[1].data=[stats?.outbound?.total||0];
+      window.iroupMobilityChart.update();
+    }
+
+    const today=new Date(); today.setHours(0,0,0,0);
+    const upcoming=[];
+    (scholars||[]).forEach(r=>{const d=irParseDate(irText(r,['วันปิดรับ','วันปิดรับสมัคร'])); if(d&&d>=today) upcoming.push({date:d,title:irText(r,['ชื่อทุน','ชื่อ']),sub:`ปิดรับสมัคร · ${irFmtDate(d)}`,type:'ทุน'});});
+    (events||[]).forEach(r=>{const d=irParseDate(irText(r,['วันเริ่ม','วันที่'])); if(d&&d>=today) upcoming.push({date:d,title:irText(r,['ชื่อกิจกรรม','ชื่อ']),sub:`${irText(r,['สถานที่','หน่วยงาน'])} · ${irFmtDate(d)}`,type:irText(r,['ประเภท'])||'กิจกรรม'});});
+    (travel||[]).forEach(r=>{const d=irParseDate(irText(r,['วันเริ่ม'])); if(d&&d>=today) upcoming.push({date:d,title:irText(r,['ชื่อโครงการ','ชื่อผู้เดินทาง'])||'การเดินทางต่างประเทศ',sub:`${irText(r,['ประเทศ','เมือง'])} · ${irFmtDate(d)}`,type:'เดินทาง'});});
+    (inbound||[]).forEach(r=>{const d=irParseDate(irText(r,['วันมาถึง','วันเริ่ม'])); if(d&&d>=today) upcoming.push({date:d,title:irText(r,['โครงการ','ชื่อ'])||'Inbound',sub:`${irText(r,['สถาบัน','ประเทศ'])} · ${irFmtDate(d)}`,type:'Inbound'});});
+    upcoming.sort((a,b)=>a.date-b.date);
+    const upcomingEl=document.getElementById('upcomingLiveList');
+    if(upcomingEl){
+      upcomingEl.innerHTML=(upcoming.slice(0,4).map(x=>`<div class="upcoming-item"><div class="upc-date"><div class="upc-day">${irDay(x.date)}</div><div class="upc-month">${irMonth(x.date)}</div></div><div class="upc-info"><div class="upc-title">${x.title||'ไม่ระบุชื่อ'}</div><div class="upc-sub">${x.sub||''}</div></div><span class="upc-type" style="${irTypeStyle(x.type)}">${x.type}</span></div>`).join('')) || '<div class="upcoming-item"><div class="upc-info"><div class="upc-title">ยังไม่มีกิจกรรมที่กำลังจะมาถึง</div><div class="upc-sub">เพิ่มข้อมูลได้จากเมนูด้านบน</div></div></div>';
+    }
+
+    const recent=[];
+    function pushRecent(rows,type,color,titleKeys,subKeys){(rows||[]).forEach(r=>{const d=irParseDate(irText(r,['วันที่บันทึก','วันบันทึก','วันเริ่ม','วันประชาสัมพันธ์'])); recent.push({d:d||new Date(0),type,color,title:irText(r,titleKeys)||type,sub:irText(r,subKeys)});});}
+    pushRecent(mous,'MOU','var(--green)',['องค์กร_ตปท','องค์กรต่างประเทศ'],['ประเทศ','หน่วยงาน_UP']);
+    pushRecent(outbound,'Outbound','var(--blue)',['ชื่อ_สกุล','โครงการ'],['ประเทศ','สถาบัน_ปลายทาง']);
+    pushRecent(scholars,'ทุน','var(--gold)',['ชื่อทุน'],['สถาบัน','ประเทศ']);
+    pushRecent(travel,'เดินทาง','var(--teal)',['ชื่อโครงการ','ชื่อผู้เดินทาง'],['ประเทศ','เมือง']);
+    recent.sort((a,b)=>b.d-a.d);
+    const recentEl=document.getElementById('recentLiveList');
+    if(recentEl){
+      recentEl.innerHTML=recent.slice(0,5).map(x=>`<div class="activity-item"><div class="act-dot" style="background:${x.color}"></div><div class="act-content"><div class="act-title">${x.type} — ${x.title}</div><div class="act-meta">${x.sub||''}</div></div><div class="act-time">${irFmtDate(x.d)}</div></div>`).join('') || '<div class="activity-item"><div class="act-dot" style="background:var(--gray-400)"></div><div class="act-content"><div class="act-title">ยังไม่มีข้อมูลล่าสุด</div><div class="act-meta">เมื่อเพิ่มข้อมูลในชีต ระบบจะแสดงตรงนี้</div></div></div>';
+    }
+
     const el=document.getElementById('dashMap');
     if(el && window.d3 && window.topojson){
-      const liveMapData=countryData||{};
       const w=el.parentElement.offsetWidth||600, h=220;
       const svg=d3.select('#dashMap');
       svg.selectAll('*').remove();
@@ -790,23 +829,22 @@ async function iroupDashboardLiveSync(){
       g.append('stop').attr('offset','0%').attr('stop-color','#162845');
       g.append('stop').attr('offset','100%').attr('stop-color','#0A1525');
       svg.append('rect').attr('width',w).attr('height',h).attr('fill','url(#dbgLive)');
-      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-        .then(r=>r.json()).then(world=>{
-          const countries=topojson.feature(world,world.objects.countries);
-          svg.selectAll('.c').data(countries.features).join('path')
-            .attr('d',path)
-            .attr('fill',d=>{const n=cNames[+d.id]||'';const c=liveMapData[n]||0;return c===0?'rgba(255,255,255,0.07)':c>=8?'#F5A623':c>=4?'#1A6DB5':'#4BBDE8';})
-            .attr('stroke','rgba(255,255,255,0.1)').attr('stroke-width',0.4)
-            .style('cursor',d=>(liveMapData[cNames[+d.id]]||0)>0?'pointer':'default')
-            .append('title').text(d=>{const n=cNames[+d.id]||''; return liveMapData[n]?`${n}: ${liveMapData[n]} MOU`:n;});
-        });
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(r=>r.json()).then(world=>{
+        const countries=topojson.feature(world,world.objects.countries);
+        svg.selectAll('.c').data(countries.features).join('path')
+          .attr('d',path)
+          .attr('fill',d=>{const n=cNames[+d.id]||''; const c=countryData[n]||0; return c===0?'rgba(255,255,255,0.07)':c>=8?'#F5A623':c>=4?'#1A6DB5':'#4BBDE8';})
+          .attr('stroke','rgba(255,255,255,0.1)').attr('stroke-width',0.4)
+          .style('cursor',d=>(countryData[cNames[+d.id]]||0)>0?'pointer':'default')
+          .on('click',function(e,d){ if(countryData[cNames[+d.id]]||0) showPage('mou'); })
+          .append('title').text(d=>{const n=cNames[+d.id]||''; return countryData[n]?`${n}: ${countryData[n]} MOU`:n;});
+      });
     }
-    console.log('✅ Dashboard live sync complete', stats, countryData);
+    console.log('✅ Dashboard live sync complete', stats);
   }catch(e){
     console.error('❌ Dashboard live sync failed', e);
   }
 }
-
 document.addEventListener('DOMContentLoaded',()=>setTimeout(iroupDashboardLiveSync, 900));
 </script>
 
