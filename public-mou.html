@@ -86,7 +86,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 /* TABLE */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
-thead{background:var(--gray-100);position:sticky;top:60px}
+thead{background:var(--gray-100)}
 th{padding:10px 14px;text-align:left;font-weight:600;color:var(--gray-600);font-size:11px;border-bottom:1px solid var(--gray-200);font-family:'Sarabun',sans-serif;text-transform:uppercase;letter-spacing:0.3px;white-space:nowrap}
 td{padding:11px 14px;border-bottom:1px solid var(--gray-200);color:var(--gray-800);vertical-align:middle}
 tr:hover td{background:var(--blue-pale)}
@@ -355,13 +355,19 @@ function normalizeText(v) {
 
 function getSearchBlob(row) {
   const aliases = {
-    'China':'จีน cn', 'Japan':'ญี่ปุ่น jp', 'South Korea':'เกาหลีใต้ korea kr',
-    'Germany':'เยอรมนี de', 'USA':'สหรัฐอเมริกา us united states',
-    'United Kingdom':'อังกฤษ uk', 'Taiwan':'ไต้หวัน tw', 'Australia':'ออสเตรเลีย au'
+    'China':'จีน cn ประเทศจีน', 'Japan':'ญี่ปุ่น jp ประเทศญี่ปุ่น', 'South Korea':'เกาหลีใต้ korea kr เกาหลี',
+    'Germany':'เยอรมนี de ประเทศเยอรมนี', 'USA':'สหรัฐอเมริกา us united states อเมริกา',
+    'United Kingdom':'อังกฤษ uk สหราชอาณาจักร', 'Taiwan':'ไต้หวัน tw', 'Australia':'ออสเตรเลีย au'
   };
   const country = row['ประเทศ'] || '';
+  const type = row['ประเภท'] || 'MOU';
   return normalizeText([
     ...Object.values(row || {}),
+    type,
+    'mou memorandum agreement cooperation ความร่วมมือ บันทึกข้อตกลง',
+    row['หน่วยงาน_UP'] || '',
+    row['องค์กร_ตปท'] || '',
+    row['ประเทศ'] || '',
     aliases[country] || ''
   ].join(' | '));
 }
