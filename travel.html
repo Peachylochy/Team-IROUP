@@ -196,18 +196,6 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 .modal-btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'Prompt',sans-serif;transition:all .2s}
 .modal-save{background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff}
 .modal-cancel{background:var(--gray-200);color:var(--gray-700)}
-
-
-/* ============================================================
-   ROUND 7 — ADMIN IFRAME MOBILE SAFETY
-   ============================================================ */
-@media (max-width: 1024px){
-  html,body{overflow:auto!important;height:auto!important}.sidebar{position:sticky!important;top:0!important;z-index:1000;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;overflow-x:auto!important;padding:8px!important}.logo-box{margin:0 8px 0 0!important;flex:0 0 auto}.nav-item{flex:0 0 auto}.main-layout{width:100%;min-width:0}.topbar{height:auto!important;min-height:56px;flex-wrap:wrap;gap:8px;padding:10px 12px!important}.topbar-left,.topbar-right{width:100%;flex-wrap:wrap}.content{padding:14px!important;overflow:visible!important}.kpi-row,.grid-2,.grid-3,.grid-cols-6-4{grid-template-columns:1fr 1fr!important}.filter-bar{align-items:stretch}.search-wrap{min-width:100%!important}.table-wrap{overflow-x:auto}.data-table,table{min-width:860px}.modal{width:min(96vw,760px)!important;max-height:88vh;overflow:auto}.form-grid{grid-template-columns:1fr 1fr!important}.chart-wrap{min-height:240px}.country-search-dropdown,.member-dropdown,.server-dropdown{max-height:260px;overflow:auto}
-}
-@media (max-width: 680px){
-  .topbar-left,.topbar-right{display:flex}.breadcrumb{font-size:11px}.add-btn,.topbar-btn{flex:1;justify-content:center}.kpi-row,.grid-2,.grid-3,.grid-cols-6-4{grid-template-columns:1fr!important}.form-grid{grid-template-columns:1fr!important}.modal{border-radius:18px 18px 0 0!important;width:100vw!important;max-height:92vh!important;margin-top:auto}.modal-overlay{align-items:flex-end!important}.tab-bar{width:100%;overflow-x:auto}.tab-btn{flex:1;justify-content:center;white-space:nowrap}.status-pills{overflow-x:auto;width:100%}.pill{white-space:nowrap}.content{gap:12px}.card{min-width:0}.chart-wrap{height:240px!important}.kpi-num{font-size:24px!important}
-}
-
 </style>
 </head>
 <body>
@@ -750,6 +738,39 @@ document.addEventListener('click',function(e){
 });
 </script>
 <script src="iroup-config.js"></script>
+
+<script>
+/* ROUND 9 — Live CRUD/Search for Travel */
+let ROUND9_TRAVEL=[]; let selectedMembers = window.selectedMembers || [];
+function r9esc(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function r9text(x){return Object.values(x).join(' ').toLowerCase();}
+function r9TravelStatus(x){const n=new Date(),s=IROUP.parseDate(x['วันเริ่ม']),e=IROUP.parseDate(x['วันสิ้นสุด']); if(s&&e&&n>=s&&n<=e)return['s-traveling','กำลังเดินทาง']; if(s&&n<s)return['s-upcoming','กำลังจะเดินทาง']; return['s-done','เสร็จสิ้น'];}
+function r9RenderTravel(list){
+  const wrap=document.querySelector('.trip-list')||document.querySelector('.content')||document.body;
+  let holder=document.getElementById('round9TravelList');
+  if(!holder){ holder=document.createElement('div'); holder.id='round9TravelList'; holder.className='trip-list'; const old=document.querySelectorAll('.trip-card'); old.forEach(x=>x.remove()); wrap.appendChild(holder); }
+  holder.innerHTML=list.length?list.map((x,i)=>{const st=r9TravelStatus(x); return `<div class="trip-card ${st[0]==='s-traveling'?'traveling':''}">
+    <div class="trip-main"><div class="trip-title">${r9esc(x['ชื่อโครงการ']||'ไม่ระบุชื่อโครงการ')}</div><div class="trip-meta">📍 ${r9esc(x['เมือง']||'')} ${r9esc(x['ประเทศ']||'')} · ${IROUP.formatDate(x['วันเริ่ม'])}–${IROUP.formatDate(x['วันสิ้นสุด'])}</div><div class="trip-tags"><span>${r9esc(x['วัตถุประสงค์']||'—')}</span><span>${r9esc(x['ชื่อผู้เดินทาง']||'—')}</span></div></div>
+    <div class="trip-side"><span class="status-dot ${st[0]}">${st[1]}</span><div class="trip-actions"><button onclick="r9OpenTravel('${r9esc(x['ID'])}')">✏️</button><button onclick="r9DeleteTravel('${r9esc(x['ID'])}')">🗑️</button></div></div>
+  </div>`}).join(''):'<div class="empty-state">ไม่พบข้อมูลการเดินทาง</div>';
+  const count=document.querySelector('.table-count'); if(count) count.textContent=list.length+' รายการ';
+}
+async function r9LoadTravel(){try{ROUND9_TRAVEL=await IROUP.getAll(IROUP.SHEETS.TRAVEL); r9RenderTravel(ROUND9_TRAVEL); const k=document.querySelectorAll('.kpi-num'); if(k[0])k[0].textContent=ROUND9_TRAVEL.length;}catch(e){console.warn(e)}}
+function r9OpenTravel(id){ openModal(); document.getElementById('modalOverlay').dataset.editId=id||''; }
+async function r9SaveTravel(){
+  const modal=document.getElementById('modalOverlay'); const id=modal.dataset.editId; const inputs=Array.from(modal.querySelectorAll('input,select,textarea'));
+  const data={'ชื่อโครงการ':inputs[0].value,'วัตถุประสงค์':inputs[1].value,'วันเริ่ม':inputs[2].value,'วันสิ้นสุด':inputs[3].value,'ประเทศ':inputs[4].value,'เมือง':inputs[5].value,'ปีงบ':inputs[6].value,'รหัสผู้เดินทาง':'','ชื่อผู้เดินทาง':(selectedMembers||[]).join(', '),'งบประเภท':inputs[10]?.value||'','จำนวนเงิน':inputs[11]?.value||''};
+  if(!data['ชื่อโครงการ']) return alert('กรุณากรอกชื่อโครงการ');
+  const res=id?await IROUP.edit(IROUP.SHEETS.TRAVEL,id,data):await IROUP.add(IROUP.SHEETS.TRAVEL,data);
+  if(res.success){alert('บันทึกสำเร็จ'); closeModal(); r9LoadTravel();} else alert(res.error||'บันทึกไม่สำเร็จ');
+}
+async function r9DeleteTravel(id){ if(!confirm('ยืนยันลบรายการเดินทาง?'))return; const r=await IROUP.delete(IROUP.SHEETS.TRAVEL,id); if(r.success){alert('ลบสำเร็จ');r9LoadTravel()}else alert(r.error||'ลบไม่สำเร็จ'); }
+document.addEventListener('DOMContentLoaded',()=>{
+  const save=document.querySelector('.modal-save'); if(save) save.onclick=r9SaveTravel;
+  const search=document.getElementById('searchInput'); if(search) search.addEventListener('input',e=>r9RenderTravel(ROUND9_TRAVEL.filter(x=>r9text(x).includes(e.target.value.toLowerCase()))));
+  setTimeout(r9LoadTravel,400);
+});
+</script>
 
 <script>
 async function loadTravelData() {

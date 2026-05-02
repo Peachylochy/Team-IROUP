@@ -193,18 +193,6 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 .modal-type-tabs{display:flex;gap:8px;margin-bottom:16px}
 .type-tab{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-300);color:var(--gray-600);transition:all .2s;font-family:'Prompt',sans-serif}
 .type-tab.active{border-color:var(--blue);background:var(--blue-pale);color:var(--blue)}
-
-
-/* ============================================================
-   ROUND 7 — ADMIN IFRAME MOBILE SAFETY
-   ============================================================ */
-@media (max-width: 1024px){
-  html,body{overflow:auto!important;height:auto!important}.sidebar{position:sticky!important;top:0!important;z-index:1000;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;overflow-x:auto!important;padding:8px!important}.logo-box{margin:0 8px 0 0!important;flex:0 0 auto}.nav-item{flex:0 0 auto}.main-layout{width:100%;min-width:0}.topbar{height:auto!important;min-height:56px;flex-wrap:wrap;gap:8px;padding:10px 12px!important}.topbar-left,.topbar-right{width:100%;flex-wrap:wrap}.content{padding:14px!important;overflow:visible!important}.kpi-row,.grid-2,.grid-3,.grid-cols-6-4{grid-template-columns:1fr 1fr!important}.filter-bar{align-items:stretch}.search-wrap{min-width:100%!important}.table-wrap{overflow-x:auto}.data-table,table{min-width:860px}.modal{width:min(96vw,760px)!important;max-height:88vh;overflow:auto}.form-grid{grid-template-columns:1fr 1fr!important}.chart-wrap{min-height:240px}.country-search-dropdown,.member-dropdown,.server-dropdown{max-height:260px;overflow:auto}
-}
-@media (max-width: 680px){
-  .topbar-left,.topbar-right{display:flex}.breadcrumb{font-size:11px}.add-btn,.topbar-btn{flex:1;justify-content:center}.kpi-row,.grid-2,.grid-3,.grid-cols-6-4{grid-template-columns:1fr!important}.form-grid{grid-template-columns:1fr!important}.modal{border-radius:18px 18px 0 0!important;width:100vw!important;max-height:92vh!important;margin-top:auto}.modal-overlay{align-items:flex-end!important}.tab-bar{width:100%;overflow-x:auto}.tab-btn{flex:1;justify-content:center;white-space:nowrap}.status-pills{overflow-x:auto;width:100%}.pill{white-space:nowrap}.content{gap:12px}.card{min-width:0}.chart-wrap{height:240px!important}.kpi-num{font-size:24px!important}
-}
-
 </style>
 </head>
 <body>
@@ -793,5 +781,91 @@ function togglePill(el){
 }
 </script>
 <script src="iroup-config.js"></script>
+
+<script>
+/* ROUND 9 — Live CRUD for Scholarships & Events */
+let IROUND9_currentType = 'scholar';
+let IROUND9_scholars = [];
+let IROUND9_events = [];
+function qs(root, sel){ return root.querySelector(sel); }
+function qsa(root, sel){ return Array.from(root.querySelectorAll(sel)); }
+function esc(v){ return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function getStatusByDate(open, close){
+  const now = new Date(); const o = IROUP.parseDate(open); const c = IROUP.parseDate(close);
+  if (o && now < o) return ['s-upcoming','เร็วๆ นี้'];
+  if (c && now > c) return ['s-closed','ปิดรับแล้ว'];
+  return ['s-open','กำลังรับสมัคร'];
+}
+function daysLeft(close){ const c=IROUP.parseDate(close); if(!c) return ''; const d=Math.ceil((c-new Date())/86400000); return d>=0?`⏰ เหลือ ${d} วัน`:`ปิดแล้ว`; }
+function scholarSearchText(x){ return Object.values(x).join(' ').toLowerCase(); }
+async function round9LoadScholarEvent(){
+  try{
+    IROUND9_scholars = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
+    IROUND9_events = await IROUP.getAll(IROUP.SHEETS.EVENT);
+    round9RenderScholars(IROUND9_scholars);
+    round9RenderEvents(IROUND9_events);
+    const nums=document.querySelectorAll('.kpi-num');
+    if(nums[0]) nums[0].textContent=IROUND9_scholars.length;
+    if(nums[1]) nums[1].textContent=IROUND9_scholars.filter(x=>getStatusByDate(x['วันเปิดรับ'],x['วันปิดรับ'])[1]==='กำลังรับสมัคร').length;
+    if(nums[2]) nums[2].textContent=IROUND9_events.length;
+  }catch(e){ console.warn('Round9 load scholar/events failed',e); }
+}
+function round9RenderScholars(list){
+  const wrap=document.getElementById('scholarCards'); if(!wrap) return;
+  if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลทุนในชีต</div>'; return; }
+  wrap.innerHTML=list.map(x=>{ const st=getStatusByDate(x['วันเปิดรับ'],x['วันปิดรับ']); return `
+  <div class="scholar-card">
+    ${String(x['Pin']||'')==='1'?'<div class="pin-badge">📌</div>':''}
+    <div class="card-poster-bg" style="background:linear-gradient(135deg,#E8F4FD,#4BBDE8)">${esc((x['ประเทศ']||'🌐').slice(0,2))}</div>
+    <div class="card-body">
+      <div class="card-status-row"><span class="status-badge ${st[0]}">${st[1]}</span><span class="days-left days-urgent">${daysLeft(x['วันปิดรับ'])}</span></div>
+      <div class="card-title">${esc(x['ชื่อทุน']||'ไม่ระบุชื่อทุน')}</div>
+      <div class="card-org">${esc(x['สถาบัน']||'—')} · ${esc(x['ประเทศ']||'—')}</div>
+      <div class="coverage-row">${String(x['ครอบคลุม']||'').split(/[,，]/).filter(Boolean).slice(0,5).map(t=>`<span class="coverage-tag">${esc(t.trim())}</span>`).join('')||'<span class="coverage-tag">ทุนการศึกษา</span>'}</div>
+      <div class="card-meta-row"><div class="meta-item">📅 ปิดรับ ${IROUP.formatDate(x['วันปิดรับ'])}</div><span class="level-badge">${esc(x['ระดับ']||'ทุกระดับ')}</span></div>
+    </div>
+    <div class="card-footer"><button class="card-btn btn-edit" onclick="openModal('scholar','${esc(x['ID'])}')">✏️ แก้ไข</button><button class="card-btn btn-del" onclick="round9Delete('scholar','${esc(x['ID'])}')">🗑️ ลบ</button></div>
+  </div>`}).join('');
+}
+function round9RenderEvents(list){
+  const wrap=document.getElementById('eventCards'); if(!wrap) return;
+  if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลกิจกรรมในชีต</div>'; return; }
+  wrap.innerHTML=list.map(x=>{ const d=IROUP.parseDate(x['วันเริ่ม'])||new Date(); return `
+  <div class="event-card">
+    <div class="event-top"><div class="event-date-box"><div class="event-day">${d.getDate()}</div><div class="event-month">${d.toLocaleDateString('th-TH',{month:'short'}).replace('.','')}</div></div>
+      <div class="event-info"><span class="event-type-tag type-travel">${esc(x['ประเภท']||'กิจกรรม')}</span><div class="event-title">${esc(x['ชื่อกิจกรรม']||'ไม่ระบุชื่อกิจกรรม')}</div><div class="event-place">📍 ${esc(x['สถานที่']||'—')} · ${IROUP.formatDate(x['วันเริ่ม'])}–${IROUP.formatDate(x['วันสิ้นสุด'])}</div></div>
+    </div>
+    <div class="event-bottom"><div class="event-dept">${esc(x['หน่วยงาน']||'งานวิเทศสัมพันธ์')}</div><div class="event-pax">👥 ${esc(x['จำนวน']||0)} คน</div><span class="event-status ev-upcoming">Upcoming</span></div>
+    <div class="card-footer"><button class="card-btn btn-edit" onclick="openModal('event','${esc(x['ID'])}')">✏️ แก้ไข</button><button class="card-btn btn-del" onclick="round9Delete('event','${esc(x['ID'])}')">🗑️ ลบ</button></div>
+  </div>`}).join('');
+}
+const _round9OpenModal = window.openModal;
+window.openModal=function(type,id){ IROUND9_currentType=type||'scholar'; switchModalType(IROUND9_currentType); document.getElementById('modalOverlay').classList.add('show'); document.getElementById('modalOverlay').dataset.editId=id||''; };
+async function round9Save(){
+  const type=IROUND9_currentType; const id=document.getElementById('modalOverlay').dataset.editId;
+  let sheet, data={};
+  if(type==='scholar'){
+    const f=document.getElementById('scholarForm'); const inputs=qsa(f,'input,textarea,select');
+    const cov=qsa(f,'input[type=checkbox]:checked').map(x=>x.nextElementSibling?.innerText||'').join(', ');
+    data={'ชื่อทุน':inputs[0].value,'หมายเหตุ':inputs[1].value,'สถาบัน':inputs[2].value,'ประเทศ':inputs[3].value,'ระดับ':inputs[4].value,'Link':inputs[5].value,'วันประชาสัมพันธ์':inputs[6].value,'วันเปิดรับ':inputs[7].value,'วันปิดรับ':inputs[8].value,'Pin':inputs[9].value,'ครอบคลุม':cov}; sheet=IROUP.SHEETS.SCHOLAR;
+    if(!data['ชื่อทุน']) return alert('กรุณากรอกชื่อทุน');
+  }else{
+    const f=document.getElementById('eventForm'); const inputs=qsa(f,'input,textarea,select');
+    data={'ชื่อกิจกรรม':inputs[0].value,'ประเภท':inputs[1].value,'หน่วยงาน':inputs[2].value,'วันเริ่ม':inputs[3].value,'วันสิ้นสุด':inputs[4].value,'สถานที่':inputs[5].value,'จำนวน':inputs[6].value,'รายละเอียด':inputs[7].value,'Pin':inputs[9]?.value||'0'}; sheet=IROUP.SHEETS.EVENT;
+    if(!data['ชื่อกิจกรรม']) return alert('กรุณากรอกชื่อกิจกรรม');
+  }
+  const res=id?await IROUP.edit(sheet,id,data):await IROUP.add(sheet,data);
+  if(res.success){ alert('บันทึกสำเร็จ'); closeModal(); round9LoadScholarEvent(); } else alert(res.error||'บันทึกไม่สำเร็จ');
+}
+async function round9Delete(type,id){ if(!confirm('ยืนยันลบรายการนี้?')) return; const sheet=type==='scholar'?IROUP.SHEETS.SCHOLAR:IROUP.SHEETS.EVENT; const r=await IROUP.delete(sheet,id); if(r.success){alert('ลบสำเร็จ'); round9LoadScholarEvent();} else alert(r.error||'ลบไม่สำเร็จ'); }
+document.addEventListener('DOMContentLoaded',()=>{
+  const btn=document.querySelector('.modal-footer .modal-save'); if(btn) btn.onclick=round9Save;
+  const searchInputs=document.querySelectorAll('.filter-bar input[type=text]');
+  if(searchInputs[0]) searchInputs[0].addEventListener('input',e=>round9RenderScholars(IROUND9_scholars.filter(x=>scholarSearchText(x).includes(e.target.value.toLowerCase()))));
+  if(searchInputs[1]) searchInputs[1].addEventListener('input',e=>round9RenderEvents(IROUND9_events.filter(x=>scholarSearchText(x).includes(e.target.value.toLowerCase()))));
+  setTimeout(round9LoadScholarEvent,300);
+});
+</script>
+
 </body>
 </html>

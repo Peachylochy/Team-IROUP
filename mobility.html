@@ -216,18 +216,6 @@ tr:hover td{background:rgba(75,189,232,0.04)}
 .modal-save-in{background:linear-gradient(135deg,var(--teal),#0D9488);color:#fff}
 .modal-save-out{background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff}
 .modal-cancel{background:var(--gray-200);color:var(--gray-700)}
-
-
-/* ============================================================
-   ROUND 7 — ADMIN IFRAME MOBILE SAFETY
-   ============================================================ */
-@media (max-width: 1024px){
-  html,body{overflow:auto!important;height:auto!important}.sidebar{position:sticky!important;top:0!important;z-index:1000;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;overflow-x:auto!important;padding:8px!important}.logo-box{margin:0 8px 0 0!important;flex:0 0 auto}.nav-item{flex:0 0 auto}.main-layout{width:100%;min-width:0}.topbar{height:auto!important;min-height:56px;flex-wrap:wrap;gap:8px;padding:10px 12px!important}.topbar-left,.topbar-right{width:100%;flex-wrap:wrap}.content{padding:14px!important;overflow:visible!important}.kpi-row,.grid-2,.grid-3,.grid-cols-6-4{grid-template-columns:1fr 1fr!important}.filter-bar{align-items:stretch}.search-wrap{min-width:100%!important}.table-wrap{overflow-x:auto}.data-table,table{min-width:860px}.modal{width:min(96vw,760px)!important;max-height:88vh;overflow:auto}.form-grid{grid-template-columns:1fr 1fr!important}.chart-wrap{min-height:240px}.country-search-dropdown,.member-dropdown,.server-dropdown{max-height:260px;overflow:auto}
-}
-@media (max-width: 680px){
-  .topbar-left,.topbar-right{display:flex}.breadcrumb{font-size:11px}.add-btn,.topbar-btn{flex:1;justify-content:center}.kpi-row,.grid-2,.grid-3,.grid-cols-6-4{grid-template-columns:1fr!important}.form-grid{grid-template-columns:1fr!important}.modal{border-radius:18px 18px 0 0!important;width:100vw!important;max-height:92vh!important;margin-top:auto}.modal-overlay{align-items:flex-end!important}.tab-bar{width:100%;overflow-x:auto}.tab-btn{flex:1;justify-content:center;white-space:nowrap}.status-pills{overflow-x:auto;width:100%}.pill{white-space:nowrap}.content{gap:12px}.card{min-width:0}.chart-wrap{height:240px!important}.kpi-num{font-size:24px!important}
-}
-
 </style>
 </head>
 <body>
@@ -817,6 +805,47 @@ renderChart('in');
 renderTypeStats('in');
 </script>
 <script src="iroup-config.js"></script>
+
+<script>
+/* ROUND 9 — Live CRUD/Search for Inbound & Outbound */
+let R9_IN=[], R9_OUT=[], R9_TAB='in';
+function r9e(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function r9txt(x){return Object.values(x).join(' ').toLowerCase();}
+async function r9LoadMobility(){
+  try{ R9_IN=await IROUP.getAll(IROUP.SHEETS.INBOUND); R9_OUT=await IROUP.getAll(IROUP.SHEETS.OUTBOUND);
+    document.getElementById('tabIn').querySelector('.tab-count').textContent=R9_IN.length;
+    document.getElementById('tabOut').querySelector('.tab-count').textContent=R9_OUT.length;
+    const k=document.querySelectorAll('#kpiRow .kpi-num'); if(k[0])k[0].textContent=R9_TAB==='in'?R9_IN.length:R9_OUT.length; if(k[1])k[1].textContent=R9_IN.length; if(k[2])k[2].textContent=R9_OUT.length; if(k[3])k[3].textContent=R9_IN.length+R9_OUT.length;
+    r9RenderMobility();
+  }catch(e){console.warn('mobility live failed',e)}
+}
+function r9RenderMobility(list){
+  const data=list || (R9_TAB==='in'?R9_IN:R9_OUT);
+  const head=document.getElementById('tableHead'), body=document.getElementById('tableBody'); if(!head||!body)return;
+  if(R9_TAB==='in'){
+    head.innerHTML='<tr><th>#</th><th>ชื่อ</th><th>ประเภท</th><th>สถาบัน</th><th>ประเทศ</th><th>ช่วงเวลา</th><th>โครงการ</th><th>จัดการ</th></tr>';
+    body.innerHTML=data.map((x,i)=>`<tr><td>${i+1}</td><td><strong>${r9e([x['ชื่อ'],x['ชื่อกลาง'],x['สกุล']].filter(Boolean).join(' ')||'—')}</strong></td><td>${r9e(x['ประเภท']||'—')}</td><td>${r9e(x['สถาบัน']||'—')}</td><td>${r9e(x['ประเทศ']||'—')}</td><td>${IROUP.formatDate(x['วันมาถึง'])}–${IROUP.formatDate(x['วันกลับ'])}</td><td>${r9e(x['โครงการ']||'—')}</td><td><button onclick="r9OpenMobility('in','${r9e(x['ID'])}')">✏️</button> <button onclick="r9DeleteMobility('in','${r9e(x['ID'])}')">🗑️</button></td></tr>`).join('');
+  }else{
+    head.innerHTML='<tr><th>#</th><th>ชื่อ-สกุล</th><th>คณะ</th><th>ปลายทาง</th><th>ประเทศ</th><th>ช่วงเวลา</th><th>โครงการ</th><th>จัดการ</th></tr>';
+    body.innerHTML=data.map((x,i)=>`<tr><td>${i+1}</td><td><strong>${r9e(x['ชื่อ_สกุล']||'—')}</strong><br><small>${r9e(x['รหัส']||'')}</small></td><td>${r9e(x['คณะ']||'—')}</td><td>${r9e(x['สถาบัน_ปลายทาง']||'—')}</td><td>${r9e(x['ประเทศ']||'—')}</td><td>${IROUP.formatDate(x['วันออก'])}–${IROUP.formatDate(x['วันกลับ'])}</td><td>${r9e(x['โครงการ']||'—')}</td><td><button onclick="r9OpenMobility('out','${r9e(x['ID'])}')">✏️</button> <button onclick="r9DeleteMobility('out','${r9e(x['ID'])}')">🗑️</button></td></tr>`).join('');
+  }
+}
+window.switchTab=function(type){ R9_TAB=type; document.getElementById('tabIn').className='tab-btn'+(type==='in'?' active-in':''); document.getElementById('tabOut').className='tab-btn'+(type==='out'?' active-out':''); document.getElementById('tableTitle').textContent=type==='in'?'🌏 รายชื่อ Inbound':'✈️ รายชื่อ Outbound'; const k=document.querySelectorAll('#kpiRow .kpi-num'); if(k[0])k[0].textContent=type==='in'?R9_IN.length:R9_OUT.length; r9RenderMobility(); };
+function r9OpenMobility(type,id){ R9_TAB=type; openModal(type); document.getElementById('modalOverlay').dataset.editId=id||''; }
+async function r9SaveMobility(){
+  const modal=document.getElementById('modalOverlay'), id=modal.dataset.editId; const type=document.getElementById('inboundForm').style.display==='none'?'out':'in'; let sheet,data={};
+  if(type==='in'){
+    const f=document.getElementById('inboundForm'); const inputs=Array.from(f.querySelectorAll('input,select,textarea'));
+    data={'ชื่อ':inputs[0].value,'ชื่อกลาง':inputs[1].value,'สกุล':inputs[2].value,'เพศ':inputs[3].value,'ประเภท':inputs[4].value,'สถาบัน':inputs[5].value,'ประเทศ':inputs[6].value,'ระดับ':inputs[7].value,'หน่วยงาน_UP':inputs[8].value,'ภาษา':inputs[9].value,'วันมาถึง':inputs[10].value,'วันกลับ':inputs[11].value,'โครงการ':inputs[12].value,'วัตถุประสงค์':inputs[13].value,'หมายเหตุ':inputs[14].value,'ปีงบ':inputs[15].value,'งบประเภท':inputs[17]?.value||'','จำนวนเงิน':inputs[18]?.value||''}; sheet=IROUP.SHEETS.INBOUND; if(!data['ชื่อ']||!data['สกุล'])return alert('กรุณากรอกชื่อและสกุล');
+  }else{
+    const f=document.getElementById('outboundForm'); const inputs=Array.from(f.querySelectorAll('input,select,textarea'));
+    data={'ชื่อ_สกุล':document.getElementById('ob_name').value,'รหัส':document.getElementById('ob_id').value,'คณะ':document.getElementById('ob_dept').value,'ประเภท':document.getElementById('ob_type').value,'เพศ':document.getElementById('ob_gender').value,'สถาบัน_ปลายทาง':inputs[6].value,'ประเทศ':inputs[7].value,'วันออก':inputs[8].value,'วันกลับ':inputs[9].value,'โครงการ':inputs[10].value,'วัตถุประสงค์':inputs[11].value,'หมายเหตุ':inputs[12].value,'ปีงบ':inputs[13].value,'งบประเภท':inputs[15]?.value||'','จำนวนเงิน':inputs[16]?.value||''}; sheet=IROUP.SHEETS.OUTBOUND; if(!data['ชื่อ_สกุล'])return alert('กรุณาค้นหา/เลือกชื่อก่อน');
+  }
+  const r=id?await IROUP.edit(sheet,id,data):await IROUP.add(sheet,data); if(r.success){alert('บันทึกสำเร็จ'); closeModal(); r9LoadMobility();}else alert(r.error||'บันทึกไม่สำเร็จ');
+}
+async function r9DeleteMobility(type,id){if(!confirm('ยืนยันลบรายการนี้?'))return; const sheet=type==='in'?IROUP.SHEETS.INBOUND:IROUP.SHEETS.OUTBOUND; const r=await IROUP.delete(sheet,id); if(r.success){alert('ลบสำเร็จ');r9LoadMobility()}else alert(r.error||'ลบไม่สำเร็จ')}
+document.addEventListener('DOMContentLoaded',()=>{ const btn=document.getElementById('modalSaveBtn'); if(btn)btn.onclick=r9SaveMobility; const si=document.querySelector('.search-wrap input'); if(si)si.addEventListener('input',e=>r9RenderMobility((R9_TAB==='in'?R9_IN:R9_OUT).filter(x=>r9txt(x).includes(e.target.value.toLowerCase())))); setTimeout(r9LoadMobility,500); });
+</script>
 
 <script>
 async function loadMobilityData() {
