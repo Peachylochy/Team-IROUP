@@ -237,15 +237,23 @@ async function loadData() {
   }
 }
 
+function normalizeText(v) {
+  return (v === null || v === undefined ? '' : String(v))
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function renderCards() {
-  const q       = document.getElementById('searchInput').value.toLowerCase();
+  const q       = normalizeText(document.getElementById('searchInput')?.value || '');
   const country = document.getElementById('countryFilter').value;
   const level   = document.getElementById('levelFilter').value;
 
   let filtered = allScholar.filter(s => {
-    const matchQ  = !q || (s['ชื่อทุน']+s['สถาบัน']).toLowerCase().includes(q);
+    const blob = normalizeText(Object.values(s || {}).join(' | '));
+    const matchQ  = !q || blob.includes(q);
     const matchC  = !country || s['ประเทศ'] === country;
-    const matchL  = !level || (s['ระดับ']||'').includes(level);
+    const matchL  = !level || normalizeText(s['ระดับ']).includes(normalizeText(level));
     const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
     const matchS  = !currentFilter || st.status === currentFilter;
     return matchQ && matchC && matchL && matchS;
@@ -308,6 +316,7 @@ function setLang(lang) {
   document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
 }
 
+document.getElementById('searchInput')?.addEventListener('input', renderCards);
 loadData();
 </script>
 

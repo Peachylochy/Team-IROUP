@@ -346,13 +346,46 @@ function renderTable(data) {
   document.getElementById('tableCount').textContent = `${data.length} รายการ`;
 }
 
+function normalizeText(v) {
+  return (v === null || v === undefined ? '' : String(v))
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getSearchBlob(row) {
+  const aliases = {
+    'China':'จีน cn', 'Japan':'ญี่ปุ่น jp', 'South Korea':'เกาหลีใต้ korea kr',
+    'Germany':'เยอรมนี de', 'USA':'สหรัฐอเมริกา us united states',
+    'United Kingdom':'อังกฤษ uk', 'Taiwan':'ไต้หวัน tw', 'Australia':'ออสเตรเลีย au'
+  };
+  const country = row['ประเทศ'] || '';
+  return normalizeText([
+    ...Object.values(row || {}),
+    aliases[country] || ''
+  ].join(' | '));
+}
+
+function matchContinent(row, cont) {
+  if (!cont) return true;
+  const val = normalizeText(row['ทวีป']);
+  const map = {
+    asia: ['asia','เอเชีย'],
+    europe: ['europe','ยุโรป'],
+    america: ['america','americas','อเมริกา','อเมริกาเหนือ','อเมริกาใต้'],
+    oceania: ['oceania','โอเชียเนีย','ออสเตรเลีย'],
+    africa: ['africa','แอฟริกา']
+  };
+  return (map[cont] || [cont]).some(x => val.includes(normalizeText(x)));
+}
+
 function filterTable() {
-  const q    = document.getElementById('searchInput').value.toLowerCase();
-  const cont = document.getElementById('continentFilter').value;
-  let filtered = allMou.filter(m => {
-    const matchQ    = !q || (m['องค์กร_ตปท']+m['ประเทศ']+m['หน่วยงาน_UP']).toLowerCase().includes(q);
-    const matchCont = !cont || m['ทวีป'] === cont;
-    const matchS    = !currentStatus || IROUP.getMouStatus(m['วันสิ้นสุด']).status === currentStatus;
+  const q = normalizeText(document.getElementById('searchInput')?.value || '');
+  const cont = document.getElementById('continentFilter')?.value || '';
+  const filtered = allMou.filter(m => {
+    const matchQ = !q || getSearchBlob(m).includes(q);
+    const matchCont = matchContinent(m, cont);
+    const matchS = !currentStatus || IROUP.getMouStatus(m['วันสิ้นสุด']).status === currentStatus;
     return matchQ && matchCont && matchS;
   });
   renderTable(filtered);
@@ -498,6 +531,7 @@ function setLang(lang) {
   }
 }
 
+document.getElementById('searchInput')?.addEventListener('input', filterTable);
 loadData();
 </script>
 
