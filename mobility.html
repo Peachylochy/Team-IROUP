@@ -888,6 +888,70 @@ setTimeout(loadMobilityData, 600);
 </script>
 
 
+<script>
+/* FINAL PATCH — outbound mapping + badges + status from real sheet */
+function irPick(row, keys, fallback='—'){
+  for(const k of keys){ const v=row?.[k]; if(v!==undefined && v!==null && String(v).trim()!=='') return v; }
+  return fallback;
+}
+function irDate(v){ if(!v) return null; const d=new Date(v); return isNaN(d)?null:d; }
+function irTimeStatus(start,end){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const s=irDate(start), e=irDate(end);
+  if(s && today < s) return {cls:'b-coming', text:'รอเดินทาง'};
+  if(e && today > e) return {cls:'b-done', text:'กลับแล้ว'};
+  return {cls:'b-abroad', text:'กำลังเดินทาง'};
+}
+function irTypeBadge(type){
+  const t=String(type||'').trim();
+  const cls=t.includes('นิสิต')?'t-student':(t.includes('อาจารย์')||t.includes('วิจัย'))?'t-teacher':t.includes('ผู้บริหาร')?'t-exec':'t-staff';
+  return `<span class="type-badge ${cls}">${r9e(t||'ไม่ระบุ')}</span>`;
+}
+function irLevelBadge(level){
+  const l=String(level||'').trim();
+  return l ? `<span class="purpose-badge p-academic">${r9e(l)}</span>` : '';
+}
+function irFullName(x){
+  const joined=[x['ชื่อ'],x['ชื่อกลาง'],x['สกุล']].filter(Boolean).join(' ');
+  return irPick(x,['ชื่อ_สกุล','ชื่อ-สกุล','ชื่อผู้เดินทาง','Full Name'], joined || '—');
+}
+window.r9RenderMobility=function(list){
+  const data=list || (R9_TAB==='in'?R9_IN:R9_OUT);
+  const head=document.getElementById('tableHead'), body=document.getElementById('tableBody'); if(!head||!body)return;
+  if(R9_TAB==='in'){
+    head.innerHTML='<tr><th>#</th><th>ชื่อ-สกุล</th><th>ประเภท/ระดับ</th><th>สถาบัน</th><th>ประเทศ / ทวีป</th><th>ช่วงเวลา</th><th>โครงการ</th><th>สถานะ</th><th>จัดการ</th></tr>';
+    body.innerHTML=data.map((x,i)=>{
+      const name=[x['ชื่อ'],x['ชื่อกลาง'],x['สกุล']].filter(Boolean).join(' ') || irFullName(x);
+      const st=irTimeStatus(irPick(x,['วันมาถึง','วันเริ่ม'],''),irPick(x,['วันกลับ','วันสิ้นสุด'],''));
+      return `<tr><td>${i+1}</td><td><strong>${r9e(name)}</strong><br><small>${r9e(irPick(x,['เพศ'],''))}</small></td><td>${irTypeBadge(irPick(x,['ประเภท'],''))} ${irLevelBadge(irPick(x,['ระดับ'],''))}</td><td>${r9e(irPick(x,['สถาบัน'],'—'))}</td><td>${r9e(irPick(x,['ประเทศ'],'—'))}<br><small>${r9e(irPick(x,['ทวีป'],''))}</small></td><td>${IROUP.formatDate(irPick(x,['วันมาถึง','วันเริ่ม'],''))}–${IROUP.formatDate(irPick(x,['วันกลับ','วันสิ้นสุด'],''))}</td><td>${r9e(irPick(x,['โครงการ','วัตถุประสงค์'],'—'))}</td><td><span class="badge ${st.cls}">${st.text}</span></td><td><button onclick="r9OpenMobility('in','${r9e(x['ID'])}')">✏️</button> <button onclick="r9DeleteMobility('in','${r9e(x['ID'])}')">🗑️</button></td></tr>`;
+    }).join('');
+  }else{
+    head.innerHTML='<tr><th>#</th><th>ชื่อ-สกุล</th><th>คณะ</th><th>สถาบันปลายทาง</th><th>ประเทศ / ทวีป</th><th>ประเภท/ระดับ</th><th>ช่วงเวลา</th><th>สถานะ</th><th>จัดการ</th></tr>';
+    body.innerHTML=data.map((x,i)=>{
+      const name=irFullName(x);
+      const faculty=irPick(x,['คณะ','หน่วยงาน_UP','หน่วยงาน'],'—');
+      const inst=irPick(x,['สถาบัน_ปลายทาง','มหาวิทยาลัยปลายทาง','สถาบัน','ปลายทาง'],'—');
+      const country=irPick(x,['ประเทศ'],'—');
+      const continent=irPick(x,['ทวีป'],'');
+      const type=irPick(x,['ประเภท','ประเภทผู้เดินทาง'],'');
+      const level=irPick(x,['ระดับ'],'');
+      const start=irPick(x,['วันออก','วันเริ่ม','วันเดินทาง'],'');
+      const end=irPick(x,['วันกลับ','วันสิ้นสุด'],'');
+      const st=irTimeStatus(start,end);
+      return `<tr><td>${i+1}</td><td><strong>${r9e(name)}</strong><br><small>${r9e(irPick(x,['รหัส','รหัสนิสิต'],''))}</small></td><td>${r9e(faculty)}</td><td>${r9e(inst)}</td><td>${r9e(country)}<br><small>${r9e(continent)}</small></td><td>${irTypeBadge(type)} ${irLevelBadge(level)}</td><td>${IROUP.formatDate(start)}–${IROUP.formatDate(end)}</td><td><span class="badge ${st.cls}">${st.text}</span></td><td><button onclick="r9OpenMobility('out','${r9e(x['ID'])}')">✏️</button> <button onclick="r9DeleteMobility('out','${r9e(x['ID'])}')">🗑️</button></td></tr>`;
+    }).join('');
+  }
+};
+window.switchTab=function(type){
+  R9_TAB=type;
+  document.getElementById('tabIn').className='tab-btn'+(type==='in'?' active-in':'');
+  document.getElementById('tabOut').className='tab-btn'+(type==='out'?' active-out':'');
+  document.getElementById('tableTitle').textContent=type==='in'?'🌏 รายชื่อ Inbound':'✈️ รายชื่อ Outbound';
+  const k=document.querySelectorAll('#kpiRow .kpi-num'); if(k[0])k[0].textContent=type==='in'?R9_IN.length:R9_OUT.length;
+  r9RenderMobility();
+};
+</script>
+
 <script src="iroup-sidebar.js"></script>
 </body>
 </html>
