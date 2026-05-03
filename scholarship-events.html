@@ -25,6 +25,10 @@
   --shadow-lg:0 8px 32px rgba(15,58,107,0.16);
   --radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:20px;
 }
+  .event-status.ev-upcoming{background:#e0f2fe;color:#0369a1;}
+.event-status.ev-soon{background:#fff7ed;color:#c2410c;}
+.event-status.ev-ongoing{background:#dcfce7;color:#166534;}
+.event-status.ev-done{background:#f1f5f9;color:#64748b;}
 html,body{height:100%;overflow:hidden}
 body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray-900);display:flex}
 
@@ -897,6 +901,26 @@ function round9RenderScholars(list){
 function round9RenderEvents(list){
   const wrap=document.getElementById('eventCards'); if(!wrap) return;
   if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลกิจกรรมในชีต</div>'; return; }
+  function eventTimeBadge(start, end){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const s = new Date(start);
+  const e = end ? new Date(end) : s;
+
+  if (isNaN(s)) return { text:'ไม่ระบุวัน', cls:'ev-upcoming' };
+
+  s.setHours(0,0,0,0);
+  e.setHours(0,0,0,0);
+
+  const diff = Math.ceil((s - today) / (1000*60*60*24));
+
+  if (today > e) return { text:'จบแล้ว', cls:'ev-done' };
+  if (today >= s && today <= e) return { text:'กำลังจัด', cls:'ev-ongoing' };
+  if (diff === 0) return { text:'วันนี้', cls:'ev-ongoing' };
+  if (diff <= 7) return { text:`อีก ${diff} วัน`, cls:'ev-soon' };
+  return { text:`อีก ${diff} วัน`, cls:'ev-upcoming' };
+}
   wrap.innerHTML=list.map(x=>{
     const d=IROUP.parseDate(x['วันเริ่ม'])||new Date();
     const poster=assetUrl(x,'Poster_URL');
@@ -909,7 +933,16 @@ function round9RenderEvents(list){
     <div class="event-top"><div class="event-date-box"><div class="event-day">${d.getDate()}</div><div class="event-month">${d.toLocaleDateString('th-TH',{month:'short'}).replace('.','')}</div></div>
       <div class="event-info"><span class="event-type-tag type-travel">${esc(x['ประเภท']||'กิจกรรม')}</span><div class="event-title">${esc(x['ชื่อกิจกรรม']||'ไม่ระบุชื่อกิจกรรม')}</div><div class="event-place">📍 ${esc(x['สถานที่']||'—')} · ${IROUP.formatDate(x['วันเริ่ม'])}–${IROUP.formatDate(x['วันสิ้นสุด'])}</div>${timeLine}</div>
     </div>
-    <div class="event-bottom"><div class="event-dept">${esc(x['หน่วยงาน']||'งานวิเทศสัมพันธ์')}</div><div class="event-pax">👥 ${esc(x['จำนวน']||0)} คน</div><span class="event-status ev-upcoming">Upcoming</span></div>
+   ${(()=>{
+  const ev = eventTimeBadge(x['วันเริ่ม'], x['วันสิ้นสุด']);
+  return `
+    <div class="event-bottom">
+      <div class="event-dept">${esc(x['หน่วยงาน']||'งานวิเทศสัมพันธ์')}</div>
+      <div class="event-pax">👥 ${esc(x['จำนวน']||0)} คน</div>
+      <span class="event-status ${ev.cls}">${ev.text}</span>
+    </div>
+  `;
+})()}
     <div class="card-footer">
       ${assetButton(poster,'🖼 Poster','poster')}
       ${assetButton(file,'📎 ไฟล์','file')}
