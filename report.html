@@ -212,5 +212,7 @@ function exportFilteredCsv(){downloadCsv(rowsToCsv(filteredRows),`iroup-report-f
 function exportRaw(key){const rows=raw[key]||[]; if(!rows.length)return alert('ไม่มีข้อมูล'); const headers=Object.keys(rows[0]); const csv=[headers,...rows.map(r=>headers.map(h=>r[h]??''))].map(row=>row.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n'); downloadCsv(csv,`iroup-${key}-${new Date().toISOString().slice(0,10)}.csv`)}
 loadAll(false);
 </script></script>
+
+<script src="iroup-sidebar.js"></script>
 </body>
 </html>
