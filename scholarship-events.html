@@ -706,12 +706,12 @@ function round9RenderScholars(list){
   if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลทุนในชีต</div>'; return; }
   wrap.innerHTML=list.map(x=>{
     const st=getStatusByDate(x['วันเปิดรับ'],x['วันปิดรับ']);
-    const poster=assetUrl(x,'Poster_URL');
+    const poster=iroupPickImage(x);
     const file=assetUrl(x,'ไฟล์_URL');
-    const posterHtml=poster
-      ? `<img class="scholar-poster-img" src="${esc(poster)}" alt="${esc(x['ชื่อทุน']||'Scholarship poster')}" loading="lazy">`
+    const posterHtml = poster
+      ? `<img class="scholar-poster-img" src="${esc(poster)}" alt="${esc(x['ชื่อทุน']||'Scholarship poster')}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="card-poster-bg" style="display:none;background:linear-gradient(135deg,#E8F4FD,#4BBDE8)">${esc((x['ประเทศ']||'🌐').slice(0,2))}</div>`
       : `<div class="card-poster-bg" style="background:linear-gradient(135deg,#E8F4FD,#4BBDE8)">${esc((x['ประเทศ']||'🌐').slice(0,2))}</div>`;
-    return `
+return `
   <div class="scholar-card">
     ${String(x['Pin']||'')==='1'?'<div class="pin-badge">📌</div>':''}
     ${posterHtml}
@@ -735,7 +735,7 @@ function round9RenderEvents(list){
   if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลกิจกรรมในชีต</div>'; return; }
   wrap.innerHTML=list.map(x=>{
     const d=IROUP.parseDate(x['วันเริ่ม'])||new Date();
-    const poster=assetUrl(x,'Poster_URL');
+    const poster=iroupPickImage(x);
     const file=assetUrl(x,'ไฟล์_URL');
     const timeLine=(x['เวลาเริ่ม']||x['เวลาสิ้นสุด']) ? `<div class="event-time-line">🕘 ${esc(x['เวลาเริ่ม']||'-')} - ${esc(x['เวลาสิ้นสุด']||'-')}</div>` : '';
     const posterHtml=poster ? `<img class="event-poster-img" src="${esc(poster)}" alt="${esc(x['ชื่อกิจกรรม']||'Event poster')}" loading="lazy">` : '';
