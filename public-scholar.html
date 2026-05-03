@@ -250,11 +250,11 @@ function escHtml(v){
 }
 function fixDriveUrl(url){
   const u = String(url || '').trim();
-  if(!u) return '';
-  if(u.includes('/file/d/')){
-    const id = u.split('/file/d/')[1]?.split('/')[0];
-    if(id) return `https://drive.google.com/uc?export=view&id=${id}`;
-  }
+  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
+  // Google Drive /file/d/xxx/view links do not always render in <img>.
+  // Use thumbnail endpoint for image previews; keep original URL only for file buttons.
+  const m = u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
+  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
   return u;
 }
 function linkBtn(url,label,extraClass=''){

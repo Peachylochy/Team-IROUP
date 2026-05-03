@@ -91,6 +91,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .ev-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:'Sarabun',sans-serif}
 .ev-poster{width:86px;height:58px;border-radius:10px;overflow:hidden;background:var(--gray-100);flex-shrink:0;border:1px solid var(--gray-200)}
 .ev-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.ev-poster-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--blue-pale),#fff);font-size:24px}
 .ev-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .ev-file-btn{font-size:10px;font-weight:700;text-decoration:none;border-radius:8px;padding:4px 8px;background:var(--green-pale);color:var(--green);font-family:'Sarabun',sans-serif;white-space:nowrap}
 
@@ -234,11 +235,11 @@ function escHtml(v){
 }
 function fixDriveUrl(url){
   const u = String(url || '').trim();
-  if(!u) return '';
-  if(u.includes('/file/d/')){
-    const id = u.split('/file/d/')[1]?.split('/')[0];
-    if(id) return `https://drive.google.com/uc?export=view&id=${id}`;
-  }
+  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
+  // Google Drive /file/d/xxx/view links do not always render in <img>.
+  // Use thumbnail endpoint for image previews; keep original URL only for file buttons.
+  const m = u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
+  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
   return u;
 }
 function simpleLink(url,label){
@@ -310,7 +311,7 @@ function renderEvents() {
     const lineColors = {'การเดินทาง':'#1A6DB5','Inbound':'#7C3AED','ประชุม':'#5BAD3E','อบรม':'#D4890A','Exchange':'#0D9488'};
     const lineColor = lineColors[type] || '#1A6DB5';
     const poster = fixDriveUrl(e['Poster_URL']);
-    const posterBlock = poster ? `<div class="ev-poster"><img src="${escHtml(poster)}" alt="${escHtml(e['ชื่อกิจกรรม']||'poster')}" loading="lazy"></div>` : '';
+    const posterBlock = poster ? `<div class="ev-poster"><img src="${escHtml(poster)}" alt="${escHtml(e['ชื่อกิจกรรม']||'poster')}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=&quot;ev-poster-fallback&quot;>📅</div>'"></div>` : `<div class="ev-poster"><div class="ev-poster-fallback">📅</div></div>`;
     const fileBlock = simpleLink(e['ไฟล์_URL'],'📎 ไฟล์');
 
     return `<div class="event-item">
