@@ -1,32 +1,261 @@
 // ============================================================
-// iROUP Sidebar Rescue/Fixer
-// อัปไฟล์นี้ทับ iroup-sidebar.js เดิมไฟล์เดียว
-// - ถ้าหน้ามี sidebar เก่าอยู่: ไม่สร้าง sidebar ใหม่ซ้อน แต่ทำให้ nav-item กดได้
-// - ถ้าหน้าไม่มี sidebar: สร้าง sidebar แบบ fixed ให้
-// - แก้ลิงก์ dashboard.html ที่ทำให้ 404 ให้กลับเป็น dashboard.html
+// iROUP Sidebar FINAL FIX
+// ใช้ไฟล์นี้อัปทับ iroup-sidebar.js เดิม
+// เป้าหมาย:
+// - ทุกหน้าใช้ sidebar แบบเดียวกับหน้าแรก
+// - เอา "Dashboard เดิม" ออก
+// - แก้หน้าเก่า icon-only เช่น MOU / Mobility / ทุน-กิจกรรม ให้กลายเป็นเมนูเต็ม
 // ============================================================
-(function () {
-  const NAV_ITEMS = [
-    { icon: '📊', label: 'Executive Dashboard', href: 'dashboard.html', keys: ['dashboard','executive'] },
-    { icon: '🤝', label: 'MOU', href: 'mou.html', keys: ['mou'] },
-    { icon: '🌏', label: 'Mobility', href: 'mobility.html', keys: ['mobility'] },
-    { icon: '✈️', label: 'การเดินทาง', href: 'travel.html', keys: ['travel','การเดินทาง'] },
-    { icon: '🎓', label: 'ทุน / กิจกรรม', href: 'scholarship-events.html', keys: ['ทุน','กิจกรรม','scholar'] },
-    { icon: '📤', label: 'รายงาน & Export', href: 'report.html', keys: ['report','รายงาน','export'] },
-    { icon: '🌐', label: 'Public View', href: 'public-landing.html', keys: ['public'] }
-  ];
 
+(function () {
   const current = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
 
-  function fixBrokenLinks() {
-    document.querySelectorAll('a[href="dashboard.html"]').forEach(a => {
-      a.setAttribute('href', 'dashboard.html');
-    });
+  const MENU = [
+    { section: 'OVERVIEW', items: [
+      { icon: '📊', label: 'Executive Dashboard', href: 'dashboard.html', match: ['dashboard.html', 'dashboard-full.html'] }
+    ]},
+    { section: 'MANAGEMENT', items: [
+      { icon: '🤝', label: 'MOU', href: 'mou.html', match: ['mou.html'] },
+      { icon: '🌏', label: 'Mobility', href: 'mobility.html', match: ['mobility.html'] },
+      { icon: '✈️', label: 'การเดินทาง', href: 'travel.html', match: ['travel.html'] },
+      { icon: '🎓', label: 'ทุน / กิจกรรม', href: 'scholarship-events.html', match: ['scholarship-events.html'] },
+      { icon: '📤', label: 'รายงาน & Export', href: 'report.html', match: ['report.html'] }
+    ]},
+    { section: 'PUBLIC', items: [
+      { icon: '🌐', label: 'Public View', href: 'public-landing.html', match: ['public-landing.html'] }
+    ]}
+  ];
+
+  function active(item) {
+    return item.match.includes(current);
   }
 
-  function removeDuplicateGeneratedSidebar() {
-    // ลบ sidebar component ที่เคยถูก inject ซ้อนจนเกิดแถบคู่/พื้นที่ว่างด้านบน
-    document.querySelectorAll('.iroup-sidebar').forEach(el => el.remove());
+  function sidebarHTML() {
+    return `
+      <div class="ir-final-brand">
+        <img src="iroup-logo.png" alt="iROUP" onerror="this.style.display='none'">
+        <div class="ir-final-brand-title">
+          <b>iROUP</b><br>
+          International<br>Relations Office
+        </div>
+      </div>
+
+      <nav class="ir-final-nav">
+        ${MENU.map(group => `
+          <div class="ir-final-section">${group.section}</div>
+          ${group.items.map(item => `
+            <a class="ir-final-link ${active(item) ? 'active' : ''}" href="${item.href}">
+              <span class="ir-final-icon">${item.icon}</span>
+              <span>${item.label}</span>
+            </a>
+          `).join('')}
+        `).join('')}
+      </nav>
+
+      <div class="ir-final-user">
+        <div class="ir-final-avatar">IR</div>
+        <div>
+          <div class="ir-final-user-name">งานวิเทศสัมพันธ์</div>
+          <div class="ir-final-user-sub">University of Phayao</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function injectStyle() {
+    if (document.getElementById('iroupSidebarFinalStyle')) return;
+
+    const style = document.createElement('style');
+    style.id = 'iroupSidebarFinalStyle';
+    style.textContent = `
+      /* ลบ sidebar/component ที่เคยซ้อน */
+      .iroup-sidebar,
+      .iroup-shell > .iroup-sidebar,
+      #iroupSidebar {
+        display:none !important;
+      }
+
+      /* บังคับ sidebar ทุกหน้าให้เป็นแบบเดียว */
+      .sidebar {
+        width:250px !important;
+        min-width:250px !important;
+        max-width:250px !important;
+        height:100vh !important;
+        background:#fff !important;
+        color:#10233f !important;
+        border-right:1px solid #E6EDF6 !important;
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:stretch !important;
+        padding:0 !important;
+        gap:0 !important;
+        position:sticky !important;
+        top:0 !important;
+        z-index:9999 !important;
+        box-shadow:none !important;
+        font-family:'Prompt',sans-serif !important;
+        overflow:hidden !important;
+        flex-shrink:0 !important;
+      }
+
+      .ir-final-brand {
+        height:76px;
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:0 22px;
+        border-bottom:1px solid #E6EDF6;
+        flex-shrink:0;
+      }
+      .ir-final-brand img {
+        width:68px;
+        height:auto;
+        object-fit:contain;
+        display:block;
+      }
+      .ir-final-brand-title {
+        font-size:12px;
+        color:#66758a;
+        line-height:1.25;
+      }
+      .ir-final-brand-title b {
+        color:#0F2D5A;
+        font-weight:900;
+      }
+
+      .ir-final-nav {
+        padding:16px 12px;
+        overflow:auto;
+        flex:1;
+      }
+      .ir-final-section {
+        font-size:11px;
+        font-weight:800;
+        color:#a0adbc;
+        text-transform:uppercase;
+        margin:18px 12px 8px;
+        letter-spacing:.2px;
+      }
+      .ir-final-link {
+        width:100%;
+        display:flex;
+        align-items:center;
+        gap:12px;
+        padding:12px 14px;
+        border-radius:14px;
+        color:#26364e !important;
+        font-weight:800;
+        font-size:14px;
+        cursor:pointer;
+        font-family:'Prompt',sans-serif;
+        transition:.18s;
+        text-decoration:none !important;
+        margin-bottom:4px;
+        background:transparent;
+        border:0;
+      }
+      .ir-final-link:hover {
+        background:#F1F7FD;
+        color:#1A6DB5 !important;
+        transform:translateX(1px);
+      }
+      .ir-final-link.active {
+        background:#E8F4FD;
+        color:#1A6DB5 !important;
+        box-shadow:inset 3px 0 0 #1A6DB5;
+      }
+      .ir-final-icon {
+        font-size:20px;
+        width:24px;
+        text-align:center;
+        flex:0 0 24px;
+      }
+
+      .ir-final-user {
+        margin-top:auto;
+        padding:16px;
+        border-top:1px solid #E6EDF6;
+        display:flex;
+        align-items:center;
+        gap:10px;
+        flex-shrink:0;
+      }
+      .ir-final-avatar {
+        width:38px;
+        height:38px;
+        border-radius:12px;
+        background:linear-gradient(135deg,#4BBDE8,#1A6DB5);
+        display:grid;
+        place-items:center;
+        color:#fff;
+        font-weight:900;
+      }
+      .ir-final-user-name {
+        font-size:12px;
+        font-weight:900;
+        color:#10233f;
+      }
+      .ir-final-user-sub {
+        font-size:11px;
+        color:#66758a;
+      }
+
+      /* ซ่อนของเก่าใน sidebar */
+      .sidebar > *:not(.ir-final-brand):not(.ir-final-nav):not(.ir-final-user) {
+        display:none !important;
+      }
+
+      /* กัน layout เก่าเพี้ยน */
+      body {
+        margin-left:0 !important;
+        padding-left:0 !important;
+      }
+      .main-layout,
+      .main {
+        min-width:0 !important;
+      }
+      .app {
+        grid-template-columns:250px minmax(0,1fr) !important;
+      }
+
+      @media(max-width:900px){
+        .sidebar {
+          width:100% !important;
+          min-width:100% !important;
+          max-width:100% !important;
+          height:auto !important;
+          position:relative !important;
+        }
+        .ir-final-brand {
+          height:auto;
+          padding:14px 16px;
+        }
+        .ir-final-nav {
+          display:flex;
+          gap:6px;
+          overflow-x:auto;
+          padding:10px 12px;
+        }
+        .ir-final-section {
+          display:none;
+        }
+        .ir-final-link {
+          width:auto;
+          white-space:nowrap;
+          margin-bottom:0;
+        }
+        .ir-final-user {
+          display:none;
+        }
+        .app {
+          display:block !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function cleanupOldGenerated() {
     document.querySelectorAll('.iroup-shell').forEach(shell => {
       const main = shell.querySelector('.iroup-main');
       if (main) {
@@ -34,114 +263,29 @@
       }
       shell.remove();
     });
-    const holder = document.getElementById('iroupSidebar');
-    if (holder && document.querySelector('.sidebar, .app > .sidebar')) holder.remove();
-    document.body.style.marginLeft = '';
-    document.body.style.paddingLeft = '';
-  }
 
-  function guessHrefFromText(text, index) {
-    const t = String(text || '').toLowerCase();
-    const found = NAV_ITEMS.find(item => item.keys.some(k => t.includes(k.toLowerCase())));
-    if (found) return found.href;
-
-    // fallback สำหรับ sidebar แบบ icon-only ที่ไม่มี tooltip ชัดเจน
-    const fallback = ['dashboard.html','mou.html','scholarship-events.html','travel.html','mobility.html','report.html'];
-    return fallback[index] || '#';
-  }
-
-  function enhanceOldSidebar() {
-    const sidebars = Array.from(document.querySelectorAll('.sidebar'));
-    if (!sidebars.length) return false;
-
-    sidebars.forEach(sidebar => {
-      const items = Array.from(sidebar.querySelectorAll('.nav-item'));
-      items.forEach((item, index) => {
-        const tip = item.querySelector('.nav-tooltip')?.textContent || item.textContent || '';
-        const href = guessHrefFromText(tip, index);
-        if (!href || href === '#') return;
-
-        // ทำให้ div กดแล้วเปลี่ยนหน้าได้ โดยไม่รื้อ HTML เดิม
-        item.style.cursor = 'pointer';
-        item.setAttribute('role', 'link');
-        item.setAttribute('tabindex', '0');
-        item.dataset.href = href;
-        item.onclick = function (e) {
-          e.preventDefault();
-          window.location.href = href;
-        };
-        item.onkeydown = function (e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            window.location.href = href;
-          }
-        };
-
-        if (href.toLowerCase() === current || (current === '' && href === 'dashboard.html')) {
-          item.classList.add('active');
-        } else if (!item.classList.contains('active')) {
-          // ไม่ยุ่งกับ active เดิมมากเกินไป
-        }
-      });
+    document.querySelectorAll('.iroup-sidebar').forEach(el => el.remove());
+    document.querySelectorAll('a[href="dashboard-full.html"]').forEach(a => {
+      a.setAttribute('href', 'dashboard.html');
     });
-    return true;
   }
 
-  function injectComponentStyle() {
-    if (document.getElementById('iroupSidebarRescueStyle')) return;
-    const style = document.createElement('style');
-    style.id = 'iroupSidebarRescueStyle';
-    style.textContent = `
-      .iroup-fixed-sidebar{width:230px;height:100vh;position:fixed;left:0;top:0;background:#fff;border-right:1px solid #E6EDF6;z-index:9999;font-family:'Prompt',sans-serif;display:flex;flex-direction:column}
-      .iroup-fixed-brand{height:76px;display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid #E6EDF6}
-      .iroup-fixed-brand img{width:68px;height:auto;object-fit:contain}
-      .iroup-fixed-brand-text{font-size:12px;color:#66758a;line-height:1.35}.iroup-fixed-brand-text b{color:#0F2D5A;font-weight:900}
-      .iroup-fixed-nav{padding:16px 12px;overflow:auto;flex:1}.iroup-fixed-section{font-size:11px;font-weight:800;color:#a0adbc;text-transform:uppercase;margin:16px 8px 8px}
-      .iroup-fixed-link{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;color:#26364e;font-weight:800;font-size:14px;text-decoration:none;margin-bottom:4px}
-      .iroup-fixed-link:hover{background:#F1F7FD;color:#1A6DB5}.iroup-fixed-link.active{background:#E8F4FD;color:#1A6DB5;box-shadow:inset 3px 0 0 #1A6DB5}
-      .iroup-fixed-user{padding:16px;border-top:1px solid #E6EDF6;display:flex;gap:10px;align-items:center}.iroup-fixed-avatar{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#4BBDE8,#1A6DB5);display:grid;place-items:center;color:#fff;font-weight:900}
-      .iroup-fixed-user-name{font-size:12px;font-weight:900;color:#10233f}.iroup-fixed-user-mail{font-size:11px;color:#66758a}
-      body.has-iroup-fixed-sidebar{padding-left:230px!important;margin-left:0!important;display:block!important;overflow-x:hidden!important}
-      @media(max-width:900px){.iroup-fixed-sidebar{position:relative;width:100%;height:auto}.iroup-fixed-nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px}.iroup-fixed-section,.iroup-fixed-user{display:none}body.has-iroup-fixed-sidebar{padding-left:0!important}}
-    `;
-    document.head.appendChild(style);
-  }
+  function ensureSidebar() {
+    let sidebar = document.querySelector('.sidebar');
 
-  function renderFixedSidebarIfNeeded() {
-    // สำหรับหน้าอย่าง report/travel ที่ไม่มี sidebar เดิม แต่มี script นี้อยู่
-    if (document.querySelector('.sidebar, .app > .sidebar, .iroup-fixed-sidebar')) return;
-    injectComponentStyle();
-    const aside = document.createElement('aside');
-    aside.className = 'iroup-fixed-sidebar';
-    aside.innerHTML = `
-      <div class="iroup-fixed-brand">
-        <img src="iroup-logo.png" alt="iROUP" onerror="this.style.display='none'">
-        <div class="iroup-fixed-brand-text"><b>iROUP</b><br>International Relations Office</div>
-      </div>
-      <nav class="iroup-fixed-nav">
-        <div class="iroup-fixed-section">OVERVIEW</div>
-        ${linkHTML(NAV_ITEMS[0])}
-        <div class="iroup-fixed-section">MANAGEMENT</div>
-        ${NAV_ITEMS.slice(1,6).map(linkHTML).join('')}
-        <div class="iroup-fixed-section">PUBLIC</div>
-        ${linkHTML(NAV_ITEMS[6])}
-      </nav>
-      <div class="iroup-fixed-user"><div class="iroup-fixed-avatar">IR</div><div><div class="iroup-fixed-user-name">งานวิเทศสัมพันธ์</div><div class="iroup-fixed-user-mail">University of Phayao</div></div></div>
-    `;
-    document.body.prepend(aside);
-    document.body.classList.add('has-iroup-fixed-sidebar');
-  }
+    if (!sidebar) {
+      sidebar = document.createElement('aside');
+      sidebar.className = 'sidebar';
+      document.body.insertBefore(sidebar, document.body.firstChild);
+    }
 
-  function linkHTML(item) {
-    const active = item.href.toLowerCase() === current ? ' active' : '';
-    return `<a class="iroup-fixed-link${active}" href="${item.href}"><span>${item.icon}</span><span>${item.label}</span></a>`;
+    sidebar.innerHTML = sidebarHTML();
   }
 
   function mount() {
-    fixBrokenLinks();
-    removeDuplicateGeneratedSidebar();
-    const hasOld = enhanceOldSidebar();
-    if (!hasOld) renderFixedSidebarIfNeeded();
+    injectStyle();
+    cleanupOldGenerated();
+    ensureSidebar();
   }
 
   if (document.readyState === 'loading') {
