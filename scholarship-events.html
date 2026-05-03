@@ -181,7 +181,10 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 11px;border:1.5px solid var(--gray-300);border-radius:8px;font-size:12px;font-family:'Prompt',sans-serif;color:var(--gray-900);outline:none;transition:border .15s}
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--blue-light);box-shadow:0 0 0 3px rgba(75,189,232,0.12)}
 .form-group textarea{resize:vertical;min-height:60px}
-.coverage-checks{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.coverage-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check-item{display:flex;align-items:center;gap:8px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:10px;padding:9px 10px;font-size:12px;color:var(--gray-800)}
+.check-item input{width:16px;height:16px;accent-color:var(--blue)}
+.check-item label{cursor:pointer;line-height:1.35}
 .check-item{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1.5px solid var(--gray-300);border-radius:8px;cursor:pointer;transition:all .15s}
 .check-item:hover{border-color:var(--blue-light);background:var(--blue-pale)}
 .check-item input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px;cursor:pointer}
@@ -719,13 +722,15 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
         </div>
         <div class="form-group form-full">
           <label>ทุนครอบคลุม (เลือกได้หลายรายการ)</label>
-          <div class="coverage-checks">
-            <div class="check-item"><input type="checkbox" id="c1"><label for="c1">📚 ค่าเล่าเรียน</label></div>
-            <div class="check-item"><input type="checkbox" id="c2"><label for="c2">🏠 ค่าที่พัก</label></div>
-            <div class="check-item"><input type="checkbox" id="c3"><label for="c3">✈️ ตั๋วเครื่องบิน</label></div>
-            <div class="check-item"><input type="checkbox" id="c4"><label for="c4">💴 ค่าครองชีพ / เบี้ยเลี้ยง</label></div>
-            <div class="check-item"><input type="checkbox" id="c5"><label for="c5">🏥 ประกันสุขภาพ</label></div>
-            <div class="check-item"><input type="checkbox" id="c6"><label for="c6">🛂 ค่าวีซ่า</label></div>
+          <div class="coverage-checks" id="scholarCoverageChecks">
+            <div class="check-item"><input type="checkbox" id="cov_tuition" value="ค่าเล่าเรียน"><label for="cov_tuition">📚 ค่าเล่าเรียน</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_room" value="ค่าที่พัก"><label for="cov_room">🏠 ค่าที่พัก</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_living" value="ค่าครองชีพ"><label for="cov_living">💴 ค่าครองชีพ / เบี้ยเลี้ยง</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_travel" value="ค่าเดินทาง"><label for="cov_travel">✈️ ค่าเดินทาง / ตั๋วเครื่องบิน</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_visa" value="ค่าวีซ่า"><label for="cov_visa">🛂 ค่าวีซ่า</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_insurance" value="ประกัน"><label for="cov_insurance">🏥 ประกัน / ประกันสุขภาพ</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_settle" value="ค่าแรกเริ่ม"><label for="cov_settle">💼 ค่าอยู่แรกเริ่ม</label></div>
+            <div class="check-item"><input type="checkbox" id="cov_other" value="อื่นๆ"><label for="cov_other">➕ อื่นๆ / ตามประกาศทุน</label></div>
           </div>
         </div>
         <div class="form-group form-full"><label>หมายเหตุเพิ่มเติม</label><textarea placeholder="เงื่อนไขพิเศษ หรือข้อมูลที่ต้องการระบุเพิ่มเติม..."></textarea></div>
@@ -941,8 +946,12 @@ function fillScholarForm(row){
   setInputValue(inputs[9],row['Pin'] || '0');
   const cov=String(row['ครอบคลุม']||'').split(/[,，]/).map(x=>x.trim()).filter(Boolean);
   qsa(f,'.coverage-checks input[type=checkbox]').forEach(cb=>{
-    const label=cb.nextElementSibling?.innerText?.replace(/^[^ก-๙A-Za-z0-9]+\s*/,'').trim() || '';
-    cb.checked = cov.some(v=>label.includes(v)||v.includes(label));
+    const value=(cb.value||'').trim();
+    const label=(cb.nextElementSibling?.innerText||'').replace(/^[^ก-๙A-Za-z0-9]+\s*/,'').trim();
+    cb.checked = cov.some(v=>{
+      const t=String(v||'').trim();
+      return t===value || t===label || label.includes(t) || t.includes(value) || value.includes(t);
+    });
   });
   setInputValue(inputs[10],row['หมายเหตุ']);
   setAssetField(f,'Poster_URL',row['Poster_URL']);
@@ -969,7 +978,7 @@ function fillEventForm(row){
 }
 function getScholarCoverage(form){
   return qsa(form,'.coverage-checks input[type=checkbox]:checked')
-    .map(x=>(x.nextElementSibling?.innerText||'').replace(/^[^ก-๙A-Za-z0-9]+\s*/,'').trim())
+    .map(x=>(x.value || (x.nextElementSibling?.innerText||'').replace(/^[^ก-๙A-Za-z0-9]+\s*/,'').trim()))
     .filter(Boolean).join(', ');
 }
 
