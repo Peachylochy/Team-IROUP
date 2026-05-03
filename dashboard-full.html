@@ -3,459 +3,526 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>iROUP Executive Dashboard</title>
+<title>iROUP Dashboard — Rebuild</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script src="iroup-config.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --blue:#1A6DB5;--sky:#4BBDE8;--navy:#0F2D5A;--dark:#071828;
-  --green:#5BAD3E;--gold:#F5A623;--red:#D63B32;--purple:#7C3AED;--teal:#0D9488;
-  --bg:#F5F8FC;--card:#fff;--line:#E6EDF6;--text:#10233f;--muted:#66758a;--soft:#E8F4FD;
-  --shadow:0 8px 30px rgba(15,45,90,.09);--radius:18px
-}
-body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
-.sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:20}
-.brand{height:76px;display:flex;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid var(--line)}
-.brand img{width:68px;height:auto}
-.brand-title{font-size:12px;color:var(--muted);line-height:1.35}
-.nav{padding:16px 12px;overflow:auto}
-.nav-section{font-size:11px;font-weight:800;color:#a0adbc;text-transform:uppercase;margin:18px 12px 8px}
-.nav-btn{width:100%;border:0;background:transparent;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;color:#26364e;font-weight:800;font-size:14px;cursor:pointer;font-family:'Prompt',sans-serif;transition:.18s;text-decoration:none}
-.nav-btn:hover{background:#F1F7FD;color:var(--blue)}
-.nav-btn.active{background:#E8F4FD;color:var(--blue);box-shadow:inset 3px 0 0 var(--blue)}
-.nav-icon{font-size:20px;width:24px;text-align:center}
-.userbox{margin-top:auto;padding:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}
-.avatar{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--sky),var(--blue));display:grid;place-items:center;color:#fff;font-weight:900}
-.user-name{font-size:12px;font-weight:900}.user-mail{font-size:11px;color:var(--muted)}
-.main{min-width:0}
-.topbar{height:76px;background:var(--dark);color:#fff;display:flex;align-items:center;gap:14px;padding:0 24px;position:sticky;top:0;z-index:10}
-.page-title{font-size:17px;font-weight:900}.crumb{font-size:12px;color:rgba(255,255,255,.58);margin-top:3px}
-.spacer{flex:1}.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.pill{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;border-radius:12px;padding:9px 13px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;font-family:'Prompt',sans-serif}
-.pill.primary{background:linear-gradient(135deg,var(--blue),var(--sky));border-color:transparent}
-.content{padding:24px;max-width:1720px;margin:0 auto}
-.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(340px,.8fr);gap:18px;margin-bottom:18px}
-.hero-card{position:relative;overflow:hidden;background:linear-gradient(135deg,#071828,#0F2D5A 60%,#1A6DB5);color:#fff;border-radius:24px;padding:26px;box-shadow:var(--shadow);min-height:210px}
-.hero-card::after{content:'';position:absolute;right:-90px;top:-120px;width:320px;height:320px;border-radius:50%;background:rgba(75,189,232,.18)}
-.hero-title{font-size:28px;font-weight:900;letter-spacing:-.5px;position:relative;z-index:1}.hero-sub{font-family:'Sarabun',sans-serif;color:rgba(255,255,255,.75);font-size:14px;line-height:1.7;margin-top:8px;max-width:650px;position:relative;z-index:1}
-.hero-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:1}.hero-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800}
-.globy-box{display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#fff,#EAF7FE);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);min-height:210px;position:relative;overflow:hidden}
-.globy-box img{height:180px;object-fit:contain;filter:drop-shadow(0 18px 30px rgba(26,109,181,.18));animation:float 4s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.toolbar{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:18px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
-.select,.input{border:1.5px solid #DCE6F2;background:#fff;border-radius:12px;padding:11px 13px;font-family:'Prompt',sans-serif;font-size:13px;outline:none}.input{min-width:220px}
-.btn{border:0;border-radius:12px;padding:11px 16px;font-family:'Prompt',sans-serif;font-weight:900;cursor:pointer;background:#E8F4FD;color:var(--blue);transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}.btn:hover{transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff}.btn.green{background:#EBF7E3;color:var(--green)}.btn.gold{background:#FEF3DC;color:#9b6200}
-.notice{background:#FFF7E5;border:1px solid #FFD89B;color:#8B5A00;border-radius:16px;padding:13px 16px;font-size:13px;margin-bottom:18px;display:none}
-.grid-kpi{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-bottom:18px}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:12px;min-height:108px}
-.kpi-ico{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:22px;flex:0 0 auto}.kpi .num{font-size:30px;line-height:1;font-weight:900;color:var(--blue);white-space:nowrap}.kpi .label{font-size:12px;font-weight:900}.kpi .sub{font-size:11px;color:var(--muted);margin-top:4px;font-family:'Sarabun',sans-serif}
-.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-.panel-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
-.panel-title{font-size:16px;font-weight:900}.panel-sub{font-size:12px;color:var(--muted);margin-top:3px;font-family:'Sarabun',sans-serif}.panel-body{padding:18px}
-.layout-main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,.85fr);gap:18px;margin-bottom:18px}
-.layout-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:18px}
-.insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.insight{border:1px solid var(--line);background:linear-gradient(180deg,#fff,#F8FBFF);border-radius:16px;padding:14px;display:flex;gap:12px;align-items:flex-start}
-.insight .i{font-size:22px;width:34px;height:34px;border-radius:12px;background:var(--soft);display:grid;place-items:center;flex:0 0 auto}
-.insight .t{font-size:13px;font-weight:800;line-height:1.55}.insight .s{font-size:11px;color:var(--muted);font-family:'Sarabun',sans-serif;margin-top:3px}
-.budget{display:grid;gap:10px}
-.budget-total{background:linear-gradient(135deg,#EBF7E3,#E8F4FD);border-radius:18px;padding:18px}.budget-total .n{font-size:32px;font-weight:900;color:var(--green);line-height:1}.budget-total .l{font-size:12px;font-weight:900;color:var(--navy);margin-top:5px}
-.bar-row{display:grid;grid-template-columns:110px 1fr 58px;gap:10px;align-items:center;margin:12px 0}.bar-name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar-track{height:18px;background:#EDF3FA;border-radius:999px;overflow:hidden}.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--sky));min-width:3px}.bar-val{font-size:12px;font-weight:900;text-align:right}
-.chart-mini{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.mini{border:1px solid var(--line);border-radius:16px;padding:14px;background:#FBFDFF}.mini .n{font-size:28px;font-weight:900}.mini .l{font-size:12px;color:var(--muted);font-weight:800}
-.table-wrap{overflow:auto}.data-table{width:100%;border-collapse:separate;border-spacing:0;min-width:760px}.data-table th{background:#F4F7FB;color:#64738a;font-size:12px;text-align:left;padding:12px;border-bottom:1px solid var(--line);white-space:nowrap}.data-table td{padding:12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}.data-table tr:hover td{background:#FAFCFF}
-.status{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:900;white-space:nowrap}.status.active{background:#EBF7E3;color:var(--green)}.status.expired{background:#EEF1F5;color:#778598}.status.soon{background:#FFF4DE;color:#B46D00}.status.urgent{background:#FFE3E3;color:#D90429}.status.upcoming{background:#E7F0FF;color:#1D4ED8}
-.loading{display:grid;place-items:center;min-height:420px;color:var(--muted);font-weight:900}.spinner{width:34px;height:34px;border-radius:50%;border:4px solid #E4EEF8;border-top-color:var(--blue);animation:spin 1s linear infinite;margin-bottom:12px}@keyframes spin{to{transform:rotate(360deg)}}
-.empty{padding:26px;text-align:center;color:var(--muted)}
-.footer-note{font-size:11px;color:var(--muted);font-family:'Sarabun',sans-serif;text-align:center;margin:20px 0}
-@media(max-width:1300px){.grid-kpi{grid-template-columns:repeat(3,1fr)}.layout-main,.hero{grid-template-columns:1fr}.layout-3{grid-template-columns:1fr 1fr}.insights{grid-template-columns:1fr}}
-@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.grid-kpi,.layout-3{grid-template-columns:1fr}.content{padding:16px}.topbar{height:auto;padding:16px;align-items:flex-start}.top-actions{justify-content:flex-end}}
+:root{--blue:#1A6DB5;--sky:#4BBDE8;--navy:#0F2D5A;--dark:#071828;--green:#5BAD3E;--gold:#F5A623;--red:#D63B32;--purple:#7C3AED;--teal:#0D9488;--bg:#F5F8FC;--card:#fff;--line:#E6EDF6;--text:#10233f;--muted:#66758a;--soft:#E8F4FD;--shadow:0 8px 30px rgba(15,45,90,.09);--radius:18px}
+body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}.app{display:grid;grid-template-columns:250px 1fr;min-height:100vh}.sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:20}.brand{height:74px;display:flex;align-items:center;gap:12px;padding:0 22px;border-bottom:1px solid var(--line)}.brand img{width:70px;height:auto}.brand-title{font-size:12px;color:var(--muted);line-height:1.35}.nav{padding:16px 12px;overflow:auto}.nav-section{font-size:11px;font-weight:700;color:#a0adbc;text-transform:uppercase;margin:18px 12px 8px}.nav-btn{width:100%;border:0;background:transparent;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;color:#26364e;font-weight:700;font-size:14px;cursor:pointer;font-family:'Prompt',sans-serif;transition:.18s}.nav-btn:hover{background:#F1F7FD;color:var(--blue)}.nav-btn.active{background:#E8F4FD;color:var(--blue);box-shadow:inset 3px 0 0 var(--blue)}.nav-icon{font-size:20px;width:24px;text-align:center}.nav-badge{margin-left:auto;background:#FFE9E7;color:var(--red);font-size:11px;border-radius:99px;padding:2px 8px}.userbox{margin-top:auto;padding:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px}.avatar{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--sky),var(--blue));display:grid;place-items:center;color:#fff;font-weight:800}.user-name{font-size:12px;font-weight:800}.user-mail{font-size:11px;color:var(--muted)}.main{min-width:0}.topbar{height:74px;background:var(--dark);color:#fff;display:flex;align-items:center;gap:14px;padding:0 24px;position:sticky;top:0;z-index:10}.page-title{font-size:16px;font-weight:800}.crumb{font-size:12px;color:rgba(255,255,255,.55)}.spacer{flex:1}.top-actions{display:flex;align-items:center;gap:8px}.pill{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer;font-family:'Prompt',sans-serif}.pill.primary{background:linear-gradient(135deg,var(--blue),var(--sky));border-color:transparent}.lang{display:flex;background:rgba(255,255,255,.1);border-radius:10px;padding:3px}.lang button{border:0;background:transparent;color:rgba(255,255,255,.6);padding:5px 9px;border-radius:8px;font-weight:800;cursor:pointer}.lang button.active{background:var(--blue);color:#fff}.content{padding:24px;max-width:1700px;margin:0 auto}.notice{background:#FFF6DE;border:1px solid #FFD17A;color:#8B5A00;border-radius:14px;padding:12px 16px;font-size:13px;margin-bottom:18px}.grid-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px}.kpi-ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:24px}.kpi .num{font-size:34px;line-height:1;font-weight:900;color:var(--blue)}.kpi .label{font-size:13px;font-weight:800}.kpi .sub{font-size:11px;color:var(--muted);margin-top:4px}.panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-title{font-size:16px;font-weight:900}.panel-sub{font-size:12px;color:var(--muted);margin-top:3px}.panel-body{padding:18px}.layout-2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(340px,.55fr);gap:16px;margin-bottom:18px}.map-card{background:#071828;border-radius:18px;padding:18px;color:#fff;min-height:420px}.map-wrap{height:330px;background:#081d31;border-radius:14px;overflow:hidden;position:relative}.map-wrap svg{width:100%;height:100%;display:block}.country{fill:#22364c;stroke:#31465f;stroke-width:.4}.country.active-low{fill:#4BBDE8}.country.active-mid{fill:#1A6DB5}.country.active-high{fill:#F5A623}.map-tooltip{position:absolute;display:none;background:#fff;color:#10233f;border-radius:10px;padding:8px 10px;font-size:12px;box-shadow:var(--shadow);pointer-events:none}.chart{height:250px}.bar-row{display:grid;grid-template-columns:110px 1fr 54px;gap:10px;align-items:center;margin:12px 0}.bar-name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar-track{height:18px;background:#EDF3FA;border-radius:999px;overflow:hidden}.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--sky));min-width:3px}.bar-val{font-size:12px;font-weight:800;text-align:right}.toolbar{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}.input,.select{border:1.5px solid #DCE6F2;background:#fff;border-radius:12px;padding:11px 13px;font-family:'Prompt',sans-serif;font-size:13px;outline:none}.input:focus,.select:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(75,189,232,.12)}.search{flex:1;min-width:260px}.btn{border:0;border-radius:12px;padding:11px 16px;font-family:'Prompt',sans-serif;font-weight:800;cursor:pointer;background:#E8F4FD;color:var(--blue);transition:.15s;text-decoration:none;display:inline-flex;align-items:center;gap:7px}.btn:hover{transform:translateY(-1px)}.btn.primary{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff}.btn.danger{background:#FDECEA;color:var(--red)}.btn.green{background:#EBF7E3;color:var(--green)}.btn.gold{background:#FEF3DC;color:#9b6200}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 15px;font-weight:800;color:var(--muted);cursor:pointer}.tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}.table-wrap{overflow:auto}.data-table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px}.data-table th{background:#F4F7FB;color:#64738a;font-size:12px;text-align:left;padding:12px;border-bottom:1px solid var(--line);white-space:nowrap}.data-table td{padding:12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}.data-table tr:hover td{background:#FAFCFF}.status{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:800}.status.active{background:#EBF7E3;color:var(--green)}.status.expired{background:#EEF1F5;color:#778598}.status.soon{background:#FFF4DE;color:#B46D00}
+.status.urgent{background:#FFE3E3;color:#D90429}
+.status.upcoming{background:#E7F0FF;color:#1D4ED8}
+.status.done{background:#EEF1F5;color:#64748B}
+.mobility-type-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;background:#EEF2FF;color:#4F46E5;font-size:11px;font-weight:800;margin:2px 4px 2px 0;white-space:nowrap}
+.mobility-level-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;background:#ECFEFF;color:#0891B2;font-size:11px;font-weight:800;margin:2px 0;white-space:nowrap}
+.mobility-date{font-weight:800;color:var(--text);white-space:nowrap}
+.mobility-sub{font-size:11px;color:var(--muted);margin-top:3px;font-family:'Sarabun',sans-serif}.actions{display:flex;gap:6px}.iconbtn{border:0;border-radius:10px;padding:8px 10px;cursor:pointer;font-weight:800}.empty{padding:34px;text-align:center;color:var(--muted)}.event-list{display:flex;flex-direction:column;gap:10px}.event-item{display:grid;grid-template-columns:54px 1fr auto;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:14px}.datebox{width:54px;height:54px;background:#F1F7FD;border-radius:14px;display:grid;place-items:center;color:var(--blue);font-weight:900}.item-title{font-weight:900;font-size:13px}.item-meta{font-size:12px;color:var(--muted);margin-top:3px}.modal-backdrop{position:fixed;inset:0;background:rgba(7,24,40,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:18px}.modal-backdrop.show{display:flex}.modal{width:min(860px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;box-shadow:0 30px 80px rgba(0,0,0,.25)}.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--line)}.modal-title{font-weight:900;font-size:18px}.close{border:0;background:#F2F5F9;border-radius:10px;width:36px;height:36px;cursor:pointer}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:20px}.field label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:6px}.field.full{grid-column:1/-1}.form input,.form textarea,.form select{width:100%;border:1.5px solid #DCE6F2;border-radius:12px;padding:11px 12px;font-family:'Prompt',sans-serif}.form textarea{min-height:88px;resize:vertical}.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--line)}.loading{padding:30px;text-align:center;color:var(--muted)}.error{background:#FDECEA;color:var(--red);border-radius:14px;padding:12px 16px;margin-bottom:14px}.mobile-menu{display:none}.hide{display:none!important}
+@media(max-width:1100px){.app{grid-template-columns:86px 1fr}.brand{justify-content:center;padding:0}.brand img{width:58px}.brand-title,.nav-section,.nav-label,.user-info,.nav-badge{display:none}.nav-btn{justify-content:center;padding:14px 0}.nav-icon{font-size:22px}.userbox{justify-content:center}.grid-kpi{grid-template-columns:repeat(2,1fr)}.layout-2{grid-template-columns:1fr}.sidebar{width:86px}}
+@media(max-width:760px){.app{display:block}.sidebar{position:fixed;left:-280px;width:260px;transition:.25s;box-shadow:0 20px 80px rgba(0,0,0,.25)}.sidebar.open{left:0}.brand-title,.nav-section,.nav-label,.user-info,.nav-badge{display:block}.nav-btn{justify-content:flex-start;padding:12px 14px}.topbar{height:64px;padding:0 14px}.mobile-menu{display:inline-flex}.content{padding:14px}.grid-kpi{grid-template-columns:1fr}.kpi{padding:14px}.kpi .num{font-size:28px}.toolbar{align-items:stretch}.search,.input,.select,.btn{width:100%;min-width:0}.form{grid-template-columns:1fr}.layout-2{gap:12px}.map-card{padding:12px;min-height:340px}.map-wrap{height:250px}.event-item{grid-template-columns:48px 1fr}.event-item .btn{grid-column:1/-1}.top-actions .pill:not(.primary),.lang{display:none}.page-title{font-size:14px}.crumb{display:none}.table-wrap{margin:0 -14px;padding:0 14px}.panel-head{align-items:flex-start;flex-direction:column}.sidebar{height:100dvh}.userbox{justify-content:flex-start}.brand{justify-content:flex-start;padding:0 22px}.brand img{width:70px}}
+
+.file-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:10px;background:#E8F4FD;color:#1A6DB5;font-weight:800;text-decoration:none;font-size:12px;white-space:nowrap}
+.file-btn:hover{background:#D7ECFB}
+.file-empty{color:#9AA8B8;font-weight:700}
 </style>
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <img src="iroup-logo.png" alt="iROUP">
-      <div class="brand-title"><b>iROUP</b><br>International Relations Office</div>
-    </div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><img src="iroup-logo.png" alt="iROUP"><div class="brand-title">International Relations<br>Admin System</div></div>
     <nav class="nav">
-      <div class="nav-section">Overview</div>
-      <a class="nav-btn active" href="dashboard-full.html"><span class="nav-icon">📊</span>Executive Dashboard</a>
-      <a class="nav-btn" href="dashboard.html"><span class="nav-icon">🏠</span>Dashboard เดิม</a>
-      <div class="nav-section">Management</div>
-      <a class="nav-btn" href="mou.html"><span class="nav-icon">🤝</span>MOU</a>
-      <a class="nav-btn" href="mobility.html"><span class="nav-icon">🌏</span>Mobility</a>
-      <a class="nav-btn" href="travel.html"><span class="nav-icon">✈️</span>การเดินทาง</a>
-      <a class="nav-btn" href="scholarship-events.html"><span class="nav-icon">🎓</span>ทุน / กิจกรรม</a>
-      <a class="nav-btn" href="report.html"><span class="nav-icon">📤</span>รายงาน & Export</a>
+      <div class="nav-section">หลัก</div>
+      <button class="nav-btn active" data-page="home"><span class="nav-icon">▦</span><span class="nav-label">Dashboard</span></button>
+      <div class="nav-section">ข้อมูลหลัก</div>
+      <button class="nav-btn" data-page="mou"><span class="nav-icon">🤝</span><span class="nav-label">MOU ต่างประเทศ</span><span class="nav-badge" id="badgeMou">0</span></button>
+      <button class="nav-btn" data-page="scholar"><span class="nav-icon">🎓</span><span class="nav-label">ทุน & กิจกรรม</span></button>
+      <button class="nav-btn" data-page="travel"><span class="nav-icon">✈️</span><span class="nav-label">การเดินทางบุคลากร</span></button>
+      <button class="nav-btn" data-page="mobility"><span class="nav-icon">👥</span><span class="nav-label">Mobility</span></button>
+      <div class="nav-section">รายงาน</div>
+      <button class="nav-btn" data-page="reports"><span class="nav-icon">📊</span><span class="nav-label">รายงาน & Export</span></button>
+      <div class="nav-section">อื่นๆ</div>
+      <button class="nav-btn" data-page="public"><span class="nav-icon">🌐</span><span class="nav-label">Public View</span></button>
+      <button class="nav-btn" data-page="settings"><span class="nav-icon">⚙️</span><span class="nav-label">ตั้งค่า</span></button>
     </nav>
-    <div class="userbox">
-      <div class="avatar">IR</div>
-      <div><div class="user-name">งานวิเทศสัมพันธ์</div><div class="user-mail">University of Phayao</div></div>
-    </div>
+    <div class="userbox"><div class="avatar" id="avatar">T</div><div class="user-info"><div class="user-name" id="userName">Admin</div><div class="user-mail" id="userMail">iROUP</div></div></div>
   </aside>
-
   <main class="main">
     <header class="topbar">
-      <div>
-        <div class="page-title">Executive Dashboard</div>
-        <div class="crumb">สรุปภาพรวมงานวิเทศสัมพันธ์จากข้อมูลจริงใน Google Sheet</div>
-      </div>
+      <button class="pill mobile-menu" id="menuBtn">☰</button>
+      <div><div class="crumb">งานวิเทศสัมพันธ์ · <span id="crumbPage">Dashboard</span></div><div class="page-title" id="pageTitle">Dashboard</div></div>
       <div class="spacer"></div>
-      <div class="top-actions">
-        <a class="pill" href="public-landing.html">🌐 Public Web</a>
-        <a class="pill" href="report.html">📤 Report</a>
-        <button class="pill primary" onclick="reloadData(true)">↻ โหลดใหม่</button>
-      </div>
+      <div class="top-actions"><div class="lang"><button class="active" data-lang="th">TH</button><button data-lang="en">EN</button></div><a class="pill" href="public-landing.html" target="_blank">🌐 Public View</a><button class="pill primary" onclick="location.reload()">↻ Refresh</button></div>
     </header>
-
-    <section class="content">
-      <div class="hero">
-        <div class="hero-card">
-          <div class="hero-title">ภาพรวมความเป็นนานาชาติของมหาวิทยาลัยพะเยา</div>
-          <div class="hero-sub">หน้านี้อ่านข้อมูลจาก API เดียวคือ <b>getReport</b> แล้วสรุปเป็น KPI, insight, ranking, งบประมาณ และรายการล่าสุด เพื่อใช้เป็นหน้าเสนอผู้บริหารหรือ monitor งานประจำวัน</div>
-          <div class="hero-meta">
-            <span class="hero-chip" id="lastUpdated">กำลังโหลดข้อมูล...</span>
-            <span class="hero-chip" id="yearChip">ทุกปีงบประมาณ</span>
-            <span class="hero-chip">⚡ Fast Report API</span>
-          </div>
-        </div>
-        <div class="globy-box">
-          <img src="Globy_IROUP.png" alt="Globy">
-        </div>
-      </div>
-
-      <div class="toolbar">
-        <select id="yearSelect" class="select">
-          <option value="">ทุกปีงบประมาณ</option>
-        </select>
-        <input id="quickSearch" class="input" placeholder="ค้นหาประเทศ / คณะ / กิจกรรม..." />
-        <button class="btn primary" onclick="applyFilter()">ใช้ตัวกรอง</button>
-        <button class="btn" onclick="clearFilter()">ล้างตัวกรอง</button>
-        <a class="btn green" href="report.html">ไปหน้า Report</a>
-      </div>
-
-      <div id="notice" class="notice"></div>
-      <div id="appContent"><div class="loading"><div><div class="spinner"></div><div>กำลังโหลด Dashboard...</div></div></div></div>
-      <div class="footer-note">iROUP Executive Dashboard · Generated from Google Sheet via Apps Script</div>
-    </section>
+    <section class="content" id="content"><div class="loading">กำลังโหลดข้อมูล...</div></section>
   </main>
 </div>
-
+<div class="modal-backdrop" id="modalBackdrop"><div class="modal"><div class="modal-head"><div class="modal-title" id="modalTitle">เพิ่มข้อมูล</div><button class="close" id="modalClose">✕</button></div><form id="modalForm"><div class="form" id="formFields"></div><div class="modal-foot"><button type="button" class="btn" id="modalCancel">ยกเลิก</button><button type="submit" class="btn primary" id="modalSubmit">บันทึก</button></div></form></div></div>
 <script>
-const state = {
-  raw:null,
-  view:null,
-  year:'',
-  query:'',
-  loading:false
+const SHEETS = {
+  mou: IROUP.SHEETS.MOU,
+  scholar: IROUP.SHEETS.SCHOLAR,
+  event: IROUP.SHEETS.EVENT,
+  travel: IROUP.SHEETS.TRAVEL,
+  inbound: IROUP.SHEETS.INBOUND,
+  outbound: IROUP.SHEETS.OUTBOUND,
 };
-
-function $(s){return document.querySelector(s)}
-function esc(v){return String(v ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function num(v){return Number(v||0).toLocaleString('th-TH')}
-function money(v){return Number(v||0).toLocaleString('th-TH',{maximumFractionDigits:0})+' บาท'}
-function toDate(v){if(!v)return null; const d=new Date(v); return isNaN(d)?null:d}
-function fmtDate(v){const d=toDate(v); return d?d.toLocaleDateString('th-TH',{year:'numeric',month:'short',day:'numeric'}):'-'}
-function daysBetween(a,b){return Math.ceil((a-b)/(1000*60*60*24))}
-function startDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
-
-async function fetchReport(year=''){
-  const url = `${IROUP.SCRIPT_URL}?action=getReport&year=${encodeURIComponent(year)}`;
-  const res = await fetch(url,{cache:'no-store'});
-  if(!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ');
-  const json = await res.json();
-  if(!json.success) throw new Error(json.error || 'API error');
-  return json;
-}
-
-async function reloadData(force=false){
-  if(state.loading) return;
-  state.loading=true;
-  $('#notice').style.display='none';
-  $('#appContent').innerHTML='<div class="loading"><div><div class="spinner"></div><div>กำลังโหลดข้อมูลจาก Google Sheet...</div></div></div>';
-  try{
-    const cacheKey='iroup_dashboard_full_'+(state.year||'all');
-    if(!force){
-      const cached=localStorage.getItem(cacheKey);
-      if(cached){
-        const c=JSON.parse(cached);
-        if(Date.now()-c.ts<5*60*1000){
-          state.raw=c.data;
-          buildYearOptions();
-          render();
-          state.loading=false;
-          return;
-        }
-      }
-    }
-    const data=await fetchReport(state.year);
-    state.raw=data;
-    localStorage.setItem(cacheKey,JSON.stringify({ts:Date.now(),data}));
-    buildYearOptions();
-    render();
-  }catch(err){
-    $('#appContent').innerHTML=`<div class="panel"><div class="empty">โหลดข้อมูลไม่ได้<br><b>${esc(err.message)}</b><br><br>เช็กว่า Apps Script Deploy เวอร์ชันล่าสุดแล้ว และ URL ใน iroup-config.js ถูกต้อง</div></div>`;
-  }finally{
-    state.loading=false;
-  }
-}
-
-function buildYearOptions(){
-  const sel=$('#yearSelect');
-  const current=sel.value || state.year;
-  const years=new Set();
-  const data=state.raw?.data||{};
-  Object.values(data).flat().forEach(r=>{
-    const y=String(r['ปีงบ']||'').trim();
-    if(/^25\d{2}$/.test(y)) years.add(y);
-  });
-  const sorted=[...years].sort((a,b)=>b.localeCompare(a));
-  sel.innerHTML='<option value="">ทุกปีงบประมาณ</option>'+sorted.map(y=>`<option value="${esc(y)}">ปีงบ ${esc(y)}</option>`).join('');
-  sel.value=current;
-}
-
-function applyFilter(){
-  state.year=$('#yearSelect').value;
-  state.query=$('#quickSearch').value.trim();
-  reloadData(true);
-}
-function clearFilter(){
-  state.year='';
-  state.query='';
-  $('#yearSelect').value='';
-  $('#quickSearch').value='';
-  reloadData(true);
-}
-
-function filteredReport(){
-  const r=structuredClone(state.raw);
-  if(!state.query) return r;
-  const q=state.query.toLowerCase();
-  Object.keys(r.data).forEach(k=>{
-    r.data[k]=r.data[k].filter(row=>Object.values(row).join(' ').toLowerCase().includes(q));
-  });
-  r.total={
-    mou:r.data.mou.length,
-    scholar:r.data.scholar.length,
-    event:r.data.event.length,
-    travel:r.data.travel.length,
-    inbound:r.data.inbound.length,
-    outbound:r.data.outbound.length,
-    mobility:r.data.inbound.length+r.data.outbound.length,
-    all:Object.values(r.data).flat().length
-  };
-  r.summary=makeSummary(r.data);
-  return r;
-}
-
-function makeSummary(data){
-  const allCountries=[
-    ...data.mou.map(r=>r['ประเทศ']),
-    ...data.scholar.map(r=>r['ประเทศ']),
-    ...data.inbound.map(r=>r['ประเทศ']),
-    ...data.outbound.map(r=>r['ประเทศ']),
-    ...data.travel.map(r=>r['ประเทศ'])
-  ];
-  return {
-    countries:uniqueCount(allCountries),
-    budget:{
-      scholar:sum(data.scholar,'จำนวนเงิน'),
-      event:sum(data.event,'จำนวนเงิน'),
-      travel:sum(data.travel,'จำนวนเงิน'),
-      inbound:sum(data.inbound,'จำนวนเงิน'),
-      outbound:sum(data.outbound,'จำนวนเงิน'),
-      all:sum(data.scholar,'จำนวนเงิน')+sum(data.event,'จำนวนเงิน')+sum(data.travel,'จำนวนเงิน')+sum(data.inbound,'จำนวนเงิน')+sum(data.outbound,'จำนวนเงิน')
-    },
-    byCountry:group(allCountries),
-    byFaculty:group([
-      ...data.mou.map(r=>r['หน่วยงาน_UP']),
-      ...data.event.map(r=>r['หน่วยงาน']),
-      ...data.inbound.map(r=>r['หน่วยงาน_UP']),
-      ...data.outbound.map(r=>r['คณะ']),
-      ...data.travel.map(r=>r['หน่วยงาน_UP'] || r['คณะ'])
-    ]),
-    byScholarLevel:group(data.scholar.map(r=>r['ระดับ'])),
-    byEventType:group(data.event.map(r=>r['ประเภท'])),
-    byMouType:group(data.mou.map(r=>r['ประเภท']))
-  }
-}
-function group(arr){const o={}; arr.map(v=>String(v||'').trim()).filter(Boolean).forEach(v=>o[v]=(o[v]||0)+1); return o}
-function uniqueCount(arr){return Object.keys(group(arr)).length}
-function sum(rows,key){return rows.reduce((s,r)=>s+(Number(String(r[key]||0).replace(/,/g,''))||0),0)}
-
+const FIELDS = {
+  mou:['หน่วยงาน_UP','องค์กร_ตปท','ประเทศ','ทวีป','ประเภท','วันเริ่ม','วันสิ้นสุด','ปีงบ','หมายเหตุ','ไฟล์_URL'],
+  scholar:['ชื่อทุน','สถาบัน','ประเทศ','ระดับ','วันประชาสัมพันธ์','วันเปิดรับ','วันปิดรับ','ครอบคลุม','Link','Poster_URL','ไฟล์_URL','Pin','หมายเหตุ'],
+  event:['ชื่อกิจกรรม','ประเภท','วันเริ่ม','วันสิ้นสุด','เวลาเริ่ม','เวลาสิ้นสุด','สถานที่','หน่วยงาน','จำนวน','รายละเอียด','Poster_URL','ไฟล์_URL'],
+  travel:['ชื่อโครงการ','วัตถุประสงค์','วันเริ่ม','วันสิ้นสุด','ประเทศ','เมือง','จำนวน','รหัสผู้เดินทาง','ชื่อผู้เดินทาง','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ'],
+  inbound:['ชื่อ','ชื่อกลาง','สกุล','เพศ','ประเภทผู้เข้าร่วม','สถาบันต้นทาง','ประเทศ','ทวีป','ระดับ','หน่วยงาน_UP','ภาษา','วันมาถึง','วันกลับ','โครงการ','วัตถุประสงค์','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ'],
+  outbound:['รหัสนิสิต','จำนวน','ชื่อ-สกุล','เพศ','คณะ','สาขา','สถาบันปลายทาง','ประเทศ','ทวีป','ระดับ','วันออก','วันกลับ','โครงการ','วัตถุประสงค์','ปีงบ','งบประเภท','จำนวนเงิน','ไฟล์_URL','หมายเหตุ']
+};
+const labels = {home:'Dashboard',mou:'MOU ต่างประเทศ',scholar:'ทุน & กิจกรรม',travel:'การเดินทางบุคลากร',mobility:'Mobility',reports:'รายงาน & Export',settings:'ตั้งค่า',public:'Public View'};
+let state={page:'home', stats:null, data:{}, master:{faculty:[], country:[], student:[]}, lang:'th', activeSub:null, editing:null, query:'', searchTimer:null, scholarFilter:''};
+const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
+function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+function asArr(res){return Array.isArray(res) ? res : (res?.data || [])}
+function toDate(v){if(!v)return null;if(v instanceof Date)return v;const s=String(v).trim();let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);if(m){let y=+m[3]; if(y>2400)y-=543; if(y<100)y+=2000; return new Date(y,+m[2]-1,+m[1]);}let d=new Date(s);return isNaN(d)?null:d}
+function fmtDate(v){const d=toDate(v); if(!d)return v||'-'; return d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'});}
+function daysBetween(a,b){return Math.ceil((b-a)/(86400000))}
+function startOfDay(d){return new Date(d.getFullYear(), d.getMonth(), d.getDate())}
+function statusMou(r){const end=toDate(r['วันสิ้นสุด']); if(!end)return 'active'; const diff=daysBetween(new Date(),end); if(diff<0)return 'expired'; if(diff<=180)return 'soon'; return 'active';}
 function statusScholar(r){
-  const today=startDay(new Date());
+  const today=startOfDay(new Date());
   const open=toDate(r['วันเปิดรับ']);
   const close=toDate(r['วันปิดรับ']);
-  if(!open || !close) return 'upcoming';
-  const d=daysBetween(close,today);
-  if(today<open) return 'upcoming';
-  if(today>close) return 'expired';
-  if(d<=7) return 'urgent';
-  if(d<=30) return 'soon';
-  return 'active';
-}
-function statusEvent(r){
-  const today=startDay(new Date());
-  const start=toDate(r['วันเริ่ม']);
-  const end=toDate(r['วันสิ้นสุด'])||start;
-  if(!start) return 'upcoming';
-  if(today<start) return 'upcoming';
-  if(today>end) return 'expired';
-  return 'active';
-}
-function statusMou(r){
-  const today=startDay(new Date());
-  const end=toDate(r['วันสิ้นสุด']);
-  if(!end) return 'active';
-  const d=daysBetween(end,today);
-  if(d<0) return 'expired';
-  if(d<=180) return 'soon';
-  return 'active';
-}
-function statusText(s){return {active:'กำลังดำเนินการ',soon:'ใกล้หมด/ใกล้ปิด',urgent:'ด่วน',upcoming:'กำลังจะถึง',expired:'สิ้นสุดแล้ว'}[s]||s}
-
-function topEntries(obj,n=6){return Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]).slice(0,n)}
-function barList(obj,n=6){
-  const rows=topEntries(obj,n); if(!rows.length)return '<div class="empty">ยังไม่มีข้อมูล</div>';
-  const max=Math.max(...rows.map(x=>x[1]),1);
-  return rows.map(([name,val])=>`<div class="bar-row"><div class="bar-name" title="${esc(name)}">${esc(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(5,val/max*100)}%"></div></div><div class="bar-val">${num(val)}</div></div>`).join('');
-}
-
-function generateInsights(report){
-  const {data,total,summary}=report;
-  const insights=[];
-  const inb=total.inbound||0, out=total.outbound||0, mob=inb+out;
-  if(mob){
-    const diff=out-inb;
-    insights.push({
-      icon:'🌏',
-      title: diff===0 ? `Mobility สมดุล Inbound และ Outbound รวม ${num(mob)} รายการ` : `Mobility รวม ${num(mob)} รายการ โดย ${diff>0?'Outbound มากกว่า Inbound':'Inbound มากกว่า Outbound'} ${num(Math.abs(diff))} รายการ`,
-      sub:'คำนวณจากชีท Inbound และ Outbound'
-    });
+  const openDay=open?startOfDay(open):null;
+  const closeDay=close?startOfDay(close):null;
+  if(closeDay && today>closeDay) return 'expired';
+  if(openDay && today<openDay) return 'upcoming';
+  if(closeDay){
+    const diff=daysBetween(today,closeDay);
+    if(diff<=3) return 'urgent';
+    if(diff<=10) return 'soon';
   }
-  const topCountry=topEntries(summary.byCountry,1)[0];
-  if(topCountry) insights.push({icon:'🌍',title:`ประเทศที่มี activity สูงสุดคือ ${topCountry[0]} (${num(topCountry[1])} รายการ)`,sub:'รวม MOU, Mobility, Travel และทุน'});
-  const topFaculty=topEntries(summary.byFaculty,1)[0];
-  if(topFaculty) insights.push({icon:'🏫',title:`หน่วยงานที่ active สูงสุดคือ ${topFaculty[0]}`,sub:`พบ ${num(topFaculty[1])} รายการในข้อมูลที่เลือก`});
-  const openScholar=data.scholar.filter(r=>['active','soon','urgent'].includes(statusScholar(r)));
-  insights.push({icon:'🎓',title:openScholar.length?`ขณะนี้มีทุนที่ยังเปิดรับ/ใกล้ปิดรับ ${num(openScholar.length)} ทุน`:'ขณะนี้ยังไม่มีทุนที่เปิดรับสมัครในข้อมูลชุดนี้',sub:'ดูจากวันเปิดรับและวันปิดรับ'});
-  const upcoming=data.event.filter(r=>{const d=toDate(r['วันเริ่ม']); if(!d)return false; const diff=daysBetween(d,startDay(new Date())); return diff>=0 && diff<=30});
-  if(upcoming.length) insights.push({icon:'📅',title:`มีกิจกรรมที่กำลังจะเกิดขึ้นใน 30 วัน ${num(upcoming.length)} รายการ`,sub:'เหมาะสำหรับติดตามงานประจำเดือน'});
-  if(summary.budget.all>0) insights.push({icon:'💰',title:`งบประมาณรวมที่บันทึกในระบบ ${money(summary.budget.all)}`,sub:'รวมทุน กิจกรรม เดินทาง Inbound และ Outbound'});
-  const soonMou=data.mou.filter(r=>statusMou(r)==='soon');
-  if(soonMou.length) insights.push({icon:'⏰',title:`มี MOU ใกล้หมดอายุ ${num(soonMou.length)} รายการ`,sub:'ควรตรวจสอบเพื่อต่ออายุหรือประเมินความร่วมมือ'});
-  return insights.slice(0,6);
+  return 'active';
+}
+function statusScholarPriority(r){return ({urgent:1,soon:2,active:3,upcoming:4,expired:5})[statusScholar(r)]||9}
+function scholarRemainText(r){
+  const s=statusScholar(r), close=toDate(r['วันปิดรับ']);
+  if(!close || !['urgent','soon'].includes(s)) return '';
+  const diff=daysBetween(startOfDay(new Date()), startOfDay(close));
+  return `<div style="font-size:11px;color:#8896a8;margin-top:3px">เหลือ ${diff} วัน</div>`;
+}
+function statusText(s){return s==='active'?'เปิดรับ':s==='soon'?'ใกล้ปิดรับ':s==='urgent'?'🔥 ด่วน':s==='upcoming'?'ยังไม่เปิดรับ':s==='expired'?'หมดอายุ':'-';}
+function fileLink(url,label='เปิด'){
+  const u = String(url || '').trim();
+  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '<span class="file-empty">-</span>';
+  return `<a href="${esc(u)}" target="_blank" rel="noopener" class="file-btn">🔗 ${esc(label)}</a>`;
 }
 
-function kpi(icon,numText,label,sub,color='blue'){
-  const bg={blue:'#E8F4FD',green:'#EBF7E3',gold:'#FEF3DC',red:'#FDECEA',purple:'#F0EBFF',teal:'#E0F7F5'}[color]||'#E8F4FD';
-  const c={blue:'var(--blue)',green:'var(--green)',gold:'var(--gold)',red:'var(--red)',purple:'var(--purple)',teal:'var(--teal)'}[color]||'var(--blue)';
-  return `<div class="kpi"><div class="kpi-ico" style="background:${bg}">${icon}</div><div><div class="num" style="color:${c}">${numText}</div><div class="label">${label}</div><div class="sub">${sub}</div></div></div>`
+async function safe(label, fn, fallback=[]){try{return await fn()}catch(e){console.error(label,e); return fallback}}
+async function loadCore(){
+  state.stats = await safe('stats',()=>IROUP.getStats(),{stats:{}});
+  state.stats = state.stats.stats ? state.stats.stats : state.stats;
+  const keys=['mou','scholar','event','travel','inbound','outbound'];
+  await Promise.all(keys.map(async k=>{state.data[k]=asArr(await safe(k,()=>IROUP.getAll(SHEETS[k]),{data:[]}));}));
+  // Master data: ใช้ sheet ที่ผู้ใช้สร้างเอง ถ้าโหลดไม่ได้จะ fallback เป็นข้อมูลจากรายการที่เคยกรอก
+  state.master.faculty = asArr(await safe('FACULTY',()=>IROUP.getAll('FACULTY'),{data:[]}));
+  state.master.country = asArr(await safe('COUNTRY',()=>IROUP.getAll('COUNTRY'),{data:[]}));
+  state.master.student = asArr(await safe('STUDENT',()=>IROUP.getAll('STUDENT'),{data:[]}));
+  $('#badgeMou').textContent = state.data.mou.length;
 }
-
-function render(){
-  const report=filteredReport();
-  const {data,total,summary}=report;
-  $('#lastUpdated').textContent='อัปเดตล่าสุด '+new Date(report.generatedAt||Date.now()).toLocaleString('th-TH');
-  $('#yearChip').textContent=state.year?`ปีงบ ${state.year}`:'ทุกปีงบประมาณ';
-  if(state.query){
-    $('#notice').style.display='block';
-    $('#notice').textContent=`กำลังกรองข้อมูลด้วยคำค้น “${state.query}”`;
-  }else{
-    $('#notice').style.display='none';
-  }
-
-  const insights=generateInsights(report);
-  const openScholar=data.scholar.filter(r=>['active','soon','urgent'].includes(statusScholar(r))).length;
-  const upcomingEvent=data.event.filter(r=>statusEvent(r)==='upcoming').length;
-  const activeMou=data.mou.filter(r=>statusMou(r)==='active').length;
-  const activeTravel=data.travel.filter(r=>statusEvent({'วันเริ่ม':r['วันเริ่ม'],'วันสิ้นสุด':r['วันสิ้นสุด']})==='active').length;
-
-  $('#appContent').innerHTML=`
-    <div class="grid-kpi">
-      ${kpi('🤝',num(total.mou),'MOU ทั้งหมด',`${num(activeMou)} active`,'blue')}
-      ${kpi('🎓',num(total.scholar),'ทุนการศึกษา',`${num(openScholar)} เปิดรับ/ใกล้ปิด`,'gold')}
-      ${kpi('📅',num(total.event),'กิจกรรม',`${num(upcomingEvent)} upcoming`,'purple')}
-      ${kpi('🌏',num(total.mobility),'Mobility',`Inbound ${num(total.inbound)} · Outbound ${num(total.outbound)}`,'teal')}
-      ${kpi('✈️',num(total.travel),'การเดินทาง',`${num(activeTravel)} กำลังเดินทาง`,'green')}
-      ${kpi('💰',summary.budget.all?money(summary.budget.all):'0 บาท','งบประมาณรวม','จากข้อมูลจำนวนเงิน','red')}
-    </div>
-
-    <div class="layout-main">
-      <div class="panel">
-        <div class="panel-head"><div><div class="panel-title">🧠 Auto Insight</div><div class="panel-sub">ข้อความเปลี่ยนตามข้อมูลจริง ปีงบ และคำค้นที่เลือก</div></div></div>
-        <div class="panel-body"><div class="insights">${insights.map(x=>`<div class="insight"><div class="i">${x.icon}</div><div><div class="t">${esc(x.title)}</div><div class="s">${esc(x.sub)}</div></div></div>`).join('')}</div></div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><div><div class="panel-title">💰 Budget Snapshot</div><div class="panel-sub">สรุปงบประมาณตามหมวดข้อมูล</div></div></div>
-        <div class="panel-body">
-          <div class="budget-total"><div class="n">${money(summary.budget.all)}</div><div class="l">งบประมาณรวมที่บันทึก</div></div>
-          ${barList({
-            'ทุนการศึกษา':summary.budget.scholar,
-            'กิจกรรม':summary.budget.event,
-            'การเดินทาง':summary.budget.travel,
-            'Inbound':summary.budget.inbound,
-            'Outbound':summary.budget.outbound
-          },5)}
-        </div>
-      </div>
-    </div>
-
-    <div class="layout-3">
-      <div class="panel"><div class="panel-head"><div><div class="panel-title">🌍 Top ประเทศ</div><div class="panel-sub">รวมทุกหมวดข้อมูล</div></div></div><div class="panel-body">${barList(summary.byCountry,8)}</div></div>
-      <div class="panel"><div class="panel-head"><div><div class="panel-title">🏫 Top หน่วยงาน/คณะ</div><div class="panel-sub">จาก MOU, Event, Mobility, Travel</div></div></div><div class="panel-body">${barList(summary.byFaculty,8)}</div></div>
-      <div class="panel"><div class="panel-head"><div><div class="panel-title">📊 Mix ข้อมูล</div><div class="panel-sub">ภาพรวมจำนวนรายการ</div></div></div><div class="panel-body"><div class="chart-mini">
-        <div class="mini"><div class="n" style="color:var(--blue)">${num(total.mou)}</div><div class="l">MOU</div></div>
-        <div class="mini"><div class="n" style="color:var(--gold)">${num(total.scholar)}</div><div class="l">ทุน</div></div>
-        <div class="mini"><div class="n" style="color:var(--purple)">${num(total.event)}</div><div class="l">กิจกรรม</div></div>
-        <div class="mini"><div class="n" style="color:var(--teal)">${num(total.mobility)}</div><div class="l">Mobility</div></div>
-      </div></div></div>
-    </div>
-
-    <div class="layout-main">
-      <div class="panel">
-        <div class="panel-head"><div><div class="panel-title">🎓 ทุนที่เปิดรับ / ใกล้ปิดรับ</div><div class="panel-sub">เรียงตามวันปิดรับ</div></div><a class="btn" href="scholarship-events.html">จัดการทุน</a></div>
-        <div class="table-wrap">${scholarTable(data.scholar)}</div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><div><div class="panel-title">📅 กิจกรรมใกล้ถึง</div><div class="panel-sub">ใช้ติดตามงานระยะสั้น</div></div><a class="btn" href="scholarship-events.html">จัดการกิจกรรม</a></div>
-        <div class="table-wrap">${eventTable(data.event)}</div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head"><div><div class="panel-title">⏰ MOU ใกล้หมดอายุ</div><div class="panel-sub">รายการที่ควรตรวจสอบหรือต่ออายุ</div></div><a class="btn" href="mou.html">จัดการ MOU</a></div>
-      <div class="table-wrap">${mouTable(data.mou)}</div>
-    </div>
+function setPage(p){ if(p==='public'){window.open('public-landing.html','_blank');return} state.page=p; state.query=''; $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===p)); $('#pageTitle').textContent=labels[p]; $('#crumbPage').textContent=labels[p]; $('#sidebar').classList.remove('open'); render(); }
+function errorBox(msg){return `<div class="error">${esc(msg)}</div>`}
+function card(icon,num,label,sub,color='blue'){return `<div class="kpi"><div class="kpi-ico" style="background:${color==='green'?'#EBF7E3':color==='gold'?'#FEF3DC':color==='purple'?'#F0EBFF':'#E8F4FD'}">${icon}</div><div><div class="num" style="color:var(--${color==='blue'?'blue':color})">${num??0}</div><div class="label">${label}</div><div class="sub">${sub||''}</div></div></div>`}
+function render(){ const c=$('#content'); if(!state.stats){c.innerHTML='<div class="loading">กำลังโหลดข้อมูล...</div>'; return}
+  if(state.page==='home') return renderHome(); if(state.page==='mou') return renderMou(); if(state.page==='scholar') return renderScholarEvents(); if(state.page==='travel') return renderTravel(); if(state.page==='mobility') return renderMobility(); if(state.page==='reports') return renderReports(); if(state.page==='settings') return renderSettings();}
+function renderHome(){const s=state.stats; const upcoming=getUpcoming().slice(0,6); $('#content').innerHTML=`
+  <div class="notice">⚠️ ข้อมูลทั้งหมดในหน้านี้ดึงจาก Google Sheet จริง ไม่มี mock data หากไม่แสดงให้กด Refresh</div>
+  <div class="grid-kpi">${card('🤝',s.mou?.total||0,'MOU ทั้งหมด',`${s.mou?.active||0} Active · ${s.mou?.countries||0} ประเทศ`)}${card('🎓',s.scholarship?.total||0,'ทุนการศึกษา',`${s.scholarship?.open||0} กำลังรับสมัคร`,'gold')}${card('👥',s.mobility?.total||0,'Mobility',`In ${s.inbound?.total||0} / Out ${s.outbound?.total||0}`,'purple')}${card('✈️',s.travel?.total||0,'การเดินทางบุคลากร',`${s.travel?.active||0} กำลังเดินทาง`,'green')}</div>
+  <div class="layout-2"><div class="map-card"><div class="panel-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div><div class="panel-sub" style="color:rgba(255,255,255,.68)">${s.mou?.active||0} MOU Active · ${s.mou?.countries||0} ประเทศ</div><div class="map-wrap" id="homeMap"><div class="map-tooltip" id="mapTip"></div></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">กิจกรรม/รายการที่กำลังจะมาถึง</div><div class="panel-sub">จากทุน กิจกรรม การเดินทาง และ Mobility</div></div></div><div class="panel-body"><div class="event-list">${upcoming.length?upcoming.map(eventItem).join(''):'<div class="empty">ยังไม่มีรายการกำลังจะมาถึง</div>'}</div></div></div></div>
+  <div class="layout-2"><div class="panel"><div class="panel-head"><div><div class="panel-title">Mobility ปีนี้</div><div class="panel-sub">Inbound / Outbound จากชีตจริง</div></div><button class="btn" onclick="setPage('mobility')">ดูรายละเอียด</button></div><div class="panel-body">${barChart([{name:'Inbound',value:state.data.inbound.length},{name:'Outbound',value:state.data.outbound.length}])}</div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">MOU Active แยกตามประเทศ</div><div class="panel-sub">ใช้ประเทศจากชีต MOU</div></div></div><div class="panel-body">${countryBars()}</div></div></div>`; renderMap('homeMap');}
+function getUpcoming(){let items=[]; state.data.scholar.forEach(r=>items.push({type:'ทุน',date:r['วันปิดรับ'],title:r['ชื่อทุน'],meta:`${r['ประเทศ']||''} · ปิดรับ ${fmtDate(r['วันปิดรับ'])}`})); state.data.event.forEach(r=>items.push({type:'กิจกรรม',date:r['วันเริ่ม'],title:r['ชื่อกิจกรรม'],meta:`${r['สถานที่']||''} · ${fmtDate(r['วันเริ่ม'])}`})); state.data.travel.forEach(r=>items.push({type:'เดินทาง',date:r['วันเริ่ม'],title:r['ชื่อโครงการ'],meta:`${r['ประเทศ']||''} ${r['เมือง']||''} · ${fmtDate(r['วันเริ่ม'])}`})); state.data.inbound.forEach(r=>items.push({type:'Inbound',date:r['วันมาถึง'],title:[r['ชื่อ'],r['สกุล']].filter(Boolean).join(' ')||r['โครงการ'],meta:`${r['ประเทศ']||''} · ${fmtDate(r['วันมาถึง'])}`})); state.data.outbound.forEach(r=>items.push({type:'Outbound',date:r['วันออก'],title:r['ชื่อ_สกุล']||r['โครงการ'],meta:`${r['ประเทศ']||''} · ${fmtDate(r['วันออก'])}`})); const now=new Date(); return items.filter(x=>toDate(x.date)&&toDate(x.date)>=new Date(now.getFullYear(),now.getMonth(),now.getDate())).sort((a,b)=>toDate(a.date)-toDate(b.date));}
+function eventItem(x){const d=toDate(x.date); return `<div class="event-item"><div class="datebox">${d?d.getDate():'-'}</div><div><div class="item-title">${esc(x.title||'-')}</div><div class="item-meta">📌 ${esc(x.meta||'')}</div></div><span class="status active">${esc(x.type)}</span></div>`}
+function barChart(rows){const max=Math.max(1,...rows.map(r=>+r.value||0)); return `<div class="chart">${rows.map(r=>`<div class="bar-row"><div class="bar-name">${esc(r.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(+r.value||0)/max*100)}%"></div></div><div class="bar-val">${r.value||0}</div></div>`).join('')}</div>`}
+function cleanCountry(v){return String(v||'').replace(/^[A-Z]{2,3}\s+/,'').trim();}
+function countryCount(){const o={}; state.data.mou.filter(r=>statusMou(r)==='active').forEach(r=>{const c=cleanCountry(r['ประเทศ']); if(c)o[c]=(o[c]||0)+1}); return o}
+function countryBars(){const rows=Object.entries(countryCount()).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value); return rows.length?barChart(rows):'<div class="empty">ยังไม่มี MOU Active</div>'}
+const countryAlias={
+ 'china':['china','cn','people','prc','จีน'], 'japan':['japan','jp','ญี่ปุ่น'], 'south korea':['south korea','korea','kr','เกาหลี'],
+ 'united states of america':['usa','us','united states','america','สหรัฐ'], 'australia':['australia','au','ออสเตรเลีย'],
+ 'france':['france','fr','ฝรั่งเศส'], 'germany':['germany','de','เยอรมนี'], 'thailand':['thailand','th','ไทย'],
+ 'malaysia':['malaysia','my','มาเลเซีย'], 'indonesia':['indonesia','id','อินโดนีเซีย'], 'singapore':['singapore','sg','สิงคโปร์']
+};
+function matchCountryName(mapName, data){let n=String(mapName).toLowerCase(); for(const [k,aliases] of Object.entries(countryAlias)){ if(n===k || aliases.some(a=>n.includes(a))) { for(const dc of Object.keys(data)){let d=cleanCountry(dc).toLowerCase(); if(d.includes(k)||aliases.some(a=>d.includes(a)))return data[dc]; } } } for(const dc of Object.keys(data)){ let d=cleanCountry(dc).toLowerCase(); if(n.includes(d)||d.includes(n))return data[dc]; } return 0;}
+async function renderMap(id){const el=document.getElementById(id); if(!el)return; el.innerHTML='<div class="loading" style="color:#fff">กำลังโหลดแผนที่...</div>'; const data=countryCount(); try{const world=await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'); const countries=topojson.feature(world,world.objects.countries).features; el.innerHTML='<svg></svg><div class="map-tooltip" id="mapTip"></div>'; const svg=d3.select(el).select('svg'); const w=el.clientWidth||800,h=el.clientHeight||330; const projection=d3.geoNaturalEarth1().fitSize([w,h],{type:'Sphere'}); const path=d3.geoPath(projection); const tip=el.querySelector('.map-tooltip'); svg.attr('viewBox',`0 0 ${w} ${h}`); svg.append('path').datum({type:'Sphere'}).attr('d',path).attr('fill','#081d31'); svg.selectAll('path.country').data(countries).join('path').attr('class',d=>{const v=matchCountryName(d.properties.name,data);return 'country '+(v>=8?'active-high':v>=4?'active-mid':v>=1?'active-low':'')}).attr('d',path).on('mousemove',(ev,d)=>{const v=matchCountryName(d.properties.name,data); if(!v)return; tip.style.display='block'; tip.style.left=(ev.offsetX+12)+'px'; tip.style.top=(ev.offsetY+12)+'px'; tip.innerHTML=`<b>${d.properties.name}</b><br>${v} MOU Active`;}).on('mouseleave',()=>tip.style.display='none'); }catch(e){console.error(e); el.innerHTML='<div class="empty" style="color:#b8c9da">โหลดแผนที่ไม่ได้ แต่ข้อมูลยังใช้งานได้</div>';}}
+function filterRows(rows,q){q=(q||'').toLowerCase().trim(); if(!q)return rows; return rows.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q));}
+function renderCrudPage(opts){const rows=filterRows(opts.rows,state.query); $('#content').innerHTML=`<div class="toolbar"><input class="input search" id="searchInput" placeholder="🔍 ค้นหาจากทุกคอลัมน์..." value="${esc(state.query)}"><button class="btn primary" onclick="openForm('${opts.key}')">＋ เพิ่ม${opts.addLabel}</button><button class="btn" onclick="exportCsv('${opts.key}')">⬇ Export CSV</button><button class="btn" onclick="loadCore().then(render)">↻ โหลดใหม่</button></div><div class="panel"><div class="panel-head"><div><div class="panel-title">${opts.title}</div><div class="panel-sub">แสดง ${rows.length} รายการจาก Google Sheet จริง</div></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${opts.cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th>จัดการ</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${opts.cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key]||'-')}</td>`).join('')}<td><div class="actions"><button class="iconbtn" onclick="openForm('${opts.key}','${esc(r.ID)}')">✏️</button><button class="iconbtn" onclick="removeRow('${opts.key}','${esc(r.ID)}')">🗑️</button></div></td></tr>`).join(''):`<tr><td colspan="${opts.cols.length+1}"><div class="empty">ไม่พบข้อมูล</div></td></tr>`}</tbody></table></div></div>`; $('#searchInput').addEventListener('input',e=>{state.query=e.target.value; render();});}
+function renderMou(){const s=state.stats; $('#content').innerHTML=`<div class="notice">⚠️ MOU ใกล้หมดอายุ ${s.mou?.soon||0} รายการ · ข้อมูลมาจากชีต MOU โดยตรง</div><div class="grid-kpi">${card('🤝',s.mou?.total||0,'MOU ทั้งหมด',`${s.mou?.active||0} Active`)}${card('✅',s.mou?.active||0,'Active','ยังไม่หมดอายุ','green')}${card('⏰',s.mou?.soon||0,'ใกล้หมดอายุ','ภายใน 180 วัน','gold')}${card('🌐',s.mou?.countries||0,'ประเทศ','เครือข่ายทั่วโลก')}</div><div class="layout-2"><div class="map-card"><div class="panel-title">🗺️ แผนที่ความร่วมมือนานาชาติ</div><div class="panel-sub" style="color:rgba(255,255,255,.68)">คลิก/hover เพื่อดูรายละเอียด</div><div class="map-wrap" id="mouMap"></div></div><div class="panel"><div class="panel-head"><div><div class="panel-title">MOU Active แยกตามประเทศ</div><div class="panel-sub">จากข้อมูลจริง</div></div></div><div class="panel-body">${countryBars()}</div></div></div><div id="mouTable"></div>`; renderMap('mouMap'); const old=$('#content').innerHTML; const tmp=document.createElement('div'); document.body.appendChild(tmp); state.page='mouTableOnly'; const content=$('#content'); const holder=document.createElement('div'); content.appendChild(holder); renderCrudInto(holder,{key:'mou',addLabel:' MOU',title:'รายการ MOU ทั้งหมด',rows:state.data.mou,cols:[{key:'หน่วยงาน_UP',label:'หน่วยงาน ม.พะเยา'},{key:'องค์กร_ตปท',label:'องค์กรต่างประเทศ'},{key:'ประเทศ',label:'ประเทศ'},{key:'ประเภท',label:'ประเภท'},{key:'วันสิ้นสุด',label:'สิ้นสุด',render:r=>fmtDate(r['วันสิ้นสุด'])},{key:'ไฟล์_URL',label:'ไฟล์แนบ',render:r=>fileLink(r['ไฟล์_URL'])},{key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusMou(r)}">${statusText(statusMou(r))}</span>`}]}); state.page='mou';}
+function renderCrudInto(el,opts){
+  const qid='searchInput2';
+  const draw=()=>{
+    const rows=filterRows(opts.rows,state.query);
+    const table=`<div class="panel"><div class="panel-head"><div><div class="panel-title">${opts.title}</div><div class="panel-sub">แสดง ${rows.length} รายการ</div></div></div><div class="table-wrap"><table class="data-table"><thead><tr>${opts.cols.map(c=>`<th>${esc(c.label)}</th>`).join('')}<th>จัดการ</th></tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${opts.cols.map(c=>`<td>${c.render?c.render(r):esc(r[c.key]||'-')}</td>`).join('')}<td><div class="actions"><button class="iconbtn" onclick="openForm('${opts.key}','${esc(r.ID)}')">✏️</button><button class="iconbtn" onclick="removeRow('${opts.key}','${esc(r.ID)}')">🗑️</button></div></td></tr>`).join(''):`<tr><td colspan="${opts.cols.length+1}"><div class="empty">ไม่พบข้อมูล</div></td></tr>`}</tbody></table></div></div>`;
+    const area=el.querySelector('.crud-table-area'); if(area) area.innerHTML=table;
+  };
+  el.innerHTML=`<div class="toolbar"><input class="input search" id="${qid}" placeholder="🔍 ค้นหา..." value="${esc(state.query)}"><button class="btn primary" onclick="openForm('${opts.key}')">＋ เพิ่ม${opts.addLabel}</button><button class="btn" onclick="exportCsv('${opts.key}')">⬇ Export CSV</button></div><div class="crud-table-area"></div>`;
+  draw();
+  el.querySelector('#'+qid).addEventListener('input',e=>{
+    state.query=e.target.value;
+    clearTimeout(state.searchTimer);
+    state.searchTimer=setTimeout(draw,180);
+  });
+}
+function renderScholarEvents(){
+  state.activeSub=state.activeSub||'scholar';
+  const isS=state.activeSub==='scholar';
+  const scholarRows=state.data.scholar
+    .filter(r=>!state.scholarFilter || statusScholar(r)===state.scholarFilter)
+    .sort((a,b)=>statusScholarPriority(a)-statusScholarPriority(b) || ((toDate(a['วันปิดรับ'])||new Date(9999,0,1))-(toDate(b['วันปิดรับ'])||new Date(9999,0,1))));
+  const opts=isS?{
+    key:'scholar',
+    addLabel:'ทุน',
+    title:'ทุนการศึกษาทั้งหมด',
+    rows:scholarRows,
+    cols:[
+      {key:'ชื่อทุน',label:'ชื่อทุน'},
+      {key:'สถาบัน',label:'สถาบัน'},
+      {key:'ประเทศ',label:'ประเทศ'},
+      {key:'วันปิดรับ',label:'ปิดรับ',render:r=>fmtDate(r['วันปิดรับ'])},
+      {key:'Poster_URL',label:'Poster',render:r=>fileLink(r['Poster_URL'],'Poster')},
+      {key:'ไฟล์_URL',label:'ไฟล์แนบ',render:r=>fileLink(r['ไฟล์_URL'],'ไฟล์')},
+      {key:'สถานะ',label:'สถานะ',render:r=>`<span class="status ${statusScholar(r)}">${statusText(statusScholar(r))}</span>${scholarRemainText(r)}`}
+    ]
+  }:{
+    key:'event',
+    addLabel:'กิจกรรม',
+    title:'กิจกรรมทั้งหมด',
+    rows:state.data.event,
+    cols:[
+      {key:'ชื่อกิจกรรม',label:'ชื่อกิจกรรม'},
+      {key:'ประเภท',label:'ประเภท'},
+      {key:'สถานที่',label:'สถานที่'},
+      {key:'วันเริ่ม',label:'วันเริ่ม',render:r=>fmtDate(r['วันเริ่ม'])},
+      {key:'เวลาเริ่ม',label:'เวลา',render:r=>[r['เวลาเริ่ม'],r['เวลาสิ้นสุด']].filter(Boolean).join(' - ') || '-'},
+      {key:'จำนวน',label:'จำนวน'},
+      {key:'Poster_URL',label:'Poster',render:r=>fileLink(r['Poster_URL'],'Poster')},
+      {key:'ไฟล์_URL',label:'ไฟล์แนบ',render:r=>fileLink(r['ไฟล์_URL'],'ไฟล์')}
+    ]
+  };
+  $('#content').innerHTML=`<div class="grid-kpi">${card('🎓',state.data.scholar.length,'ทุนทั้งหมด',`${state.stats.scholarship?.open||0} เปิดรับ`,'gold')}${card('📅',state.data.event.length,'กิจกรรมทั้งหมด','จากชีตกิจกรรม')}${card('🔥',state.data.scholar.filter(r=>['active','soon','urgent'].includes(statusScholar(r))).length,'ทุนเปิดรับ','สมัครได้ตอนนี้','green')}${card('📌',state.data.event.filter(r=>toDate(r['วันเริ่ม'])>=new Date()).length,'Upcoming','กิจกรรมที่จะถึง','purple')}</div><div class="tabs"><button class="tab ${isS?'active':''}" onclick="state.activeSub='scholar';state.query='';render()">🎓 ทุนการศึกษา</button><button class="tab ${!isS?'active':''}" onclick="state.activeSub='event';state.query='';render()">📅 กิจกรรม</button></div>${isS?`<div class="tabs"><button class="tab ${!state.scholarFilter?'active':''}" onclick="state.scholarFilter='';state.query='';render()">ทั้งหมด</button><button class="tab ${state.scholarFilter==='urgent'?'active':''}" onclick="state.scholarFilter='urgent';state.query='';render()">🔥 ด่วน</button><button class="tab ${state.scholarFilter==='soon'?'active':''}" onclick="state.scholarFilter='soon';state.query='';render()">ใกล้ปิดรับ</button><button class="tab ${state.scholarFilter==='active'?'active':''}" onclick="state.scholarFilter='active';state.query='';render()">เปิดรับ</button><button class="tab ${state.scholarFilter==='upcoming'?'active':''}" onclick="state.scholarFilter='upcoming';state.query='';render()">ยังไม่เปิดรับ</button><button class="tab ${state.scholarFilter==='expired'?'active':''}" onclick="state.scholarFilter='expired';state.query='';render()">หมดอายุ</button></div>`:''}<div id="crudArea"></div>`;
+  renderCrudInto($('#crudArea'),opts);
+}
+function renderTravel(){
+  $('#content').innerHTML = `
+    <iframe src="travel.html" title="การเดินทางบุคลากร" style="width:100%;min-height:calc(100vh - 122px);border:0;border-radius:18px;background:#fff;box-shadow:var(--shadow);display:block"></iframe>
   `;
 }
 
-function scholarTable(rows){
-  const open=rows.filter(r=>['active','soon','urgent'].includes(statusScholar(r))).sort((a,b)=>(toDate(a['วันปิดรับ'])||new Date(9999,0,1))-(toDate(b['วันปิดรับ'])||new Date(9999,0,1))).slice(0,8);
-  if(!open.length)return '<div class="empty">ยังไม่มีทุนที่เปิดรับในข้อมูลชุดนี้</div>';
-  return `<table class="data-table"><thead><tr><th>ชื่อทุน</th><th>ประเทศ</th><th>ระดับ</th><th>ปิดรับ</th><th>สถานะ</th></tr></thead><tbody>${open.map(r=>`<tr><td><b>${esc(r['ชื่อทุน']||'-')}</b><br><span style="color:var(--muted);font-size:11px">${esc(r['สถาบัน']||'')}</span></td><td>${esc(r['ประเทศ']||'-')}</td><td>${esc(r['ระดับ']||'-')}</td><td>${fmtDate(r['วันปิดรับ'])}</td><td><span class="status ${statusScholar(r)}">${statusText(statusScholar(r))}</span></td></tr>`).join('')}</tbody></table>`
+
+function splitList(v){return String(v||'').split(',').map(x=>x.trim()).filter(Boolean)}
+function mobilityPeriodStatus(startVal,endVal,mode='inbound'){
+  const today=startOfDay(new Date());
+  const start=toDate(startVal);
+  const end=toDate(endVal);
+  const startDay=start?startOfDay(start):null;
+  const endDay=end?startOfDay(end):null;
+  if(startDay && today<startDay) return {key:'upcoming',text:mode==='outbound'?'ยังไม่ออก':'ยังไม่มา'};
+  if(startDay && endDay && today>=startDay && today<=endDay) return {key:'active',text:mode==='outbound'?'กำลังเดินทาง':'กำลังอยู่'};
+  if(endDay && today>endDay) return {key:'done',text:'เสร็จสิ้น'};
+  return {key:'upcoming',text:'รอข้อมูล'};
 }
-function eventTable(rows){
-  const today=startDay(new Date());
-  const upcoming=rows.filter(r=>{const d=toDate(r['วันเริ่ม']); return d && d>=today}).sort((a,b)=>toDate(a['วันเริ่ม'])-toDate(b['วันเริ่ม'])).slice(0,8);
-  if(!upcoming.length)return '<div class="empty">ยังไม่มีกิจกรรมใกล้ถึงในข้อมูลชุดนี้</div>';
-  return `<table class="data-table"><thead><tr><th>กิจกรรม</th><th>ประเภท</th><th>วันที่</th><th>สถานที่</th></tr></thead><tbody>${upcoming.map(r=>`<tr><td><b>${esc(r['ชื่อกิจกรรม']||'-')}</b><br><span style="color:var(--muted);font-size:11px">${esc(r['หน่วยงาน']||'')}</span></td><td>${esc(r['ประเภท']||'-')}</td><td>${fmtDate(r['วันเริ่ม'])}</td><td>${esc(r['สถานที่']||'-')}</td></tr>`).join('')}</tbody></table>`
+function mobilityTypeBadge(type,level){
+  const t=type?`<span class="mobility-type-badge">${esc(type)}</span>`:'';
+  const l=level?`<span class="mobility-level-badge">${esc(level)}</span>`:'';
+  return (t+l)||'-';
 }
-function mouTable(rows){
-  const soon=rows.filter(r=>statusMou(r)==='soon').sort((a,b)=>toDate(a['วันสิ้นสุด'])-toDate(b['วันสิ้นสุด'])).slice(0,10);
-  if(!soon.length)return '<div class="empty">ยังไม่มี MOU ใกล้หมดอายุในข้อมูลชุดนี้</div>';
-  return `<table class="data-table"><thead><tr><th>หน่วยงาน ม.พะเยา</th><th>องค์กรต่างประเทศ</th><th>ประเทศ</th><th>สิ้นสุด</th><th>สถานะ</th></tr></thead><tbody>${soon.map(r=>`<tr><td>${esc(r['หน่วยงาน_UP']||'-')}</td><td><b>${esc(r['องค์กร_ตปท']||'-')}</b></td><td>${esc(r['ประเทศ']||'-')}</td><td>${fmtDate(r['วันสิ้นสุด'])}</td><td><span class="status soon">${statusText('soon')}</span></td></tr>`).join('')}</tbody></table>`
+function mobilityPeriodText(startVal,endVal){
+  return `<div class="mobility-date">${fmtDate(startVal)} - ${fmtDate(endVal)}</div>`;
+}
+function renderMobility(){
+  state.activeSub=state.activeSub||'inbound';
+  const isIn=state.activeSub==='inbound';
+  const opts=isIn?{
+    key:'inbound',
+    addLabel:'Inbound',
+    title:'Inbound Mobility',
+    rows:state.data.inbound,
+    cols:[
+      {key:'ชื่อ',label:'ชื่อ',render:r=>{
+        const name=[r['ชื่อ'],r['ชื่อกลาง'],r['สกุล']].filter(Boolean).join(' ') || '-';
+        const gender=r['เพศ']?`<div class="mobility-sub">${esc(r['เพศ'])}</div>`:'';
+        return `<b>${esc(name)}</b>${gender}`;
+      }},
+      {key:'สถาบันต้นทาง',label:'สถาบันต้นทาง',render:r=>esc(r['สถาบันต้นทาง']||'-')},
+      {key:'ประเทศ',label:'ประเทศ',render:r=>`<b>${esc(r['ประเทศ']||'-')}</b>${r['ทวีป']?`<div class="mobility-sub">${esc(r['ทวีป'])}</div>`:''}`},
+      {key:'ประเภทผู้เข้าร่วม',label:'ประเภท/ระดับ',render:r=>mobilityTypeBadge(r['ประเภทผู้เข้าร่วม'],r['ระดับ'])},
+      {key:'หน่วยงาน_UP',label:'หน่วยงาน_UP',render:r=>esc(r['หน่วยงาน_UP']||'-')},
+      {key:'วันมาถึง',label:'ช่วงเวลา',render:r=>mobilityPeriodText(r['วันมาถึง'],r['วันกลับ'])},
+      {key:'สถานะ',label:'สถานะ',render:r=>{const s=mobilityPeriodStatus(r['วันมาถึง'],r['วันกลับ']);return `<span class="status ${s.key}">${s.text}</span>`;}},
+      {key:'ไฟล์_URL',label:'ไฟล์',render:r=>fileLink(r['ไฟล์_URL'],'ไฟล์')}
+    ]
+  }:{
+    key:'outbound',
+    addLabel:'Outbound',
+    title:'Outbound Mobility',
+    rows:state.data.outbound,
+    cols:[
+      {key:'ชื่อ-สกุล',label:'ผู้เดินทาง',render:r=>{
+        const names=String(r['ชื่อ-สกุล']||r['ชื่อ_สกุล']||'-');
+        const count=Number(r['จำนวน']||splitList(r['รหัสนิสิต']||r['รหัส']).length||0);
+        const first=names.split(',').map(x=>x.trim()).filter(Boolean).slice(0,2).join(', ') || '-';
+        return `<b>${esc(first)}</b>${count>2?`<div class="mobility-sub">และอีก ${count-2} คน</div>`:''}<div class="mobility-sub">รวม ${count||'-'} คน</div>`;
+      }},
+      {key:'สถาบันปลายทาง',label:'สถาบันปลายทาง',render:r=>esc(r['สถาบันปลายทาง']||r['สถาบัน_ปลายทาง']||'-')},
+      {key:'ประเทศ',label:'ประเทศ',render:r=>`<b>${esc(r['ประเทศ']||'-')}</b>${r['ทวีป']?`<div class="mobility-sub">${esc(r['ทวีป'])}</div>`:''}`},
+      {key:'ระดับ',label:'ระดับ',render:r=>mobilityTypeBadge('',r['ระดับ'])},
+      {key:'คณะ',label:'คณะ',render:r=>esc(r['คณะ']||'-')},
+      {key:'วันออก',label:'ช่วงเวลา',render:r=>mobilityPeriodText(r['วันออก'],r['วันกลับ'])},
+      {key:'สถานะ',label:'สถานะ',render:r=>{const s=mobilityPeriodStatus(r['วันออก'],r['วันกลับ'],'outbound');return `<span class="status ${s.key}">${s.text}</span>`;}},
+      {key:'ไฟล์_URL',label:'ไฟล์',render:r=>fileLink(r['ไฟล์_URL'],'ไฟล์')}
+    ]
+  };
+  const inboundActive=state.data.inbound.filter(r=>mobilityPeriodStatus(r['วันมาถึง'],r['วันกลับ']).key==='active').length;
+  const inboundUpcoming=state.data.inbound.filter(r=>mobilityPeriodStatus(r['วันมาถึง'],r['วันกลับ']).key==='upcoming').length;
+  const outboundActive=state.data.outbound.filter(r=>mobilityPeriodStatus(r['วันออก'],r['วันกลับ'],'outbound').key==='active').length;
+  const outboundUpcoming=state.data.outbound.filter(r=>mobilityPeriodStatus(r['วันออก'],r['วันกลับ'],'outbound').key==='upcoming').length;
+  const outPeople=state.data.outbound.reduce((sum,r)=>sum+(Number(r['จำนวน'])||splitList(r['รหัสนิสิต']||r['รหัส']).length||0),0);
+  $('#content').innerHTML=`<div class="grid-kpi">${card('👥',state.data.inbound.length+outPeople,'Mobility รวม',`In ${state.data.inbound.length} / Out ${outPeople}`,'purple')}${card('🌏',state.data.inbound.length,'Inbound',`${inboundActive} กำลังอยู่ · ${inboundUpcoming} ยังไม่มา`,'green')}${card('✈️',outPeople,'Outbound',`${outboundActive} กำลังเดินทาง · ${outboundUpcoming} ยังไม่ออก`)}${card('📊',new Set([...state.data.inbound,...state.data.outbound].map(r=>r['ประเทศ']).filter(Boolean)).size,'ประเทศ','จาก Mobility','gold')}</div><div class="tabs"><button class="tab ${isIn?'active':''}" onclick="state.activeSub='inbound';state.query='';render()">🌏 Inbound</button><button class="tab ${!isIn?'active':''}" onclick="state.activeSub='outbound';state.query='';render()">✈️ Outbound</button></div><div id="crudArea"></div>`;
+  renderCrudInto($('#crudArea'),opts);
+}
+function renderReports(){
+  $('#content').innerHTML=`
+    <iframe src="report.html" title="รายงาน & Export" style="width:100%;min-height:calc(100vh - 122px);border:0;border-radius:18px;background:#fff;box-shadow:var(--shadow);display:block"></iframe>
+  `;
+}
+function renderSettings(){ $('#content').innerHTML=`<div class="panel"><div class="panel-head"><div><div class="panel-title">ตั้งค่า</div><div class="panel-sub">ระบบใช้ Apps Script URL จาก iroup-config.js</div></div></div><div class="panel-body"><p><b>API:</b> ${esc(IROUP.SCRIPT_URL)}</p><p style="margin-top:10px;color:var(--muted)">ถ้าแก้ Code.gs ต้อง Deploy เป็น New version ทุกครั้ง</p></div></div>`;}
+
+
+
+let selectedOutboundStudents=[];
+function studentName(s){return String(s['ชื่อ-สกุล']||s['ชื่อ_สกุล']||[s['ชื่อ'],s['สกุล']].filter(Boolean).join(' ')||'').trim()}
+function studentCode(s){return String(s['รหัสนิสิต']||s['รหัส']||'').trim()}
+function studentText(s){return [studentCode(s),studentName(s),s['เพศ'],s['คณะ'],s['สาขา']].filter(Boolean).join(' ')}
+function searchStudents(q){
+  q=String(q||'').toLowerCase().trim();
+  if(!q) return [];
+  const selected=new Set(selectedOutboundStudents.map(studentCode));
+  return (state.master.student||[]).filter(s=>!selected.has(studentCode(s)) && studentText(s).toLowerCase().includes(q)).slice(0,20);
+}
+function searchOutboundStudentUI(q){
+  const box=document.getElementById('outStudentResults');
+  if(!box) return;
+  const rows=searchStudents(q);
+  if(!String(q||'').trim()){box.classList.remove('show');box.innerHTML='';return;}
+  box.innerHTML = rows.length ? rows.map((s,i)=>`<div class="student-option" onclick="selectOutboundStudentByCode('${esc(studentCode(s))}')"><div><div class="student-name">${esc(studentName(s)||'-')}</div><div class="student-meta">${esc([s['เพศ'],s['คณะ'],s['สาขา']].filter(Boolean).join(' · '))}</div></div><div class="student-code">${esc(studentCode(s))}</div></div>`).join('') : `<div class="student-option" onclick="toggleQuickAddStudent(true)"><div><div class="student-name">ไม่พบรายชื่อ</div><div class="student-meta">เพิ่มนิสิตใหม่แล้วใช้ต่อทันที</div></div><div class="student-code">＋ เพิ่ม</div></div>`;
+  box.classList.add('show');
+}
+function selectOutboundStudentByCode(code){
+  const s=(state.master.student||[]).find(x=>studentCode(x)===String(code));
+  if(!s) return;
+  if(selectedOutboundStudents.some(x=>studentCode(x)===studentCode(s))) return;
+  selectedOutboundStudents.push(s);
+  const input=document.getElementById('outStudentSearch'); if(input) input.value='';
+  const box=document.getElementById('outStudentResults'); if(box){box.classList.remove('show');box.innerHTML='';}
+  renderOutboundStudentSelection();
+}
+function removeOutboundStudent(code){selectedOutboundStudents=selectedOutboundStudents.filter(s=>studentCode(s)!==String(code));renderOutboundStudentSelection();}
+function renderOutboundStudentSelection(){
+  const chips=document.getElementById('outStudentChips');
+  if(chips){chips.innerHTML=selectedOutboundStudents.length?selectedOutboundStudents.map(s=>`<span class="student-chip">${esc(studentName(s)||studentCode(s))}<button type="button" onclick="removeOutboundStudent('${esc(studentCode(s))}')">×</button></span>`).join(''):'<span style="font-size:12px;color:var(--muted);font-family:Sarabun,sans-serif">ยังไม่มีนิสิต — ค้นหาและเลือกได้หลายคน</span>';}
+  const codes=selectedOutboundStudents.map(studentCode).filter(Boolean);
+  const names=selectedOutboundStudents.map(studentName).filter(Boolean);
+  const genders=selectedOutboundStudents.map(s=>s['เพศ']).filter(Boolean);
+  const facs=selectedOutboundStudents.map(s=>s['คณะ']).filter(Boolean);
+  const majors=selectedOutboundStudents.map(s=>s['สาขา']).filter(Boolean);
+  const setVal=(id,val)=>{const el=document.getElementById(id); if(el) el.value=val;};
+  setVal('outStudentCodes',codes.join(', '));
+  setVal('outStudentNames',names.join(', '));
+  setVal('outStudentGenders',genders.join(', '));
+  setVal('outStudentFacs',facs.join(', '));
+  setVal('outStudentMajors',majors.join(', '));
+  setVal('outStudentCount',codes.length || '');
+  const meta=document.getElementById('outStudentSummary');
+  if(meta) meta.innerHTML=`<b>${codes.length}</b> คน · ${codes.length?esc(codes.join(', ')):'ยังไม่เลือก'}`;
+}
+function seedOutboundStudents(row){
+  selectedOutboundStudents=[];
+  if(row){
+    const codes=splitList(row['รหัสนิสิต']||row['รหัส']);
+    const names=splitList(row['ชื่อ-สกุล']||row['ชื่อ_สกุล']);
+    const genders=splitList(row['เพศ']);
+    const facs=splitList(row['คณะ']);
+    const majors=splitList(row['สาขา']);
+    selectedOutboundStudents=codes.map((code,i)=>{
+      const found=(state.master.student||[]).find(s=>studentCode(s)===code);
+      return found || {'รหัสนิสิต':code,'ชื่อ-สกุล':names[i]||'','เพศ':genders[i]||'','คณะ':facs[i]||'','สาขา':majors[i]||''};
+    });
+  }
+  setTimeout(renderOutboundStudentSelection,0);
+}
+function toggleQuickAddStudent(show){const box=document.getElementById('quickStudentBox'); if(box) box.classList.toggle('show',!!show);}
+function nextStudentCode(){
+  const nums=(state.master.student||[]).map(s=>String(studentCode(s)).match(/(\d+)/)?.[1]).filter(Boolean).map(Number);
+  const n=(Math.max(69010000,...nums)+1);
+  return String(n);
+}
+async function quickAddStudent(){
+  const data={
+    'รหัสนิสิต':document.getElementById('qsCode')?.value.trim() || nextStudentCode(),
+    'ชื่อ-สกุล':document.getElementById('qsName')?.value.trim() || '',
+    'เพศ':document.getElementById('qsGender')?.value.trim() || '',
+    'คณะ':document.getElementById('qsFaculty')?.value.trim() || '',
+    'สาขา':document.getElementById('qsMajor')?.value.trim() || ''
+  };
+  if(!data['ชื่อ-สกุล']) return alert('กรอกชื่อ-สกุลก่อน');
+  try{
+    const res=await IROUP.add('STUDENT',data);
+    if(res.error) throw new Error(res.error);
+    state.master.student.push(data);
+    selectedOutboundStudents.push(data);
+    toggleQuickAddStudent(false);
+    ['qsCode','qsName','qsGender','qsFaculty','qsMajor'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+    renderOutboundStudentSelection();
+  }catch(e){alert('เพิ่มนิสิตไม่สำเร็จ: '+e.message);}
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  $('#yearSelect').addEventListener('change',()=>{state.year=$('#yearSelect').value; reloadData(true)});
-  $('#quickSearch').addEventListener('keydown',e=>{if(e.key==='Enter')applyFilter()});
-  reloadData(false);
-});
+function getFacultyOptions(){
+  const masters=(state.master.faculty||[]).flatMap(f=>[f.en_name,f.th_name,f.code]).filter(Boolean);
+  const used=[...state.data.mou,...state.data.event,...state.data.travel,...state.data.inbound,...state.data.outbound].flatMap(r=>[r['หน่วยงาน_UP'],r['คณะ'],r['หน่วยงาน']]).filter(Boolean);
+  return uniq([...masters,...used]);
+}
+function getCountryOptions(){
+  const masters=(state.master.country||[]).flatMap(c=>[c.en_name,c.th_name,c.code]).filter(Boolean);
+  const used=[...state.data.mou,...state.data.scholar,...state.data.travel,...state.data.inbound,...state.data.outbound].map(r=>r['ประเทศ']).filter(Boolean);
+  return uniq([...masters,...used]);
+}
+function findFaculty(v){const x=String(v||'').trim().toLowerCase(); return (state.master.faculty||[]).find(f=>[f.code,f.th_name,f.en_name].some(a=>String(a||'').trim().toLowerCase()===x));}
+function findCountry(v){const x=String(v||'').trim().toLowerCase(); return (state.master.country||[]).find(c=>[c.code,c.th_name,c.en_name].some(a=>String(a||'').trim().toLowerCase()===x));}
+function normalizeFaculty(v){const f=findFaculty(v); return f ? (f.en_name || f.th_name || v) : v;}
+function normalizeCountry(v){const c=findCountry(v); return c ? (c.en_name || c.th_name || v) : v;}
+function continentOfCountry(v){const c=findCountry(v); return c ? (c.continent || '') : '';}
+function onCountryInput(el){const cont=continentOfCountry(el.value); const input=document.querySelector('#modalForm [name="ทวีป"]'); if(cont&&input) input.value=cont;}
+function uniq(arr){return [...new Set(arr.map(x=>String(x||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));}
+function optionPool(field){
+  const all=[...state.data.mou,...state.data.scholar,...state.data.event,...state.data.travel,...state.data.inbound,...state.data.outbound];
+  const base={
+    'ประเทศ':getCountryOptions(),
+    'เมือง':['Phayao','Bangkok','Shanghai','Beijing','Tokyo','Nagano','Seoul','Daegu','Daejeon','Deggendorf','Paris','Sydney'],
+    'คณะ':getFacultyOptions(),
+    'หน่วยงาน_UP':getFacultyOptions(),
+    'หน่วยงาน':getFacultyOptions(),
+    'ประเภท':['MOU','MOA','LOI','Agreement','Exchange','Research','Training','Award','รับรางวัล','Inbound','Outbound','อบรม','ประชุม','ทุน','นักศึกษา','บุคลากร'],
+    'ประเภทผู้เข้าร่วม':['นิสิต','นักศึกษา','อาจารย์','นักวิจัย','บุคลากร','ผู้บริหาร','อื่นๆ'],
+    'ระดับ':['ป.ตรี','ป.โท','ป.เอก','Exchange','Research','บุคลากร','อาจารย์'],
+    'เพศ':['ชาย','หญิง','ไม่ระบุ'],
+    'ทวีป':['Asia','Europe','North America','South America','Oceania','Africa'],
+    'ปีงบ':['2568','2569','2570','2571'],
+    'งบประเภท':['งบประมาณแผ่นดิน','เงินรายได้','ทุนภายนอก','ไม่มีงบประมาณ']
+  };
+  return uniq([...(base[field]||[]), ...all.map(r=>r[field])]);
+}
+function fieldInput(f,row){
+  const curKey=state.editing?.key || '';
+  let raw=row?.[f]||''; if(/วัน|date/i.test(f)){const d=toDate(raw); if(d){raw=d.toISOString().slice(0,10);}} const val=esc(raw);
+
+  if(curKey==='outbound' && f==='รหัสนิสิต'){
+    return `<div class="student-picker"><div class="student-search-row"><input id="outStudentSearch" type="text" placeholder="ค้นหาด้วยรหัสนิสิต / ชื่อ-สกุล / คณะ / สาขา" autocomplete="off" oninput="searchOutboundStudentUI(this.value)"><button type="button" class="btn" onclick="toggleQuickAddStudent(true)">＋ เพิ่มนิสิตใหม่</button><div id="outStudentResults" class="student-results"></div></div><div id="outStudentChips" class="student-chips"></div><div id="outStudentSummary" style="font-size:12px;color:var(--muted);font-family:Sarabun,sans-serif;margin-top:8px">ยังไม่เลือก</div><div id="quickStudentBox" class="quick-student"><div style="font-size:12px;color:var(--muted);font-family:Sarabun,sans-serif;margin-bottom:8px">เพิ่มเข้าชีต STUDENT แล้วเลือกใช้ทันที</div><div class="quick-student-grid"><input id="qsCode" placeholder="รหัสนิสิต (ไม่กรอก = auto)"><input id="qsName" placeholder="ชื่อ-สกุล"><input id="qsGender" placeholder="เพศ"><input id="qsFaculty" placeholder="คณะ"><input id="qsMajor" placeholder="สาขา"></div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button type="button" class="btn green" onclick="quickAddStudent()">บันทึกนิสิตใหม่</button><button type="button" class="btn" onclick="toggleQuickAddStudent(false)">ยกเลิก</button></div></div><input type="hidden" name="รหัสนิสิต" id="outStudentCodes"></div>`;
+  }
+  if(curKey==='outbound' && f==='จำนวน') return `<input type="number" name="จำนวน" id="outStudentCount" value="${val}" readonly placeholder="ระบบนับจากรายชื่อนิสิตอัตโนมัติ">`;
+  if(curKey==='outbound' && f==='ชื่อ-สกุล') return `<textarea name="ชื่อ-สกุล" id="outStudentNames" readonly>${val}</textarea>`;
+  if(curKey==='outbound' && f==='เพศ') return `<textarea name="เพศ" id="outStudentGenders" readonly>${val}</textarea>`;
+  if(curKey==='outbound' && f==='คณะ') return `<textarea name="คณะ" id="outStudentFacs" readonly>${val}</textarea>`;
+  if(curKey==='outbound' && f==='สาขา') return `<textarea name="สาขา" id="outStudentMajors" readonly>${val}</textarea>`;
+
+  if(f === 'ครอบคลุม'){
+    const options = ['ค่าเครื่องบิน','ค่าเล่าเรียน','ค่าครองชีพ','ที่พัก','ค่าที่พัก','ค่าวีซ่า','ประกัน','ค่าลงทะเบียน','ค่าหนังสือ/อุปกรณ์','อื่นๆ'];
+    const rawText = String(raw||'');
+    return `<div class="coverage-box" style="display:flex;flex-wrap:wrap;gap:8px">
+      ${options.map(opt=>{
+        const checked = rawText.includes(opt) ? 'checked' : '';
+        return `<label style="display:inline-flex;align-items:center;gap:6px;background:#F4F7FB;border:1px solid #DCE6F2;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer">
+          <input class="coverage-check" type="checkbox" value="${esc(opt)}" ${checked}> ${esc(opt)}
+        </label>`;
+      }).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">เลือกได้หลายรายการ ระบบจะบันทึกเป็นข้อความคั่นด้วย comma</div>`;
+  }
+
+  if(['หมายเหตุ','รายละเอียด'].includes(f)) return `<textarea name="${esc(f)}">${val}</textarea>`;
+
+  if(f === 'Poster_URL'){
+    return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="url" name="${esc(f)}" value="${val}" placeholder="Poster/Cover URL" style="flex:1;min-width:220px">
+      <input type="file" accept="image/*" onchange="uploadAssetFromInput(this,'image')" style="flex:1;min-width:190px">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:5px">แนะนำ 1200 × 630 px · ระบบจะอัปโหลดแล้วใส่ URL ให้อัตโนมัติ</div>`;
+  }
+
+  if(f === 'ไฟล์_URL'){
+    return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="url" name="${esc(f)}" value="${val}" placeholder="File URL / PDF URL" style="flex:1;min-width:220px">
+      <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*" onchange="uploadAssetFromInput(this,'file')" style="flex:1;min-width:190px">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:5px">แนบ PDF/เอกสารได้ · ระบบจะอัปโหลดแล้วใส่ URL ให้อัตโนมัติ</div>`;
+  }
+
+  const type=/วัน|date/i.test(f)?'date':(/เวลา/.test(f)?'time':'text');
+  const opts=optionPool(f);
+  const listId=opts.length?`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`:'';
+  const extra=f==='ประเทศ'?' oninput="onCountryInput(this)" onchange="onCountryInput(this)"':(f==='ทวีป'?' placeholder="เลือกประเทศแล้วระบบจะเติมให้อัตโนมัติ"':'');
+  return `<input type="${type}" name="${esc(f)}" value="${val}" placeholder="${esc(f)}" ${listId?`list="${listId}"`:''}${extra}>`;
+}
+function dataListsForFields(fields){return fields.map(f=>{const opts=optionPool(f); if(!opts.length)return ''; const id=`list-${f.replace(/[^a-zA-Z0-9ก-๙_]/g,'')}`; return `<datalist id="${id}">${opts.map(o=>`<option value="${esc(o)}"></option>`).join('')}</datalist>`;}).join('');}
+function openForm(key,id=null){const rows=state.data[key]||[]; const row=id?rows.find(r=>String(r.ID)===String(id)):null; state.editing={key,id,row}; $('#modalTitle').textContent=(id?'แก้ไข':'เพิ่ม')+' '+({mou:'MOU',scholar:'ทุน',event:'กิจกรรม',travel:'การเดินทางบุคลากร',inbound:'Inbound',outbound:'Outbound'}[key]||key); const fields=FIELDS[key]||[]; $('#formFields').innerHTML=fields.map(f=>`<div class="field ${['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)?'full':''}"><label>${esc(f)}</label>${fieldInput(f,row)}</div>`).join('')+dataListsForFields(fields); $('#modalBackdrop').classList.add('show');
+  if(key==='outbound') seedOutboundStudents(row); else selectedOutboundStudents=[];
+}
+function closeModal(){ $('#modalBackdrop').classList.remove('show'); state.editing=null; }
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+    reader.readAsDataURL(file);
+  });
+}
+async function uploadAssetFromInput(input, kind='file'){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const urlInput = input.parentElement.querySelector('input[type="url"]');
+  const oldText = input.dataset.status || '';
+  input.disabled = true;
+  try{
+    const base64 = await fileToBase64(file);
+    const res = await fetch(IROUP.SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({
+        action: kind === 'image' ? 'uploadImage' : 'uploadFile',
+        base64,
+        fileName:file.name
+      })
+    });
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    const url = data.url || data.fileUrl || data.webViewLink || '';
+    if(!url) throw new Error('อัปโหลดแล้วแต่ไม่ได้รับ URL กลับมา');
+    urlInput.value = url;
+    alert(kind === 'image' ? 'อัปโหลด Poster สำเร็จ' : 'อัปโหลดไฟล์สำเร็จ');
+  }catch(err){
+    alert('อัปโหลดไม่สำเร็จ: ' + err.message);
+  }finally{
+    input.disabled = false;
+  }
+}
+async function submitForm(e){e.preventDefault(); const {key,id}=state.editing; if(key==='outbound') renderOutboundStudentSelection(); const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v);
+  if(key === 'scholar'){
+    const coverage = Array.from(e.target.querySelectorAll('.coverage-check:checked')).map(x=>x.value);
+    data['ครอบคลุม'] = coverage.join(', ');
+  }
+  if(data['หน่วยงาน_UP']) data['หน่วยงาน_UP']=normalizeFaculty(data['หน่วยงาน_UP']);
+  if(data['คณะ']) data['คณะ']=normalizeFaculty(data['คณะ']);
+  if(data['หน่วยงาน']) data['หน่วยงาน']=normalizeFaculty(data['หน่วยงาน']);
+  if(data['ประเทศ']) { data['ประเทศ']=normalizeCountry(data['ประเทศ']); const cont=continentOfCountry(data['ประเทศ']); if(cont) data['ทวีป']=cont; }
+  $('#modalSubmit').disabled=true; $('#modalSubmit').textContent='กำลังบันทึก...'; try{let res=id?await IROUP.edit(SHEETS[key],id,data):await IROUP.add(SHEETS[key],data); if(res.error)throw new Error(res.error); closeModal(); await loadCore(); render(); alert('บันทึกสำเร็จ');}catch(err){alert('บันทึกไม่สำเร็จ: '+err.message);}finally{$('#modalSubmit').disabled=false; $('#modalSubmit').textContent='บันทึก';}}
+async function removeRow(key,id){if(!id)return alert('ไม่พบ ID'); if(!confirm('ยืนยันลบรายการนี้?'))return; try{const res=await IROUP.delete(SHEETS[key],id); if(res.error)throw new Error(res.error); await loadCore(); render();}catch(e){alert('ลบไม่สำเร็จ: '+e.message)}}
+function exportCsv(key){const rows=state.data[key]||[]; if(!rows.length)return alert('ไม่มีข้อมูล'); const headers=Object.keys(rows[0]); const csv=[headers.join(','),...rows.map(r=>headers.map(h=>`"${String(r[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'); const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`iroup-${key}.csv`; a.click(); URL.revokeObjectURL(a.href);}
+$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>setPage(b.dataset.page))); $('#menuBtn').addEventListener('click',()=>$('#sidebar').classList.toggle('open')); $('#modalClose').addEventListener('click',closeModal); $('#modalCancel').addEventListener('click',closeModal); $('#modalForm').addEventListener('submit',submitForm); $$('.lang button').forEach(b=>b.addEventListener('click',()=>{$$('.lang button').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.lang=b.dataset.lang;}));
+(function initUser(){try{const u=JSON.parse(localStorage.getItem('iroup_user')||'{}'); if(u.name)$('#userName').textContent=u.name; if(u.email)$('#userMail').textContent=u.email; if(u.name||u.email)$('#avatar').textContent=(u.name||u.email||'A')[0].toUpperCase();}catch(e){}})();
+loadCore().then(render).catch(e=>{$('#content').innerHTML=errorBox('โหลด Dashboard ไม่สำเร็จ: '+e.message)});
 </script>
 </body>
 </html>
