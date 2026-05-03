@@ -193,6 +193,24 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 .modal-type-tabs{display:flex;gap:8px;margin-bottom:16px}
 .type-tab{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray-300);color:var(--gray-600);transition:all .2s;font-family:'Prompt',sans-serif}
 .type-tab.active{border-color:var(--blue);background:var(--blue-pale);color:var(--blue)}
+
+/* ROUND FINAL — upload preview/buttons */
+.asset-url-input{display:none!important}
+.asset-upload-wrap{display:flex;flex-direction:column;gap:6px}
+.asset-upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.asset-upload-row input[type=file]{flex:1;min-width:180px}
+.asset-status{font-size:11px;color:var(--gray-600);font-family:'Inter',sans-serif}
+.asset-status.ok{color:var(--green);font-weight:700}
+.asset-status.err{color:var(--red);font-weight:700}
+.asset-preview{display:none;width:100%;max-width:220px;aspect-ratio:1200/630;object-fit:cover;border-radius:10px;border:1px solid var(--gray-200);background:var(--gray-100)}
+.asset-preview.show{display:block}
+.card-asset-btn{flex:1;padding:6px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:'Prompt',sans-serif;transition:all .15s;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px}
+.card-asset-btn.poster{background:var(--blue-pale);color:var(--blue)}
+.card-asset-btn.file{background:var(--green-pale);color:var(--green)}
+.card-asset-btn:hover{transform:translateY(-1px)}
+.event-poster-img,.scholar-poster-img{width:100%;height:130px;object-fit:cover;display:block;background:linear-gradient(135deg,var(--blue-pale),var(--blue-light))}
+.event-time-line{font-size:11px;color:var(--gray-600);font-family:'Inter',sans-serif;margin-top:3px}
+
 </style>
 </head>
 <body>
@@ -711,8 +729,27 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
           </div>
         </div>
         <div class="form-group form-full"><label>หมายเหตุเพิ่มเติม</label><textarea placeholder="เงื่อนไขพิเศษ หรือข้อมูลที่ต้องการระบุเพิ่มเติม..."></textarea></div>
-        <div class="form-group"><label>แนบ Poster (รูปภาพ)</label><input type="file" accept="image/*"></div>
-        <div class="form-group"><label>แนบเอกสาร (PDF)</label><input type="file" accept=".pdf,.doc,.docx"></div>
+        <div class="form-group form-full">
+          <label>Poster / Banner รูปปกทุน</label>
+          <div class="asset-upload-wrap">
+            <input class="asset-url-input" type="url" name="Poster_URL" placeholder="Poster_URL">
+            <img class="asset-preview" data-preview="Poster_URL" alt="Poster preview">
+            <div class="asset-upload-row">
+              <input type="file" accept="image/*" onchange="roundFinalUploadAsset(this,'image','Poster_URL')">
+              <span class="asset-status" data-status="Poster_URL">ขนาดแนะนำ 1200 × 630 px</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group form-full">
+          <label>ไฟล์รายละเอียดทุน / PDF</label>
+          <div class="asset-upload-wrap">
+            <input class="asset-url-input" type="url" name="ไฟล์_URL" placeholder="ไฟล์_URL">
+            <div class="asset-upload-row">
+              <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*" onchange="roundFinalUploadAsset(this,'file','ไฟล์_URL')">
+              <span class="asset-status" data-status="ไฟล์_URL">แนบเอกสารให้ผู้ใช้ดู/ดาวน์โหลด</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -729,12 +766,31 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
         </div>
         <div class="form-group"><label>วันที่เริ่ม</label><input type="date"></div>
         <div class="form-group"><label>วันที่สิ้นสุด</label><input type="date"></div>
+        <div class="form-group"><label>เวลาเริ่ม</label><input type="time"></div>
+        <div class="form-group"><label>เวลาสิ้นสุด</label><input type="time"></div>
         <div class="form-group"><label>สถานที่</label><input type="text" placeholder="เช่น Shanghai, China"></div>
         <div class="form-group"><label>จำนวนผู้เข้าร่วม</label><input type="number" placeholder="เช่น 25"></div>
         <div class="form-group form-full"><label>รายละเอียด</label><textarea placeholder="วัตถุประสงค์ กำหนดการ หรือรายละเอียดเพิ่มเติม..."></textarea></div>
-        <div class="form-group"><label>แนบไฟล์ / รูปภาพ</label><input type="file"></div>
-        <div class="form-group"><label>Pin กิจกรรมนี้</label>
-          <select><option value="0">ไม่ Pin</option><option value="1">📌 Pin ไว้ด้านบน</option></select>
+        <div class="form-group form-full">
+          <label>Poster / Banner รูปปกกิจกรรม</label>
+          <div class="asset-upload-wrap">
+            <input class="asset-url-input" type="url" name="Poster_URL" placeholder="Poster_URL">
+            <img class="asset-preview" data-preview="Poster_URL" alt="Poster preview">
+            <div class="asset-upload-row">
+              <input type="file" accept="image/*" onchange="roundFinalUploadAsset(this,'image','Poster_URL')">
+              <span class="asset-status" data-status="Poster_URL">ขนาดแนะนำ 1200 × 630 px</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group form-full">
+          <label>ไฟล์รายละเอียดกิจกรรม / PDF</label>
+          <div class="asset-upload-wrap">
+            <input class="asset-url-input" type="url" name="ไฟล์_URL" placeholder="ไฟล์_URL">
+            <div class="asset-upload-row">
+              <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*" onchange="roundFinalUploadAsset(this,'file','ไฟล์_URL')">
+              <span class="asset-status" data-status="ไฟล์_URL">แนบเอกสารให้ผู้ใช้ดู/ดาวน์โหลด</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -798,6 +854,125 @@ function getStatusByDate(open, close){
 }
 function daysLeft(close){ const c=IROUP.parseDate(close); if(!c) return ''; const d=Math.ceil((c-new Date())/86400000); return d>=0?`⏰ เหลือ ${d} วัน`:`ปิดแล้ว`; }
 function scholarSearchText(x){ return Object.values(x).join(' ').toLowerCase(); }
+
+function assetUrl(row, key){ return String(row?.[key] || '').trim(); }
+function assetButton(url, label, cls){
+  url = String(url || '').trim();
+  if(!url) return '';
+  return `<a class="card-asset-btn ${cls||''}" href="${esc(url)}" target="_blank" rel="noopener">${label}</a>`;
+}
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=()=>reject(new Error('อ่านไฟล์ไม่สำเร็จ'));
+    reader.readAsDataURL(file);
+  });
+}
+async function roundFinalUploadAsset(input, kind, targetName){
+  const file=input.files && input.files[0];
+  if(!file) return;
+  const form=input.closest('#scholarForm,#eventForm');
+  const urlInput=form?.querySelector(`input[name="${targetName}"]`);
+  const status=form?.querySelector(`[data-status="${targetName}"]`);
+  const preview=form?.querySelector(`img[data-preview="${targetName}"]`);
+  if(status){status.textContent='กำลังอัปโหลด...';status.className='asset-status';}
+  input.disabled=true;
+  try{
+    const base64=await fileToBase64(file);
+    const res=await fetch(IROUP.SCRIPT_URL,{
+      method:'POST',
+      body:JSON.stringify({action:kind==='image'?'uploadImage':'uploadFile',base64,fileName:file.name})
+    });
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    const url=data.url || data.fileUrl || data.webViewLink || '';
+    if(!url) throw new Error('อัปโหลดแล้วแต่ไม่ได้รับ URL กลับมา');
+    if(urlInput) urlInput.value=url;
+    if(preview && kind==='image'){
+      preview.src=url;
+      preview.classList.add('show');
+    }
+    if(status){status.textContent='อัปโหลดสำเร็จ';status.className='asset-status ok';}
+  }catch(err){
+    if(status){status.textContent='อัปโหลดไม่สำเร็จ: '+err.message;status.className='asset-status err';}
+    alert('อัปโหลดไม่สำเร็จ: '+err.message);
+  }finally{
+    input.disabled=false;
+  }
+}
+function getFormValue(root, selector, fallback=''){
+  const el=root.querySelector(selector);
+  return el ? el.value : fallback;
+}
+function setInputValue(el, value){ if(el) el.value = value || ''; }
+function setAssetField(form, name, value){
+  const input=form.querySelector(`input[name="${name}"]`);
+  setInputValue(input,value);
+  const preview=form.querySelector(`img[data-preview="${name}"]`);
+  if(preview && value){ preview.src=value; preview.classList.add('show'); }
+  if(preview && !value){ preview.removeAttribute('src'); preview.classList.remove('show'); }
+}
+function resetForm(form){
+  form.querySelectorAll('input,textarea,select').forEach(el=>{
+    if(el.type==='checkbox') el.checked=false;
+    else if(el.type==='file') el.value='';
+    else if(el.tagName==='SELECT') el.selectedIndex=0;
+    else el.value='';
+  });
+  form.querySelectorAll('.asset-preview').forEach(img=>{img.removeAttribute('src'); img.classList.remove('show');});
+  form.querySelectorAll('.asset-status').forEach(s=>{s.className='asset-status'; if(s.dataset.status==='Poster_URL') s.textContent='ขนาดแนะนำ 1200 × 630 px'; else s.textContent='แนบเอกสารให้ผู้ใช้ดู/ดาวน์โหลด';});
+}
+function fillScholarForm(row){
+  const f=document.getElementById('scholarForm');
+  resetForm(f);
+  if(!row) return;
+  const inputs=qsa(f,'input,textarea,select').filter(el=>el.type!=='file' && !el.classList.contains('asset-url-input') && el.type!=='checkbox');
+  // order: title, detail, org, country, level, link, announce, open, close, pin, note
+  setInputValue(inputs[0],row['ชื่อทุน']);
+  setInputValue(inputs[1],row['หมายเหตุ'] || row['รายละเอียดทุน']);
+  setInputValue(inputs[2],row['สถาบัน']);
+  setInputValue(inputs[3],row['ประเทศ']);
+  setInputValue(inputs[4],row['ระดับ']);
+  setInputValue(inputs[5],row['Link']);
+  setInputValue(inputs[6],row['วันประชาสัมพันธ์']);
+  setInputValue(inputs[7],row['วันเปิดรับ']);
+  setInputValue(inputs[8],row['วันปิดรับ']);
+  setInputValue(inputs[9],row['Pin'] || '0');
+  const cov=String(row['ครอบคลุม']||'').split(/[,，]/).map(x=>x.trim()).filter(Boolean);
+  qsa(f,'.coverage-checks input[type=checkbox]').forEach(cb=>{
+    const label=cb.nextElementSibling?.innerText?.replace(/^[^ก-๙A-Za-z0-9]+\s*/,'').trim() || '';
+    cb.checked = cov.some(v=>label.includes(v)||v.includes(label));
+  });
+  setInputValue(inputs[10],row['หมายเหตุ']);
+  setAssetField(f,'Poster_URL',row['Poster_URL']);
+  setAssetField(f,'ไฟล์_URL',row['ไฟล์_URL']);
+}
+function fillEventForm(row){
+  const f=document.getElementById('eventForm');
+  resetForm(f);
+  if(!row) return;
+  const inputs=qsa(f,'input,textarea,select').filter(el=>el.type!=='file' && !el.classList.contains('asset-url-input'));
+  // order: title,type,unit,start,end,startTime,endTime,place,number,detail
+  setInputValue(inputs[0],row['ชื่อกิจกรรม']);
+  setInputValue(inputs[1],row['ประเภท']);
+  setInputValue(inputs[2],row['หน่วยงาน']);
+  setInputValue(inputs[3],row['วันเริ่ม']);
+  setInputValue(inputs[4],row['วันสิ้นสุด']);
+  setInputValue(inputs[5],row['เวลาเริ่ม']);
+  setInputValue(inputs[6],row['เวลาสิ้นสุด']);
+  setInputValue(inputs[7],row['สถานที่']);
+  setInputValue(inputs[8],row['จำนวน']);
+  setInputValue(inputs[9],row['รายละเอียด']);
+  setAssetField(f,'Poster_URL',row['Poster_URL']);
+  setAssetField(f,'ไฟล์_URL',row['ไฟล์_URL']);
+}
+function getScholarCoverage(form){
+  return qsa(form,'.coverage-checks input[type=checkbox]:checked')
+    .map(x=>(x.nextElementSibling?.innerText||'').replace(/^[^ก-๙A-Za-z0-9]+\s*/,'').trim())
+    .filter(Boolean).join(', ');
+}
+
 async function round9LoadScholarEvent(){
   try{
     IROUND9_scholars = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
@@ -813,49 +988,122 @@ async function round9LoadScholarEvent(){
 function round9RenderScholars(list){
   const wrap=document.getElementById('scholarCards'); if(!wrap) return;
   if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลทุนในชีต</div>'; return; }
-  wrap.innerHTML=list.map(x=>{ const st=getStatusByDate(x['วันเปิดรับ'],x['วันปิดรับ']); return `
+  wrap.innerHTML=list.map(x=>{
+    const st=getStatusByDate(x['วันเปิดรับ'],x['วันปิดรับ']);
+    const poster=assetUrl(x,'Poster_URL');
+    const file=assetUrl(x,'ไฟล์_URL');
+    const posterHtml=poster
+      ? `<img class="scholar-poster-img" src="${esc(poster)}" alt="${esc(x['ชื่อทุน']||'Scholarship poster')}" loading="lazy">`
+      : `<div class="card-poster-bg" style="background:linear-gradient(135deg,#E8F4FD,#4BBDE8)">${esc((x['ประเทศ']||'🌐').slice(0,2))}</div>`;
+    return `
   <div class="scholar-card">
     ${String(x['Pin']||'')==='1'?'<div class="pin-badge">📌</div>':''}
-    <div class="card-poster-bg" style="background:linear-gradient(135deg,#E8F4FD,#4BBDE8)">${esc((x['ประเทศ']||'🌐').slice(0,2))}</div>
+    ${posterHtml}
     <div class="card-body">
       <div class="card-status-row"><span class="status-badge ${st[0]}">${st[1]}</span><span class="days-left days-urgent">${daysLeft(x['วันปิดรับ'])}</span></div>
       <div class="card-title">${esc(x['ชื่อทุน']||'ไม่ระบุชื่อทุน')}</div>
       <div class="card-org">${esc(x['สถาบัน']||'—')} · ${esc(x['ประเทศ']||'—')}</div>
-      <div class="coverage-row">${String(x['ครอบคลุม']||'').split(/[,，]/).filter(Boolean).slice(0,5).map(t=>`<span class="coverage-tag">${esc(t.trim())}</span>`).join('')||'<span class="coverage-tag">ทุนการศึกษา</span>'}</div>
+      <div class="coverage-row">${String(x['ครอบคลุม']||'').split(/[,，]/).filter(Boolean).slice(0,6).map(t=>`<span class="coverage-tag">${esc(t.trim())}</span>`).join('')||'<span class="coverage-tag">ทุนการศึกษา</span>'}</div>
       <div class="card-meta-row"><div class="meta-item">📅 ปิดรับ ${IROUP.formatDate(x['วันปิดรับ'])}</div><span class="level-badge">${esc(x['ระดับ']||'ทุกระดับ')}</span></div>
     </div>
-    <div class="card-footer"><button class="card-btn btn-edit" onclick="openModal('scholar','${esc(x['ID'])}')">✏️ แก้ไข</button><button class="card-btn btn-del" onclick="round9Delete('scholar','${esc(x['ID'])}')">🗑️ ลบ</button></div>
+    <div class="card-footer">
+      ${assetButton(poster,'🖼 Poster','poster')}
+      ${assetButton(file,'📎 ไฟล์','file')}
+      <button class="card-btn btn-edit" onclick="openModal('scholar','${esc(x['ID'])}')">✏️ แก้ไข</button>
+      <button class="card-btn btn-del" onclick="round9Delete('scholar','${esc(x['ID'])}')">🗑️ ลบ</button>
+    </div>
   </div>`}).join('');
 }
 function round9RenderEvents(list){
   const wrap=document.getElementById('eventCards'); if(!wrap) return;
   if(!list.length){ wrap.innerHTML='<div class="empty-state">ยังไม่มีข้อมูลกิจกรรมในชีต</div>'; return; }
-  wrap.innerHTML=list.map(x=>{ const d=IROUP.parseDate(x['วันเริ่ม'])||new Date(); return `
+  wrap.innerHTML=list.map(x=>{
+    const d=IROUP.parseDate(x['วันเริ่ม'])||new Date();
+    const poster=assetUrl(x,'Poster_URL');
+    const file=assetUrl(x,'ไฟล์_URL');
+    const timeLine=(x['เวลาเริ่ม']||x['เวลาสิ้นสุด']) ? `<div class="event-time-line">🕘 ${esc(x['เวลาเริ่ม']||'-')} - ${esc(x['เวลาสิ้นสุด']||'-')}</div>` : '';
+    const posterHtml=poster ? `<img class="event-poster-img" src="${esc(poster)}" alt="${esc(x['ชื่อกิจกรรม']||'Event poster')}" loading="lazy">` : '';
+    return `
   <div class="event-card">
+    ${posterHtml}
     <div class="event-top"><div class="event-date-box"><div class="event-day">${d.getDate()}</div><div class="event-month">${d.toLocaleDateString('th-TH',{month:'short'}).replace('.','')}</div></div>
-      <div class="event-info"><span class="event-type-tag type-travel">${esc(x['ประเภท']||'กิจกรรม')}</span><div class="event-title">${esc(x['ชื่อกิจกรรม']||'ไม่ระบุชื่อกิจกรรม')}</div><div class="event-place">📍 ${esc(x['สถานที่']||'—')} · ${IROUP.formatDate(x['วันเริ่ม'])}–${IROUP.formatDate(x['วันสิ้นสุด'])}</div></div>
+      <div class="event-info"><span class="event-type-tag type-travel">${esc(x['ประเภท']||'กิจกรรม')}</span><div class="event-title">${esc(x['ชื่อกิจกรรม']||'ไม่ระบุชื่อกิจกรรม')}</div><div class="event-place">📍 ${esc(x['สถานที่']||'—')} · ${IROUP.formatDate(x['วันเริ่ม'])}–${IROUP.formatDate(x['วันสิ้นสุด'])}</div>${timeLine}</div>
     </div>
     <div class="event-bottom"><div class="event-dept">${esc(x['หน่วยงาน']||'งานวิเทศสัมพันธ์')}</div><div class="event-pax">👥 ${esc(x['จำนวน']||0)} คน</div><span class="event-status ev-upcoming">Upcoming</span></div>
-    <div class="card-footer"><button class="card-btn btn-edit" onclick="openModal('event','${esc(x['ID'])}')">✏️ แก้ไข</button><button class="card-btn btn-del" onclick="round9Delete('event','${esc(x['ID'])}')">🗑️ ลบ</button></div>
+    <div class="card-footer">
+      ${assetButton(poster,'🖼 Poster','poster')}
+      ${assetButton(file,'📎 ไฟล์','file')}
+      <button class="card-btn btn-edit" onclick="openModal('event','${esc(x['ID'])}')">✏️ แก้ไข</button>
+      <button class="card-btn btn-del" onclick="round9Delete('event','${esc(x['ID'])}')">🗑️ ลบ</button>
+    </div>
   </div>`}).join('');
 }
 const _round9OpenModal = window.openModal;
-window.openModal=function(type,id){ IROUND9_currentType=type||'scholar'; switchModalType(IROUND9_currentType); document.getElementById('modalOverlay').classList.add('show'); document.getElementById('modalOverlay').dataset.editId=id||''; };
+window.openModal=function(type,id){
+  IROUND9_currentType=type||'scholar';
+  switchModalType(IROUND9_currentType);
+  const modal=document.getElementById('modalOverlay');
+  modal.classList.add('show');
+  modal.dataset.editId=id||'';
+  const row=id ? (IROUND9_currentType==='scholar' ? IROUND9_scholars : IROUND9_events).find(x=>String(x['ID'])===String(id)) : null;
+  if(IROUND9_currentType==='scholar') fillScholarForm(row);
+  else fillEventForm(row);
+};
 async function round9Save(){
-  const type=IROUND9_currentType; const id=document.getElementById('modalOverlay').dataset.editId;
+  const type=IROUND9_currentType;
+  const id=document.getElementById('modalOverlay').dataset.editId;
   let sheet, data={};
   if(type==='scholar'){
-    const f=document.getElementById('scholarForm'); const inputs=qsa(f,'input,textarea,select');
-    const cov=qsa(f,'input[type=checkbox]:checked').map(x=>x.nextElementSibling?.innerText||'').join(', ');
-    data={'ชื่อทุน':inputs[0].value,'หมายเหตุ':inputs[1].value,'สถาบัน':inputs[2].value,'ประเทศ':inputs[3].value,'ระดับ':inputs[4].value,'Link':inputs[5].value,'วันประชาสัมพันธ์':inputs[6].value,'วันเปิดรับ':inputs[7].value,'วันปิดรับ':inputs[8].value,'Pin':inputs[9].value,'ครอบคลุม':cov}; sheet=IROUP.SHEETS.SCHOLAR;
+    const f=document.getElementById('scholarForm');
+    const inputs=qsa(f,'input,textarea,select').filter(el=>el.type!=='file' && !el.classList.contains('asset-url-input') && el.type!=='checkbox');
+    data={
+      'ชื่อทุน':inputs[0]?.value||'',
+      'หมายเหตุ':inputs[1]?.value||'',
+      'สถาบัน':inputs[2]?.value||'',
+      'ประเทศ':inputs[3]?.value||'',
+      'ระดับ':inputs[4]?.value||'',
+      'Link':inputs[5]?.value||'',
+      'วันประชาสัมพันธ์':inputs[6]?.value||'',
+      'วันเปิดรับ':inputs[7]?.value||'',
+      'วันปิดรับ':inputs[8]?.value||'',
+      'Pin':inputs[9]?.value||'0',
+      'ครอบคลุม':getScholarCoverage(f),
+      'Poster_URL':getFormValue(f,'input[name="Poster_URL"]'),
+      'ไฟล์_URL':getFormValue(f,'input[name="ไฟล์_URL"]')
+    };
+    sheet=IROUP.SHEETS.SCHOLAR;
     if(!data['ชื่อทุน']) return alert('กรุณากรอกชื่อทุน');
   }else{
-    const f=document.getElementById('eventForm'); const inputs=qsa(f,'input,textarea,select');
-    data={'ชื่อกิจกรรม':inputs[0].value,'ประเภท':inputs[1].value,'หน่วยงาน':inputs[2].value,'วันเริ่ม':inputs[3].value,'วันสิ้นสุด':inputs[4].value,'สถานที่':inputs[5].value,'จำนวน':inputs[6].value,'รายละเอียด':inputs[7].value,'Pin':inputs[9]?.value||'0'}; sheet=IROUP.SHEETS.EVENT;
+    const f=document.getElementById('eventForm');
+    const inputs=qsa(f,'input,textarea,select').filter(el=>el.type!=='file' && !el.classList.contains('asset-url-input'));
+    data={
+      'ชื่อกิจกรรม':inputs[0]?.value||'',
+      'ประเภท':inputs[1]?.value||'',
+      'หน่วยงาน':inputs[2]?.value||'',
+      'วันเริ่ม':inputs[3]?.value||'',
+      'วันสิ้นสุด':inputs[4]?.value||'',
+      'เวลาเริ่ม':inputs[5]?.value||'',
+      'เวลาสิ้นสุด':inputs[6]?.value||'',
+      'สถานที่':inputs[7]?.value||'',
+      'จำนวน':inputs[8]?.value||'',
+      'รายละเอียด':inputs[9]?.value||'',
+      'Poster_URL':getFormValue(f,'input[name="Poster_URL"]'),
+      'ไฟล์_URL':getFormValue(f,'input[name="ไฟล์_URL"]')
+    };
+    sheet=IROUP.SHEETS.EVENT;
     if(!data['ชื่อกิจกรรม']) return alert('กรุณากรอกชื่อกิจกรรม');
   }
-  const res=id?await IROUP.edit(sheet,id,data):await IROUP.add(sheet,data);
-  if(res.success){ alert('บันทึกสำเร็จ'); closeModal(); round9LoadScholarEvent(); } else alert(res.error||'บันทึกไม่สำเร็จ');
+  const btn=document.querySelector('.modal-footer .modal-save');
+  if(btn){btn.disabled=true;btn.textContent='กำลังบันทึก...';}
+  try{
+    const res=id?await IROUP.edit(sheet,id,data):await IROUP.add(sheet,data);
+    if(res.success){ alert('บันทึกสำเร็จ'); closeModal(); await round9LoadScholarEvent(); }
+    else alert(res.error||'บันทึกไม่สำเร็จ');
+  }catch(err){
+    alert('บันทึกไม่สำเร็จ: '+err.message);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='💾 บันทึก';}
+  }
 }
 async function round9Delete(type,id){ if(!confirm('ยืนยันลบรายการนี้?')) return; const sheet=type==='scholar'?IROUP.SHEETS.SCHOLAR:IROUP.SHEETS.EVENT; const r=await IROUP.delete(sheet,id); if(r.success){alert('ลบสำเร็จ'); round9LoadScholarEvent();} else alert(r.error||'ลบไม่สำเร็จ'); }
 document.addEventListener('DOMContentLoaded',()=>{
