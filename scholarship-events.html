@@ -216,110 +216,167 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
 .event-time-line{font-size:11px;color:var(--gray-600);font-family:'Inter',sans-serif;margin-top:3px}
 
 
-/* iROUP ADMIN LIST MODE PATCH */
-#scholarCards,
-.cards-grid{
-  display:block !important;
-}
-.scholar-card{
-  display:grid !important;
-  grid-template-columns: 1fr auto !important;
-  gap:10px !important;
-  align-items:center !important;
-  margin-bottom:10px !important;
-  border-radius:14px !important;
-  overflow:visible !important;
-}
-.scholar-card:hover{
-  transform:none !important;
-}
-.scholar-card .pin-badge{
-  position:static !important;
-  order:3;
-  margin-right:8px;
-}
-.scholar-card .scholar-poster-img,
-.scholar-card .card-poster-bg,
-.scholar-card .card-poster{
-  display:none !important;
-}
-.scholar-card .card-body{
-  padding:14px 16px !important;
-}
-.scholar-card .card-footer{
-  padding:10px 12px !important;
-  border-top:0 !important;
-  background:transparent !important;
-  min-width:320px;
-}
-.scholar-card .coverage-row{
-  margin-bottom:6px !important;
-}
-.scholar-card .card-meta-row{
-  border-top:0 !important;
-  padding-top:4px !important;
-  justify-content:flex-start !important;
-  gap:14px !important;
-}
-#scholarList,
-.list-view{
-  display:block !important;
-}
 
-
-/* iROUP EVENT LIST MODE PATCH */
-#eventCards,
+/* iROUP CLEAN COMPACT LIST PATCH */
+.cards-grid,
 .events-grid{
-  display:block !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
 }
+
+.scholar-card,
 .event-card{
   display:grid !important;
-  grid-template-columns: 1fr auto !important;
-  gap:10px !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
   align-items:center !important;
-  margin-bottom:10px !important;
-  border-radius:14px !important;
-  overflow:visible !important;
+  gap:16px !important;
+  min-height:96px !important;
+  padding:14px 16px !important;
+  border-radius:16px !important;
+  overflow:hidden !important;
   background:#fff !important;
+  box-shadow:var(--shadow-sm) !important;
+  border:1px solid var(--gray-200) !important;
 }
+
+.scholar-card:hover,
 .event-card:hover{
   transform:none !important;
+  box-shadow:var(--shadow-md) !important;
 }
+
+/* hide poster areas in admin list */
+.scholar-card .scholar-poster-img,
+.scholar-card .card-poster-bg,
+.scholar-card .card-poster,
 .event-card .event-poster-img,
 .event-card .card-poster-bg,
 .event-card .card-poster{
   display:none !important;
 }
+
+/* scholarship body */
+.scholar-card .pin-badge{
+  display:none !important;
+}
+
+.scholar-card .card-body{
+  padding:0 !important;
+  min-width:0 !important;
+}
+
+.scholar-card .card-status-row{
+  margin-bottom:6px !important;
+  justify-content:flex-start !important;
+  gap:12px !important;
+}
+
+.scholar-card .card-title{
+  font-size:14px !important;
+  margin-bottom:3px !important;
+}
+
+.scholar-card .card-org{
+  margin-bottom:7px !important;
+}
+
+.scholar-card .coverage-row{
+  margin-bottom:7px !important;
+}
+
+.scholar-card .card-meta-row{
+  border-top:0 !important;
+  padding-top:0 !important;
+  justify-content:flex-start !important;
+  gap:12px !important;
+}
+
+/* event body */
 .event-card .event-top{
-  padding:14px 16px !important;
+  padding:0 !important;
+  display:flex !important;
   align-items:center !important;
+  min-width:0 !important;
 }
-.event-card .event-bottom{
-  padding:10px 12px !important;
-  border-top:0 !important;
-  min-width:360px !important;
-  justify-content:flex-end !important;
-  gap:10px !important;
-}
-.event-card .card-footer{
-  padding:10px 12px !important;
-  border-top:0 !important;
-  background:transparent !important;
-  min-width:320px;
-}
+
 .event-card .event-date-box{
-  width:56px !important;
+  width:52px !important;
+  min-width:52px !important;
+  padding:8px 6px !important;
 }
+
 .event-card .event-info{
   min-width:0 !important;
 }
+
 .event-card .event-title{
-  font-size:13px !important;
+  font-size:14px !important;
+  margin-bottom:5px !important;
 }
+
 .event-card .event-place,
 .event-card .event-time-line{
   display:inline-flex !important;
   margin-right:12px !important;
+  font-size:11px !important;
+}
+
+.event-card .event-bottom{
+  padding:0 !important;
+  border-top:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:10px !important;
+  min-width:220px !important;
+}
+
+/* action buttons */
+.scholar-card .card-footer,
+.event-card .card-footer{
+  padding:0 !important;
+  border-top:0 !important;
+  background:transparent !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:8px !important;
+  min-width:300px !important;
+}
+
+.scholar-card .card-btn,
+.event-card .card-btn,
+.scholar-card .card-asset-btn,
+.event-card .card-asset-btn{
+  flex:0 0 auto !important;
+  min-width:86px !important;
+  padding:8px 12px !important;
+  border-radius:9px !important;
+}
+
+/* When old event-bottom contains meta and footer button areas, prevent full-width pastel bars */
+.event-card .btn-edit,
+.event-card .btn-del,
+.scholar-card .btn-edit,
+.scholar-card .btn-del{
+  min-width:86px !important;
+}
+
+/* responsive */
+@media(max-width:900px){
+  .scholar-card,
+  .event-card{
+    grid-template-columns:1fr !important;
+    align-items:start !important;
+  }
+  .scholar-card .card-footer,
+  .event-card .card-footer,
+  .event-card .event-bottom{
+    justify-content:flex-start !important;
+    min-width:0 !important;
+    flex-wrap:wrap !important;
+  }
 }
 
 </style>
