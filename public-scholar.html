@@ -61,6 +61,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:32px}
 .scholar-card{background:var(--white);border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);overflow:hidden;transition:all .25s;cursor:pointer}
 .scholar-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
+.card-poster{height:118px;background:var(--blue-pale);overflow:hidden;position:relative}
+.card-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.card-poster-fallback{height:100%;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:var(--blue);background:linear-gradient(135deg,var(--blue-pale),#fff)}
+.card-actions{padding:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap}
+.card-action-btn{font-size:11px;font-weight:700;text-decoration:none;border-radius:8px;padding:5px 10px;background:var(--blue-pale);color:var(--blue);font-family:'Sarabun',sans-serif}
+.card-action-btn.file{background:var(--green-pale);color:var(--green)}
+
 .card-top{padding:16px;display:flex;align-items:flex-start;gap:12px}
 .card-flag{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
 .card-info{flex:1}
@@ -69,8 +76,6 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .card-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;font-family:'Sarabun',sans-serif;white-space:nowrap;flex-shrink:0}
 .s-open{background:var(--green-pale);color:var(--green)}
 .s-upcoming{background:var(--blue-pale);color:var(--blue)}
-.s-urgent{background:var(--red-pale);color:var(--red)}
-.s-soon{background:var(--gold-pale);color:var(--gold)}
 .s-closed{background:var(--gray-200);color:var(--gray-600)}
 .card-covers{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:4px}
 .cover-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--blue-pale);color:var(--blue);font-weight:500;font-family:'Sarabun',sans-serif}
@@ -124,28 +129,6 @@ footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(
 .page-hero p { color: var(--gray-600) !important; }
 .page-hero .hkpi-num { filter: none; }
 
-
-
-/* ============================================================
-   ROUND 7 — MOBILE RESPONSIVE FIXES
-   ============================================================ */
-@media (max-width: 960px){
-  nav{height:auto;min-height:60px;padding:10px 4%;gap:10px;flex-wrap:wrap;position:sticky;background:rgba(255,255,255,.96);box-shadow:0 1px 16px rgba(15,45,90,.08)}
-  .nav-logo{min-width:0}.nav-logo-text{font-size:15px}.nav-links{order:3;width:100%;display:flex;gap:10px;overflow-x:auto;padding:4px 0 2px;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}
-  .nav-link{font-size:12px;white-space:nowrap;padding:6px 10px;border-radius:999px;background:var(--gray-100, #F8F9FB)}
-  .nav-lang{margin-left:auto}.nav-admin-btn{padding:7px 12px;font-size:11px}
-  .page-hero{padding:34px 5% 28px!important;text-align:center}.page-hero h1{font-size:30px!important}.page-hero p{font-size:13px!important}
-  .hero-kpi{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:12px!important;justify-content:stretch!important}.hkpi{padding:12px;background:rgba(255,255,255,.52);border-radius:14px}
-  .content{padding:18px 4%!important}.grid-2,.grid-3{grid-template-columns:1fr!important}.filter-bar{align-items:stretch!important}.search-wrap{min-width:100%!important}.filter-select{width:100%}.status-pills{width:100%;overflow-x:auto;padding-bottom:2px}
-  .cards-grid,.scholar-grid,.features-grid{grid-template-columns:1fr!important}.map-stats-row{grid-template-columns:repeat(2,1fr)!important}.table-wrap{border-radius:12px;overflow-x:auto}.table-wrap table{min-width:760px}
-  .event-item,.event-row{align-items:flex-start!important}.map-dark,.card{min-width:0}.chart-wrap{min-height:240px}.hero-btns{justify-content:center}.hero-stats{justify-content:center;flex-wrap:wrap}
-}
-@media (max-width: 640px){
-  .hero{min-height:auto!important;display:block!important;padding:90px 5% 40px!important;text-align:center}.hero-title{font-size:34px!important}.hero-title .accent2{font-size:24px!important}.hero-sub{font-size:14px!important}.hero-btns a{width:100%;justify-content:center}.hero-stats{display:grid!important;grid-template-columns:repeat(2,1fr);gap:10px}.stat-divider{display:none}.hero-visual{margin-top:18px}.globy-wrap{width:min(310px,90vw)!important;height:min(310px,90vw)!important;margin:auto}.globy-bubble{font-size:10px;transform:scale(.9)}.gb1{left:0!important}.gb2{right:0!important}.gb3{left:0!important}.gb4{right:0!important}
-  section{padding:46px 5%!important}.section-title{font-size:26px!important}.section-sub{font-size:13px!important}.about-strip{display:block!important;text-align:center;padding:36px 5%!important}.about-globy{margin-bottom:18px}.about-contact{justify-content:center}footer{display:block!important;text-align:center}.footer-logo{justify-content:center;margin-bottom:10px}.footer-admin{margin-top:12px}
-  .page-hero h1{font-size:26px!important}.hero-kpi{grid-template-columns:1fr 1fr!important}.hkpi-num{font-size:26px!important}.event-item,.event-row{display:grid!important;grid-template-columns:auto 1fr;gap:10px!important}.event-item .ev-arrow,.event-row .ev-arrow{display:none}
-}
-
 </style>
 </head>
 <body>
@@ -193,10 +176,8 @@ footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(
     </select>
     <div class="pills">
       <div class="pill on" onclick="setPill(this,'')">ทั้งหมด</div>
-      <div class="pill" onclick="setPill(this,'urgent')">🔥 ด่วน</div>
-      <div class="pill" onclick="setPill(this,'soon')">ใกล้ปิดรับ</div>
-      <div class="pill" onclick="setPill(this,'open')">เปิดรับ</div>
-      <div class="pill" onclick="setPill(this,'upcoming')">ยังไม่เปิดรับ</div>
+      <div class="pill" onclick="setPill(this,'open')">รับสมัคร</div>
+      <div class="pill" onclick="setPill(this,'upcoming')">เร็วๆ นี้</div>
       <div class="pill" onclick="setPill(this,'closed')">ปิดแล้ว</div>
     </div>
   </div>
@@ -227,11 +208,10 @@ async function loadData() {
   try {
     const data = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
     allScholar = data.sort((a,b) => {
-      const sa = IROUP.getScholarStatus(a['วันเปิดรับ'], a['วันปิดรับ']);
-      const sb = IROUP.getScholarStatus(b['วันเปิดรับ'], b['วันปิดรับ']);
+      // Pin ขึ้นก่อน
       if (a['Pin'] === 'TRUE' && b['Pin'] !== 'TRUE') return -1;
       if (b['Pin'] === 'TRUE' && a['Pin'] !== 'TRUE') return 1;
-      return (sa.priority||9) - (sb.priority||9) || ((IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1)) - (IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1)));
+      return 0;
     });
 
     // KPI
@@ -264,30 +244,41 @@ async function loadData() {
   }
 }
 
-function normalizeText(v) {
-  return (v === null || v === undefined ? '' : String(v))
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+
+function escHtml(v){
+  return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function fixDriveUrl(url){
+  const u = String(url || '').trim();
+  if(!u) return '';
+  if(u.includes('/file/d/')){
+    const id = u.split('/file/d/')[1]?.split('/')[0];
+    if(id) return `https://drive.google.com/uc?export=view&id=${id}`;
+  }
+  return u;
+}
+function linkBtn(url,label,extraClass=''){
+  const u = String(url || '').trim();
+  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
+  return `<a href="${escHtml(u)}" target="_blank" rel="noopener" class="card-action-btn ${extraClass}">${label}</a>`;
 }
 
 function renderCards() {
-  const q       = normalizeText(document.getElementById('searchInput')?.value || '');
+  const q       = document.getElementById('searchInput').value.toLowerCase();
   const country = document.getElementById('countryFilter').value;
   const level   = document.getElementById('levelFilter').value;
 
   let filtered = allScholar.filter(s => {
-    const blob = normalizeText(Object.values(s || {}).join(' | '));
-    const matchQ  = !q || blob.includes(q);
+    const matchQ  = !q || (s['ชื่อทุน']+s['สถาบัน']).toLowerCase().includes(q);
     const matchC  = !country || s['ประเทศ'] === country;
-    const matchL  = !level || normalizeText(s['ระดับ']).includes(normalizeText(level));
+    const matchL  = !level || (s['ระดับ']||'').includes(level);
     const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
     const matchS  = !currentFilter || st.status === currentFilter;
     return matchQ && matchC && matchL && matchS;
   });
 
-  const open   = filtered.filter(s => ['urgent','soon','open'].includes(IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status));
-  const others = filtered.filter(s => !['urgent','soon','open'].includes(IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status));
+  const open   = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status === 'open');
+  const others = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status !== 'open');
 
   document.getElementById('openSection').style.display = open.length > 0 ? 'block' : 'none';
   document.getElementById('openCards').innerHTML = open.map(s => cardHTML(s)).join('') || '<div class="loading">ไม่มีทุนที่กำลังรับสมัคร</div>';
@@ -298,34 +289,41 @@ function cardHTML(s) {
   const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
   const flag    = FLAGS[s['ประเทศ']] || '🌍';
   const bg      = BG[s['ประเทศ']] || '#F8F9FB';
-  const covers  = (s['ครอบคลุม']||'').split(',').filter(Boolean);
+  const covers  = (s['ครอบคลุม']||'').split(',').map(x=>x.trim()).filter(Boolean);
   const isPinned = s['Pin'] === 'TRUE';
+  const poster = fixDriveUrl(s['Poster_URL']);
+  const fileUrl = s['ไฟล์_URL'];
+  const linkUrl = s['Link'];
 
   let statusClass = 's-closed', statusLabel = 'ปิดรับแล้ว';
-  if (st.status === 'urgent')   { statusClass = 's-urgent';   statusLabel = '🔥 ด่วน'; }
-  if (st.status === 'soon')     { statusClass = 's-soon';     statusLabel = 'ใกล้ปิดรับ'; }
-  if (st.status === 'open')     { statusClass = 's-open';     statusLabel = 'เปิดรับ'; }
-  if (st.status === 'upcoming') { statusClass = 's-upcoming'; statusLabel = 'ยังไม่เปิดรับ'; }
+  if (st.status === 'open')     { statusClass = 's-open';     statusLabel = st.label || 'เปิดรับ'; }
+  if (st.status === 'upcoming') { statusClass = 's-upcoming'; statusLabel = st.label || 'ยังไม่เปิดรับ'; }
 
   let daysHTML = '';
-  if (st.daysLeft !== null) {
-    const cls = st.status === 'urgent' ? 'days-urgent' : st.status === 'soon' ? 'days-soon' : 'days-ok';
+  if (st.daysLeft !== null && st.daysLeft !== undefined) {
+    const cls = st.daysLeft <= 3 ? 'days-urgent' : st.daysLeft <= 10 ? 'days-soon' : 'days-ok';
     daysHTML = `<span class="${cls}">⏰ เหลือ ${st.daysLeft} วัน</span>`;
   }
 
   return `<div class="scholar-card" style="position:relative">
     ${isPinned ? '<div class="pin-badge">📌</div>' : ''}
+    <div class="card-poster">
+      ${poster ? `<img src="${escHtml(poster)}" alt="${escHtml(s['ชื่อทุน']||'poster')}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=&quot;card-poster-fallback&quot;>${flag}</div>'">` : `<div class="card-poster-fallback" style="background:${bg}">${flag}</div>`}
+    </div>
     <div class="card-top">
-      <div class="card-flag" style="background:${bg}">${flag}</div>
       <div class="card-info">
-        <div class="card-name">${s['ชื่อทุน']||'—'}</div>
-        <div class="card-org">${s['สถาบัน']||'—'} · ${s['ประเทศ']||'—'}</div>
+        <div class="card-name">${escHtml(s['ชื่อทุน']||'—')}</div>
+        <div class="card-org">${escHtml(s['สถาบัน']||'—')} · ${escHtml(s['ประเทศ']||'—')}</div>
       </div>
       <span class="card-status ${statusClass}">${statusLabel}</span>
     </div>
     <div class="card-covers">
-      ${covers.map(c => `<span class="cover-tag">${c.trim()}</span>`).join('')}
-      ${s['ระดับ'] ? `<span class="card-level">${s['ระดับ']}</span>` : ''}
+      ${covers.map(c => `<span class="cover-tag">${escHtml(c)}</span>`).join('')}
+      ${s['ระดับ'] ? `<span class="card-level">${escHtml(s['ระดับ'])}</span>` : ''}
+    </div>
+    <div class="card-actions">
+      ${linkBtn(linkUrl,'🔗 ลิงก์สมัคร')}
+      ${linkBtn(fileUrl,'📎 ไฟล์แนบ','file')}
     </div>
     <div class="card-footer">
       <div class="card-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>
@@ -345,7 +343,6 @@ function setLang(lang) {
   document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
 }
 
-document.getElementById('searchInput')?.addEventListener('input', renderCards);
 loadData();
 </script>
 

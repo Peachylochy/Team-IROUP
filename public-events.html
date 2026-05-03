@@ -89,6 +89,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .t-train{background:var(--gold-pale);color:var(--gold)}
 .t-exchange{background:var(--teal-pale);color:var(--teal)}
 .ev-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:'Sarabun',sans-serif}
+.ev-poster{width:86px;height:58px;border-radius:10px;overflow:hidden;background:var(--gray-100);flex-shrink:0;border:1px solid var(--gray-200)}
+.ev-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.ev-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ev-file-btn{font-size:10px;font-weight:700;text-decoration:none;border-radius:8px;padding:4px 8px;background:var(--green-pale);color:var(--green);font-family:'Sarabun',sans-serif;white-space:nowrap}
+
 .es-upcoming{background:var(--blue-pale);color:var(--blue)}
 .es-ongoing{background:var(--green-pale);color:var(--green)}
 .es-done{background:var(--gray-200);color:var(--gray-600)}
@@ -132,28 +137,6 @@ footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(
 .page-hero h1 { color: var(--navy-dark) !important; }
 .page-hero p { color: var(--gray-600) !important; }
 .page-hero .hkpi-num { filter: none; }
-
-
-
-/* ============================================================
-   ROUND 7 — MOBILE RESPONSIVE FIXES
-   ============================================================ */
-@media (max-width: 960px){
-  nav{height:auto;min-height:60px;padding:10px 4%;gap:10px;flex-wrap:wrap;position:sticky;background:rgba(255,255,255,.96);box-shadow:0 1px 16px rgba(15,45,90,.08)}
-  .nav-logo{min-width:0}.nav-logo-text{font-size:15px}.nav-links{order:3;width:100%;display:flex;gap:10px;overflow-x:auto;padding:4px 0 2px;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}
-  .nav-link{font-size:12px;white-space:nowrap;padding:6px 10px;border-radius:999px;background:var(--gray-100, #F8F9FB)}
-  .nav-lang{margin-left:auto}.nav-admin-btn{padding:7px 12px;font-size:11px}
-  .page-hero{padding:34px 5% 28px!important;text-align:center}.page-hero h1{font-size:30px!important}.page-hero p{font-size:13px!important}
-  .hero-kpi{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:12px!important;justify-content:stretch!important}.hkpi{padding:12px;background:rgba(255,255,255,.52);border-radius:14px}
-  .content{padding:18px 4%!important}.grid-2,.grid-3{grid-template-columns:1fr!important}.filter-bar{align-items:stretch!important}.search-wrap{min-width:100%!important}.filter-select{width:100%}.status-pills{width:100%;overflow-x:auto;padding-bottom:2px}
-  .cards-grid,.scholar-grid,.features-grid{grid-template-columns:1fr!important}.map-stats-row{grid-template-columns:repeat(2,1fr)!important}.table-wrap{border-radius:12px;overflow-x:auto}.table-wrap table{min-width:760px}
-  .event-item,.event-row{align-items:flex-start!important}.map-dark,.card{min-width:0}.chart-wrap{min-height:240px}.hero-btns{justify-content:center}.hero-stats{justify-content:center;flex-wrap:wrap}
-}
-@media (max-width: 640px){
-  .hero{min-height:auto!important;display:block!important;padding:90px 5% 40px!important;text-align:center}.hero-title{font-size:34px!important}.hero-title .accent2{font-size:24px!important}.hero-sub{font-size:14px!important}.hero-btns a{width:100%;justify-content:center}.hero-stats{display:grid!important;grid-template-columns:repeat(2,1fr);gap:10px}.stat-divider{display:none}.hero-visual{margin-top:18px}.globy-wrap{width:min(310px,90vw)!important;height:min(310px,90vw)!important;margin:auto}.globy-bubble{font-size:10px;transform:scale(.9)}.gb1{left:0!important}.gb2{right:0!important}.gb3{left:0!important}.gb4{right:0!important}
-  section{padding:46px 5%!important}.section-title{font-size:26px!important}.section-sub{font-size:13px!important}.about-strip{display:block!important;text-align:center;padding:36px 5%!important}.about-globy{margin-bottom:18px}.about-contact{justify-content:center}footer{display:block!important;text-align:center}.footer-logo{justify-content:center;margin-bottom:10px}.footer-admin{margin-top:12px}
-  .page-hero h1{font-size:26px!important}.hero-kpi{grid-template-columns:1fr 1fr!important}.hkpi-num{font-size:26px!important}.event-item,.event-row{display:grid!important;grid-template-columns:auto 1fr;gap:10px!important}.event-item .ev-arrow,.event-row .ev-arrow{display:none}
-}
 
 </style>
 </head>
@@ -241,19 +224,35 @@ let currentFilter = '';
 let selectedDate  = null;
 let calYear  = new Date().getFullYear();
 let calMonth = new Date().getMonth();
-const MONTHS_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-function eventMonths(){ return currentLang === 'EN' ? MONTHS_EN : MONTHS_TH; }
-function eventYearLabel(y){ return currentLang === 'EN' ? y : y + 543; }
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
 const TYPE_CLASS = {'การเดินทาง':'t-travel','Inbound':'t-inbound','ประชุม':'t-meet','อบรม':'t-train','Exchange':'t-exchange'};
 const TYPE_EMOJI = {'การเดินทาง':'✈️','Inbound':'🌏','ประชุม':'🤝','อบรม':'📚','Exchange':'🔄'};
+
+
+function escHtml(v){
+  return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function fixDriveUrl(url){
+  const u = String(url || '').trim();
+  if(!u) return '';
+  if(u.includes('/file/d/')){
+    const id = u.split('/file/d/')[1]?.split('/')[0];
+    if(id) return `https://drive.google.com/uc?export=view&id=${id}`;
+  }
+  return u;
+}
+function simpleLink(url,label){
+  const u=String(url||'').trim();
+  if(!u || u==='-' || u.toLowerCase()==='undefined' || u.toLowerCase()==='null') return '';
+  return `<a href="${escHtml(u)}" target="_blank" rel="noopener" class="ev-file-btn">${label}</a>`;
+}
 
 async function loadData() {
   try {
     const data = await IROUP.getAll(IROUP.SHEETS.EVENT);
-    allEvents = data.sort((a,b) => (IROUP.parseDate(a['วันเริ่ม'])||0) - (IROUP.parseDate(b['วันเริ่ม'])||0));
+    allEvents = data.sort((a,b) => new Date(a['วันเริ่ม']) - new Date(b['วันเริ่ม']));
     const today = new Date();
-    const upcoming = data.filter(e => (IROUP.parseDate(e['วันเริ่ม'])||0) > today).length;
+    const upcoming = data.filter(e => new Date(e['วันเริ่ม']) > today).length;
     const ongoing  = data.filter(e => {
       const s = IROUP.getStatus(e['วันเริ่ม'], e['วันสิ้นสุด']);
       return s.status === 'active';
@@ -278,21 +277,21 @@ function renderEvents() {
       (currentFilter === 'done'     && s.status === 'done');
     const matchT = !type || e['ประเภท'] === type;
     const matchD = !selectedDate || (
-      (IROUP.parseDate(e['วันเริ่ม'])||0) <= selectedDate &&
-      (IROUP.parseDate(e['วันสิ้นสุด'] || e['วันเริ่ม'])||0) >= selectedDate
+      new Date(e['วันเริ่ม']) <= selectedDate &&
+      new Date(e['วันสิ้นสุด'] || e['วันเริ่ม']) >= selectedDate
     );
     return matchS && matchT && matchD;
   });
 
   if (filtered.length === 0) {
-    document.getElementById('eventList').innerHTML = `<div class="loading">${(EVENT_PAGE_TEXT?.[currentLang]?.notFound)||'ไม่พบกิจกรรม'}</div>`;
+    document.getElementById('eventList').innerHTML = '<div class="loading">ไม่พบกิจกรรม</div>';
     return;
   }
 
   document.getElementById('eventList').innerHTML = filtered.map(e => {
-    const d    = IROUP.parseDate(e['วันเริ่ม']) || new Date();
+    const d    = new Date(e['วันเริ่ม']);
     const day  = d.getDate();
-    const mon  = eventMonths()[d.getMonth()].slice(0,3) + '.';
+    const mon  = THAI_MONTHS[d.getMonth()].slice(0,3) + '.';
     const type = e['ประเภท'] || 'กิจกรรม';
     const cls  = TYPE_CLASS[type] || 't-meet';
     const emo  = TYPE_EMOJI[type] || '📅';
@@ -310,6 +309,9 @@ function renderEvents() {
     const [bgC, textC] = dateColors[type] || ['#E8F4FD','#1A6DB5'];
     const lineColors = {'การเดินทาง':'#1A6DB5','Inbound':'#7C3AED','ประชุม':'#5BAD3E','อบรม':'#D4890A','Exchange':'#0D9488'};
     const lineColor = lineColors[type] || '#1A6DB5';
+    const poster = fixDriveUrl(e['Poster_URL']);
+    const posterBlock = poster ? `<div class="ev-poster"><img src="${escHtml(poster)}" alt="${escHtml(e['ชื่อกิจกรรม']||'poster')}" loading="lazy"></div>` : '';
+    const fileBlock = simpleLink(e['ไฟล์_URL'],'📎 ไฟล์');
 
     return `<div class="event-item">
       <div class="ev-date">
@@ -327,8 +329,12 @@ function renderEvents() {
           ${e['หน่วยงาน'] ? `<span>🏫 ${e['หน่วยงาน']}</span>` : ''}
         </div>
       </div>
-      <span class="ev-type-tag ${cls}">${emo} ${type}</span>
-      <span class="ev-status ${esCls}">${esLbl}</span>
+      ${posterBlock}
+      <div class="ev-actions">
+        <span class="ev-type-tag ${cls}">${emo} ${type}</span>
+        <span class="ev-status ${esCls}">${esLbl}</span>
+        ${fileBlock}
+      </div>
       <div class="ev-arrow">›</div>
     </div>`;
   }).join('');
@@ -342,13 +348,13 @@ function renderCalendar() {
   const grid  = document.getElementById('calDays');
   const today = new Date();
 
-  label.textContent = `${eventMonths()[calMonth]} ${eventYearLabel(calYear)}`;
+  label.textContent = `${THAI_MONTHS[calMonth]} ${calYear + 543}`;
 
   // หาวันที่มี event ในเดือนนี้
   const eventDays = new Set();
   allEvents.forEach(e => {
-    const start = IROUP.parseDate(e['วันเริ่ม']) || new Date(9999,0,1);
-    const end   = IROUP.parseDate(e['วันสิ้นสุด'] || e['วันเริ่ม']) || start;
+    const start = new Date(e['วันเริ่ม']);
+    const end   = new Date(e['วันสิ้นสุด'] || e['วันเริ่ม']);
     let cur = new Date(start);
     while (cur <= end) {
       if (cur.getFullYear() === calYear && cur.getMonth() === calMonth) {
@@ -411,31 +417,11 @@ function setPill(el, status) {
   renderEvents();
 }
 
-let currentLang = localStorage.getItem('iroup_lang') || 'TH';
-const EVENT_PAGE_TEXT = {
-  TH:{nav:['🤝 MOU','🎓 ทุนการศึกษา','📅 กิจกรรม','👥 Mobility'],admin:'🔐 Admin',title:'📅 กิจกรรม & โครงการ',sub:'ปฏิทินกิจกรรมนานาชาติ การเดินทาง Exchange และโปรแกรมพิเศษ',kpi:['กิจกรรมทั้งหมด','กำลังจะมาถึง','กำลังดำเนินการ'],days:['อา','จ','อ','พ','พฤ','ศ','ส'],legend:['การเดินทาง','Inbound','ประชุม','อบรม'],pills:['ทั้งหมด','Upcoming','Ongoing','เสร็จสิ้น'],allType:'ทุกประเภท',loading:'⏳ กำลังโหลด...',notFound:'ไม่พบกิจกรรม',footer:'© 2569 International Relations Office · University of Phayao'},
-  EN:{nav:['🤝 MOU','🎓 Scholarships','📅 Events','👥 Mobility'],admin:'🔐 Admin',title:'📅 Events & Programs',sub:'International events calendar, travel, exchange programs, and special activities.',kpi:['Total events','Upcoming','Ongoing'],days:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],legend:['Travel','Inbound','Meeting','Training'],pills:['All','Upcoming','Ongoing','Done'],allType:'All types',loading:'⏳ Loading...',notFound:'No events found',footer:'© 2026 International Relations Office · University of Phayao'}
-};
 function setLang(lang) {
-  currentLang = lang; localStorage.setItem('iroup_lang', lang); document.documentElement.lang = lang === 'EN' ? 'en' : 'th';
-  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang));
-  const t = EVENT_PAGE_TEXT[lang];
-  document.querySelectorAll('.nav-link').forEach((el,i)=>{ if(t.nav[i]) el.textContent=t.nav[i]; });
-  const admin=document.querySelector('.nav-admin-btn'); if(admin) admin.textContent=t.admin;
-  const h1=document.querySelector('.page-hero h1'); if(h1) h1.textContent=t.title;
-  const sub=document.querySelector('.page-hero p'); if(sub) sub.textContent=t.sub;
-  document.querySelectorAll('.hkpi-label').forEach((el,i)=>{ if(t.kpi[i]) el.textContent=t.kpi[i]; });
-  document.querySelectorAll('.cal-day-label').forEach((el,i)=>{ if(t.days[i]) el.textContent=t.days[i]; });
-  document.querySelectorAll('.legend-item').forEach((el,i)=>{ const dot=el.querySelector('.legend-dot'); if(t.legend[i]) el.innerHTML=(dot?dot.outerHTML:'')+t.legend[i]; });
-  document.querySelectorAll('.pill').forEach((el,i)=>{ if(t.pills[i]) el.textContent=t.pills[i]; });
-  const sel=document.getElementById('typeFilter'); if(sel && sel.options[0]) sel.options[0].textContent=t.allType;
-  const loading=document.querySelector('#eventList .loading'); if(loading && loading.textContent.includes('โหลด')) loading.textContent=t.loading;
-  const footer=document.querySelector('footer'); if(footer) footer.textContent=t.footer;
-  renderCalendar?.();
+  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
 }
 
-loadData().then?.(()=>setLang(currentLang));
-document.addEventListener('DOMContentLoaded',()=>setLang(currentLang));
+loadData();
 </script>
 
 
