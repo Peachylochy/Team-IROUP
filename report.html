@@ -24,7 +24,7 @@ body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--text);min-
       <div class="sub">สรุปข้อมูล Inbound / Outbound / การเดินทางบุคลากร พร้อมกรองและส่งออกข้อมูล</div>
     </div>
     <div class="quick-grid">
-      <button class="btn" onclick="loadAll()">↻ โหลดใหม่</button>
+      <button class="btn" onclick="loadAll(true)">↻ โหลดใหม่</button>
       <button class="btn primary" onclick="exportFilteredCsv()">⬇ Export ตาม Filter</button>
     </div>
   </div>
@@ -87,12 +87,24 @@ const SHEETS={
   outbound: IROUP.SHEETS?.OUTBOUND || 'Outbound',
   travel: IROUP.SHEETS?.TRAVEL || 'การเดินทาง'
 };
+
+// ============================================================
+// PERFORMANCE PATCH — Report โหลดเร็วขึ้น
+// 1) โหลด 3 ชีทพร้อมกันด้วย Promise.all
+// 2) แสดง cache จาก localStorage ก่อน ระหว่างรอ Google Sheet
+// 3) ใส่ timeout กันค้างยาว
+// 4) render ตารางเฉพาะ 300 แถวแรก ป้องกัน DOM หนัก
+// ============================================================
 let raw={inbound:[],outbound:[],travel:[]};
 let allRows=[], filteredRows=[]; let trendChart=null;
+let isLoading=false;
+const REPORT_CACHE_KEY='iroup_report_cache_v2';
+const CACHE_MAX_AGE=1000*60*10; // 10 นาที
+const TABLE_LIMIT=300;
 const $=s=>document.querySelector(s);
+
 function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
 function asArr(res){return Array.isArray(res)?res:(res?.data||[])}
-async function safe(label,fn,fallback=[]){try{return await fn()}catch(e){console.error(label,e);return fallback}}
 function uniq(arr){return [...new Set(arr.map(x=>String(x||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'))}
 function splitList(v){return String(v||'').split(',').map(x=>x.trim()).filter(Boolean)}
 function countPeople(row){const n=parseInt(row['จำนวน'],10); if(n>0)return n; const ids=splitList(row['รหัสนิสิต']||row['รหัสผู้เดินทาง']); return ids.length || 1}
@@ -103,6 +115,13 @@ function getStatus(start,end){const today=startOfDay(new Date());const s=toDate(
 function fileLink(url){const u=String(url||'').trim(); if(!u||u==='-'||u.toLowerCase()==='undefined')return '-'; return `<a class="file-btn" href="${esc(u)}" target="_blank" rel="noopener">🔗 ไฟล์</a>`}
 function money(v){const n=parseFloat(String(v||'').replace(/,/g,'')); return isNaN(n)?'-':n.toLocaleString('th-TH')}
 function sumBudget(rows){return rows.reduce((s,r)=>s+(parseFloat(String(r.budget||'').replace(/,/g,''))||0),0)}
+
+function timeout(ms,label){return new Promise((_,reject)=>setTimeout(()=>reject(new Error(`${label} โหลดนานเกิน ${Math.round(ms/1000)} วินาที`)),ms));}
+async function getAllFast(sheet,label){return asArr(await Promise.race([IROUP.getAll(sheet), timeout(25000,label)]));}
+function readCache(){try{const c=JSON.parse(localStorage.getItem(REPORT_CACHE_KEY)||'null'); if(!c||!c.raw)return null; return c;}catch(e){return null}}
+function writeCache(){try{localStorage.setItem(REPORT_CACHE_KEY,JSON.stringify({ts:Date.now(),raw}));}catch(e){console.warn('cache write failed',e)}}
+function useCache(){const c=readCache(); if(!c)return false; raw=c.raw; makeRows(); initFilters(); applyReport(); const ageMin=Math.round((Date.now()-c.ts)/60000); $('#notice').textContent=`แสดงข้อมูลจาก cache เมื่อ ${ageMin} นาทีที่แล้ว · กำลังอัปเดตจาก Google Sheet...`; return true;}
+
 function makeRows(){
   const inbound=raw.inbound.map(r=>({
     type:'Inbound', typeKey:'inbound', name:[r['ชื่อ'],r['ชื่อกลาง'],r['สกุล']].filter(Boolean).join(' ')||'-', project:r['โครงการ']||r['วัตถุประสงค์']||'-', country:r['ประเทศ']||'', continent:r['ทวีป']||'', faculty:r['หน่วยงาน_UP']||'', start:r['วันมาถึง'], end:r['วันกลับ'], fy:r['ปีงบ']||'', people:1, budget:r['จำนวนเงิน']||'', file:r['ไฟล์_URL']||'', level:r['ระดับ']||'', raw:r
@@ -115,21 +134,44 @@ function makeRows(){
   }));
   allRows=[...inbound,...outbound,...travel];
 }
-async function loadAll(){
+
+async function loadAll(force=false){
+  if(isLoading)return;
+  isLoading=true;
   $('#notice').textContent='กำลังโหลดข้อมูลจาก Google Sheet...';
-  raw.inbound=asArr(await safe('inbound',()=>IROUP.getAll(SHEETS.inbound),{data:[]}));
-  raw.outbound=asArr(await safe('outbound',()=>IROUP.getAll(SHEETS.outbound),{data:[]}));
-  raw.travel=asArr(await safe('travel',()=>IROUP.getAll(SHEETS.travel),{data:[]}));
-  makeRows(); initFilters(); applyReport();
-  $('#notice').textContent=`โหลดข้อมูลแล้ว: Inbound ${raw.inbound.length} รายการ · Outbound ${raw.outbound.length} รายการ · Travel ${raw.travel.length} รายการ`;
+  if(!force) useCache();
+  try{
+    const [inbound,outbound,travel]=await Promise.all([
+      getAllFast(SHEETS.inbound,'Inbound'),
+      getAllFast(SHEETS.outbound,'Outbound'),
+      getAllFast(SHEETS.travel,'Travel')
+    ]);
+    raw={inbound,outbound,travel};
+    writeCache();
+    makeRows(); initFilters(); applyReport();
+    $('#notice').textContent=`โหลดข้อมูลล่าสุดแล้ว: Inbound ${raw.inbound.length} รายการ · Outbound ${raw.outbound.length} รายการ · Travel ${raw.travel.length} รายการ`;
+  }catch(e){
+    console.error('Report load failed',e);
+    const hasData=allRows.length>0;
+    $('#notice').textContent=hasData ? `⚠️ Google Sheet ตอบช้า/โหลดไม่สำเร็จ จึงแสดงข้อมูลจาก cache ก่อน (${e.message})` : `⚠️ โหลดข้อมูลไม่สำเร็จ: ${e.message}`;
+  }finally{
+    isLoading=false;
+  }
 }
+
 function initFilters(){
   fillSelect('fyFilter',uniq(allRows.map(r=>r.fy)),'ทุกปีงบ');
   fillSelect('countryFilter',uniq(allRows.map(r=>r.country)),'ทุกประเทศ');
   fillSelect('facultyFilter',uniq(allRows.flatMap(r=>splitList(r.faculty))),'ทุกคณะ/หน่วยงาน');
 }
 function fillSelect(id,items,label){const el=$('#'+id); const cur=el.value; el.innerHTML=`<option value="">${label}</option>`+items.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join(''); if(items.includes(cur))el.value=cur;}
+
+let filterTimer=null;
 function applyReport(){
+  clearTimeout(filterTimer);
+  filterTimer=setTimeout(applyReportNow,120);
+}
+function applyReportNow(){
   const q=$('#q').value.toLowerCase().trim(), type=$('#typeFilter').value, fy=$('#fyFilter').value, country=$('#countryFilter').value, faculty=$('#facultyFilter').value, status=$('#statusFilter').value;
   filteredRows=allRows.filter(r=>{
     const st=getStatus(r.start,r.end).key;
@@ -137,11 +179,14 @@ function applyReport(){
     if(q&&!Object.values({name:r.name,project:r.project,country:r.country,faculty:r.faculty,fy:r.fy,type:r.type}).join(' ').toLowerCase().includes(q))return false;
     return true;
   });
-  renderKpis(); renderTrend(); renderBars(); renderTable();
+  requestAnimationFrame(()=>{renderKpis(); renderTrend(); renderBars(); renderTable();});
 }
+
 function renderKpis(){
-  const people=filteredRows.reduce((s,r)=>s+(+r.people||0),0); const countries=uniq(filteredRows.map(r=>r.country)).length;
-  const inPeople=filteredRows.filter(r=>r.type==='Inbound').reduce((s,r)=>s+(+r.people||0),0); const outPeople=filteredRows.filter(r=>r.type==='Outbound').reduce((s,r)=>s+(+r.people||0),0); const travelTrips=filteredRows.filter(r=>r.type==='การเดินทางบุคลากร').length;
+  const people=filteredRows.reduce((s,r)=>s+(+r.people||0),0);
+  const inPeople=filteredRows.filter(r=>r.type==='Inbound').reduce((s,r)=>s+(+r.people||0),0);
+  const outPeople=filteredRows.filter(r=>r.type==='Outbound').reduce((s,r)=>s+(+r.people||0),0);
+  const travelTrips=filteredRows.filter(r=>r.type==='การเดินทางบุคลากร').length;
   $('#kpis').innerHTML=`${kpi('👥',people,'จำนวนคนรวม','ตาม filter')}${kpi('🌏',inPeople,'Inbound','คน/รายการ')}${kpi('✈️',outPeople,'Outbound','นับจำนวนนิสิต')}${kpi('🧳',travelTrips,'Travel','จำนวนโครงการ')}${kpi('💰',money(sumBudget(filteredRows)),'งบประมาณ','บาท')}`;
 }
 function kpi(icon,num,label,hint){return `<div class="kpi"><div class="kpi-ico">${icon}</div><div><div class="num">${num}</div><div class="label">${label}</div><div class="hint">${hint}</div></div></div>`}
@@ -149,21 +194,23 @@ function monthKey(v){const d=toDate(v); if(!d)return 'ไม่ระบุ'; re
 function renderTrend(){
   const months=uniq(filteredRows.map(r=>monthKey(r.start)).filter(x=>x!=='ไม่ระบุ')).slice(-12);
   const dataFor=t=>months.map(m=>filteredRows.filter(r=>r.type===t&&monthKey(r.start)===m).reduce((s,r)=>s+(+r.people||0),0));
-  const ctx=$('#trendChart'); if(trendChart)trendChart.destroy();
-  trendChart=new Chart(ctx,{type:'line',data:{labels:months,datasets:[{label:'Inbound',data:dataFor('Inbound'),tension:.35},{label:'Outbound',data:dataFor('Outbound'),tension:.35},{label:'Travel',data:dataFor('การเดินทางบุคลากร'),tension:.35}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}});
+  const ctx=$('#trendChart'); if(!ctx)return; if(trendChart)trendChart.destroy();
+  trendChart=new Chart(ctx,{type:'line',data:{labels:months,datasets:[{label:'Inbound',data:dataFor('Inbound'),tension:.35},{label:'Outbound',data:dataFor('Outbound'),tension:.35},{label:'Travel',data:dataFor('การเดินทางบุคลากร'),tension:.35}]},options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
 }
 function countBy(rows,keyFn){const o={}; rows.forEach(r=>{const parts=splitList(keyFn(r)||''); (parts.length?parts:['ไม่ระบุ']).forEach(k=>o[k]=(o[k]||0)+(+r.people||0));}); return Object.entries(o).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value)}
 function renderBars(){barBox('countryBars',countBy(filteredRows,r=>r.country).slice(0,8));barBox('facultyBars',countBy(filteredRows,r=>r.faculty).slice(0,8));}
 function barBox(id,rows){const max=Math.max(1,...rows.map(r=>r.value)); $('#'+id).innerHTML=rows.length?rows.map(r=>`<div class="bar-row"><div class="bar-name" title="${esc(r.name)}">${esc(r.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,r.value/max*100)}%"></div></div><div class="bar-val">${r.value}</div></div>`).join(''):'<div class="empty">ไม่มีข้อมูล</div>';}
 function renderTable(){
-  $('#tableSub').textContent=`แสดง ${filteredRows.length} รายการ · รวม ${filteredRows.reduce((s,r)=>s+(+r.people||0),0)} คน`;
-  $('#reportBody').innerHTML=filteredRows.length?filteredRows.map(r=>{const st=getStatus(r.start,r.end);return `<tr><td><span class="badge ${r.typeKey==='inbound'?'in':r.typeKey==='outbound'?'out':'travel'}">${esc(r.type)}</span></td><td>${esc(r.name||'-')}</td><td>${esc(r.project||'-')}</td><td>${esc(r.country||'-')}</td><td>${esc(r.faculty||'-')}</td><td>${fmtDate(r.start)} - ${fmtDate(r.end)}</td><td>${esc(r.fy||'-')}</td><td><b>${r.people||1}</b></td><td>${money(r.budget)}</td><td>${fileLink(r.file)}</td></tr>`}).join(''):`<tr><td colspan="10"><div class="empty">ไม่พบข้อมูลตาม filter</div></td></tr>`;
+  const shown=filteredRows.slice(0,TABLE_LIMIT);
+  const people=filteredRows.reduce((s,r)=>s+(+r.people||0),0);
+  $('#tableSub').textContent=`แสดง ${shown.length}/${filteredRows.length} รายการ · รวม ${people} คน${filteredRows.length>TABLE_LIMIT?' · Export ได้ครบทุกแถว':''}`;
+  $('#reportBody').innerHTML=shown.length?shown.map(r=>`<tr><td><span class="badge ${r.typeKey==='inbound'?'in':r.typeKey==='outbound'?'out':'travel'}">${esc(r.type)}</span></td><td>${esc(r.name||'-')}</td><td>${esc(r.project||'-')}</td><td>${esc(r.country||'-')}</td><td>${esc(r.faculty||'-')}</td><td>${fmtDate(r.start)} - ${fmtDate(r.end)}</td><td>${esc(r.fy||'-')}</td><td><b>${r.people||1}</b></td><td>${money(r.budget)}</td><td>${fileLink(r.file)}</td></tr>`).join(''):`<tr><td colspan="10"><div class="empty">ไม่พบข้อมูลตาม filter</div></td></tr>`;
 }
 function rowsToCsv(rows){const headers=['ประเภท','ชื่อ/ผู้เกี่ยวข้อง','โครงการ','ประเทศ','ทวีป','คณะ/หน่วยงาน','วันเริ่ม','วันสิ้นสุด','ปีงบ','จำนวน','งบประมาณ','ไฟล์']; const lines=[headers,...rows.map(r=>[r.type,r.name,r.project,r.country,r.continent,r.faculty,r.start,r.end,r.fy,r.people,r.budget,r.file])]; return lines.map(row=>row.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n')}
 function downloadCsv(csv,name){const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href)}
 function exportFilteredCsv(){downloadCsv(rowsToCsv(filteredRows),`iroup-report-filtered-${new Date().toISOString().slice(0,10)}.csv`)}
 function exportRaw(key){const rows=raw[key]||[]; if(!rows.length)return alert('ไม่มีข้อมูล'); const headers=Object.keys(rows[0]); const csv=[headers,...rows.map(r=>headers.map(h=>r[h]??''))].map(row=>row.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n'); downloadCsv(csv,`iroup-${key}-${new Date().toISOString().slice(0,10)}.csv`)}
-loadAll();
-</script>
+loadAll(false);
+</script></script>
 </body>
 </html>
