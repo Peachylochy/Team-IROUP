@@ -3,7 +3,7 @@
 // อัปไฟล์นี้ทับ iroup-sidebar.js เดิมไฟล์เดียว
 // - ถ้าหน้ามี sidebar เก่าอยู่: ไม่สร้าง sidebar ใหม่ซ้อน แต่ทำให้ nav-item กดได้
 // - ถ้าหน้าไม่มี sidebar: สร้าง sidebar แบบ fixed ให้
-// - แก้ลิงก์ dashboard-full.html ที่ทำให้ 404 ให้กลับเป็น dashboard.html
+// - แก้ลิงก์ dashboard.html ที่ทำให้ 404 ให้กลับเป็น dashboard.html
 // ============================================================
 (function () {
   const NAV_ITEMS = [
@@ -19,7 +19,7 @@
   const current = (location.pathname.split('/').pop() || 'dashboard.html').toLowerCase();
 
   function fixBrokenLinks() {
-    document.querySelectorAll('a[href="dashboard-full.html"]').forEach(a => {
+    document.querySelectorAll('a[href="dashboard.html"]').forEach(a => {
       a.setAttribute('href', 'dashboard.html');
     });
   }
