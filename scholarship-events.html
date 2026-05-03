@@ -690,16 +690,55 @@ function getScholarCoverage(form){
 }
 
 async function round9LoadScholarEvent(){
+  const scholarWrap=document.getElementById('scholarCards');
+  const eventWrap=document.getElementById('eventCards');
   try{
-    IROUND9_scholars = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
-    IROUND9_events = await IROUP.getAll(IROUP.SHEETS.EVENT);
+    if(scholarWrap) scholarWrap.innerHTML='<div class="empty-state">กำลังโหลดข้อมูลทุนจาก Google Sheet...</div>';
+    if(eventWrap) eventWrap.innerHTML='<div class="empty-state">กำลังโหลดข้อมูลกิจกรรมจาก Google Sheet...</div>';
+
+    let scholars=[];
+    let events=[];
+
+    // ใช้ getReport เป็นแหล่งหลัก เพราะหน้า Report โหลดได้อยู่แล้วและรวมข้อมูลครบ
+    try{
+      const res = await fetch(`${IROUP.SCRIPT_URL}?action=getReport&_=${Date.now()}`, { cache:'no-store' });
+      const json = await res.json();
+      const data = json.data || json || {};
+      scholars = data.scholar || data.scholarship || json.scholar || json.scholarship || [];
+      events = data.event || data.events || json.event || json.events || [];
+    }catch(reportErr){
+      console.warn('getReport fallback needed', reportErr);
+    }
+
+    // fallback เผื่อ backend บางเวอร์ชันยังไม่ส่ง getReport ครบ
+    if(!Array.isArray(scholars) || !scholars.length){
+      try{ scholars = await IROUP.getAll(IROUP.SHEETS.SCHOLAR); }catch(e){ console.warn('getAll scholarship failed', e); }
+    }
+    if(!Array.isArray(events) || !events.length){
+      try{ events = await IROUP.getAll(IROUP.SHEETS.EVENT); }catch(e){ console.warn('getAll events failed', e); }
+    }
+
+    IROUND9_scholars = Array.isArray(scholars) ? scholars : [];
+    IROUND9_events = Array.isArray(events) ? events : [];
+
     round9RenderScholars(IROUND9_scholars);
     round9RenderEvents(IROUND9_events);
+
     const nums=document.querySelectorAll('.kpi-num');
     if(nums[0]) nums[0].textContent=IROUND9_scholars.length;
     if(nums[1]) nums[1].textContent=IROUND9_scholars.filter(x=>getStatusByDate(x['วันเปิดรับ'],x['วันปิดรับ'])[1]==='กำลังรับสมัคร').length;
     if(nums[2]) nums[2].textContent=IROUND9_events.length;
-  }catch(e){ console.warn('Round9 load scholar/events failed',e); }
+    if(nums[3]) nums[3].textContent=IROUND9_scholars.filter(x=>{
+      const c=IROUP.parseDate(x['วันปิดรับ']);
+      if(!c) return false;
+      const d=Math.ceil((c-new Date())/86400000);
+      return d>=0 && d<=30;
+    }).length;
+  }catch(e){
+    console.error('Round9 load scholar/events failed',e);
+    if(scholarWrap) scholarWrap.innerHTML=`<div class="empty-state">โหลดข้อมูลทุนไม่สำเร็จ<br><small>${esc(e.message||e)}</small></div>`;
+    if(eventWrap) eventWrap.innerHTML=`<div class="empty-state">โหลดข้อมูลกิจกรรมไม่สำเร็จ<br><small>${esc(e.message||e)}</small></div>`;
+  }
 }
 function round9RenderScholars(list){
   const wrap=document.getElementById('scholarCards'); if(!wrap) return;
