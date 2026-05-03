@@ -182,7 +182,7 @@ function renderSettings(){ $('#content').innerHTML=`<div class="panel"><div clas
 
 function getFacultyOptions(){
   const masters=(state.master.faculty||[]).flatMap(f=>[f.en_name,f.th_name,f.code]).filter(Boolean);
-  const used=[...state.data.mou,...state.data.travel,...state.data.inbound,...state.data.outbound].flatMap(r=>[r['หน่วยงาน_UP'],r['คณะ']]).filter(Boolean);
+  const used=[...state.data.mou,...state.data.event,...state.data.travel,...state.data.inbound,...state.data.outbound].flatMap(r=>[r['หน่วยงาน_UP'],r['คณะ'],r['หน่วยงาน']]).filter(Boolean);
   return uniq([...masters,...used]);
 }
 function getCountryOptions(){
@@ -204,6 +204,7 @@ function optionPool(field){
     'เมือง':['Phayao','Bangkok','Shanghai','Beijing','Tokyo','Nagano','Seoul','Daegu','Daejeon','Deggendorf','Paris','Sydney'],
     'คณะ':getFacultyOptions(),
     'หน่วยงาน_UP':getFacultyOptions(),
+    'หน่วยงาน':getFacultyOptions(),
     'ประเภท':['MOU','MOA','LOI','Agreement','Exchange','Research','Training','Award','รับรางวัล','Inbound','Outbound','อบรม','ประชุม','ทุน','นักศึกษา','บุคลากร'],
     'ระดับ':['ป.ตรี','ป.โท','ป.เอก','บุคลากร','อาจารย์'],
     'เพศ':['ชาย','หญิง','ไม่ระบุ'],
@@ -215,7 +216,22 @@ function optionPool(field){
 }
 function fieldInput(f,row){
   let raw=row?.[f]||''; if(/วัน|date/i.test(f)){const d=toDate(raw); if(d){raw=d.toISOString().slice(0,10);}} const val=esc(raw);
-  if(['หมายเหตุ','รายละเอียด','ครอบคลุม'].includes(f)) return `<textarea name="${esc(f)}">${val}</textarea>`;
+
+  if(f === 'ครอบคลุม'){
+    const options = ['ค่าเครื่องบิน','ค่าเล่าเรียน','ค่าครองชีพ','ที่พัก','ค่าที่พัก','ค่าวีซ่า','ประกัน','ค่าลงทะเบียน','ค่าหนังสือ/อุปกรณ์','อื่นๆ'];
+    const rawText = String(raw||'');
+    return `<div class="coverage-box" style="display:flex;flex-wrap:wrap;gap:8px">
+      ${options.map(opt=>{
+        const checked = rawText.includes(opt) ? 'checked' : '';
+        return `<label style="display:inline-flex;align-items:center;gap:6px;background:#F4F7FB;border:1px solid #DCE6F2;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer">
+          <input class="coverage-check" type="checkbox" value="${esc(opt)}" ${checked}> ${esc(opt)}
+        </label>`;
+      }).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">เลือกได้หลายรายการ ระบบจะบันทึกเป็นข้อความคั่นด้วย comma</div>`;
+  }
+
+  if(['หมายเหตุ','รายละเอียด'].includes(f)) return `<textarea name="${esc(f)}">${val}</textarea>`;
 
   if(f === 'Poster_URL'){
     return `<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -279,8 +295,13 @@ async function uploadAssetFromInput(input, kind='file'){
   }
 }
 async function submitForm(e){e.preventDefault(); const {key,id}=state.editing; const data={}; new FormData(e.target).forEach((v,k)=>data[k]=v);
+  if(key === 'scholar'){
+    const coverage = Array.from(e.target.querySelectorAll('.coverage-check:checked')).map(x=>x.value);
+    data['ครอบคลุม'] = coverage.join(', ');
+  }
   if(data['หน่วยงาน_UP']) data['หน่วยงาน_UP']=normalizeFaculty(data['หน่วยงาน_UP']);
   if(data['คณะ']) data['คณะ']=normalizeFaculty(data['คณะ']);
+  if(data['หน่วยงาน']) data['หน่วยงาน']=normalizeFaculty(data['หน่วยงาน']);
   if(data['ประเทศ']) { data['ประเทศ']=normalizeCountry(data['ประเทศ']); const cont=continentOfCountry(data['ประเทศ']); if(cont) data['ทวีป']=cont; }
   $('#modalSubmit').disabled=true; $('#modalSubmit').textContent='กำลังบันทึก...'; try{let res=id?await IROUP.edit(SHEETS[key],id,data):await IROUP.add(SHEETS[key],data); if(res.error)throw new Error(res.error); closeModal(); await loadCore(); render(); alert('บันทึกสำเร็จ');}catch(err){alert('บันทึกไม่สำเร็จ: '+err.message);}finally{$('#modalSubmit').disabled=false; $('#modalSubmit').textContent='บันทึก';}}
 async function removeRow(key,id){if(!id)return alert('ไม่พบ ID'); if(!confirm('ยืนยันลบรายการนี้?'))return; try{const res=await IROUP.delete(SHEETS[key],id); if(res.error)throw new Error(res.error); await loadCore(); render();}catch(e){alert('ลบไม่สำเร็จ: '+e.message)}}
