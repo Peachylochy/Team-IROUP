@@ -285,7 +285,11 @@ function renderMobility(){
   $('#content').innerHTML=`<div class="grid-kpi">${card('👥',state.data.inbound.length+outPeople,'Mobility รวม',`In ${state.data.inbound.length} / Out ${outPeople}`,'purple')}${card('🌏',state.data.inbound.length,'Inbound',`${inboundActive} กำลังอยู่ · ${inboundUpcoming} ยังไม่มา`,'green')}${card('✈️',outPeople,'Outbound',`${outboundActive} กำลังเดินทาง · ${outboundUpcoming} ยังไม่ออก`)}${card('📊',new Set([...state.data.inbound,...state.data.outbound].map(r=>r['ประเทศ']).filter(Boolean)).size,'ประเทศ','จาก Mobility','gold')}</div><div class="tabs"><button class="tab ${isIn?'active':''}" onclick="state.activeSub='inbound';state.query='';render()">🌏 Inbound</button><button class="tab ${!isIn?'active':''}" onclick="state.activeSub='outbound';state.query='';render()">✈️ Outbound</button></div><div id="crudArea"></div>`;
   renderCrudInto($('#crudArea'),opts);
 }
-function renderReports(){ $('#content').innerHTML=`<div class="panel"><div class="panel-head"><div><div class="panel-title">รายงาน & Export</div><div class="panel-sub">ดาวน์โหลดข้อมูลจากชีตจริงเป็น CSV</div></div></div><div class="panel-body"><div class="toolbar"><button class="btn" onclick="exportCsv('mou')">MOU CSV</button><button class="btn" onclick="exportCsv('scholar')">Scholarship CSV</button><button class="btn" onclick="exportCsv('event')">Events CSV</button><button class="btn" onclick="exportCsv('travel')">Travel CSV</button><button class="btn" onclick="exportCsv('inbound')">Inbound CSV</button><button class="btn" onclick="exportCsv('outbound')">Outbound CSV</button></div></div></div>`;}
+function renderReports(){
+  $('#content').innerHTML=`
+    <iframe src="report.html" title="รายงาน & Export" style="width:100%;min-height:calc(100vh - 122px);border:0;border-radius:18px;background:#fff;box-shadow:var(--shadow);display:block"></iframe>
+  `;
+}
 function renderSettings(){ $('#content').innerHTML=`<div class="panel"><div class="panel-head"><div><div class="panel-title">ตั้งค่า</div><div class="panel-sub">ระบบใช้ Apps Script URL จาก iroup-config.js</div></div></div><div class="panel-body"><p><b>API:</b> ${esc(IROUP.SCRIPT_URL)}</p><p style="margin-top:10px;color:var(--muted)">ถ้าแก้ Code.gs ต้อง Deploy เป็น New version ทุกครั้ง</p></div></div>`;}
 
 
