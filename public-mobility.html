@@ -6,393 +6,124 @@
 <title>Mobility — iROUP</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --blue:#1A6DB5;--blue-light:#4BBDE8;--blue-pale:#E8F4FD;
-  --navy:#0F2D5A;--navy-dark:#071828;
-  --green:#5BAD3E;--green-pale:#EBF7E3;
-  --gold:#D4890A;--gold-pale:#FEF3DC;
-  --teal:#0D9488;--teal-pale:#E0F7F5;
-  --gray-100:#F8F9FB;--gray-200:#EEF1F5;--gray-300:#DDE2EA;
-  --gray-400:#B8C2D0;--gray-600:#6B7A8D;--gray-800:#2D3748;
-  --white:#FFFFFF;
-  --shadow-sm:0 1px 4px rgba(15,45,90,0.08);
-  --shadow-md:0 4px 16px rgba(15,45,90,0.12);
-}
-html{scroll-behavior:smooth}
-body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--navy)}
-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
-.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
-.nav-links{display:flex;align-items:center;gap:20px}
-.nav-link{font-size:13px;font-weight:500;color:var(--gray-600);text-decoration:none;border-bottom:2px solid transparent;padding:4px 0}
-.nav-link:hover{color:var(--blue)}
-.nav-link.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
-.nav-lang{display:flex;background:var(--gray-200);border-radius:8px;padding:3px;gap:2px}
-.nav-lang-btn{padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gray-600);transition:all .2s}
-.nav-lang-btn.active{background:var(--blue);color:#fff}
-.nav-admin-btn{padding:7px 16px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:20px;font-size:12px;font-weight:700;color:#fff;text-decoration:none}
-
-/* HERO */
-.page-hero{background:linear-gradient(135deg, #F0EBFF 0%, #E8F4FD 50%, #E0F7F5 100%);padding:48px 5%}
-.page-hero h1{font-size:32px;font-weight:800;margin-bottom:8px}
-.page-hero p{font-size:14px;color:rgba(255,255,255,0.6);font-family:'Sarabun',sans-serif}
-.hero-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:28px}
-.hkpi{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px;text-align:center}
-.hkpi-num{font-size:36px;font-weight:900;letter-spacing:-1px}
-.hkpi-label{font-size:11px;color:rgba(255,255,255,0.5);font-family:'Sarabun',sans-serif;margin-top:3px}
-
-/* CONTENT */
-.content{padding:32px 5%;max-width:1400px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:24px}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
-.card{background:var(--white);border-radius:16px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);overflow:hidden}
-.card-header{padding:14px 18px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-size:13px;font-weight:700;color:var(--navy)}
-.card-body{padding:16px}
-
-/* COMPARE */
-.compare-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));border-radius:16px;padding:20px;color:#fff}
-.compare-title{font-size:12px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;font-family:'Sarabun',sans-serif}
-.compare-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:16px}
-.compare-side{text-align:center;padding:14px;border-radius:12px}
-.c-in{background:rgba(13,148,136,0.2)}
-.c-out{background:rgba(75,189,232,0.2)}
-.c-num{font-size:32px;font-weight:900;line-height:1}
-.c-label{font-size:11px;color:rgba(255,255,255,0.55);font-family:'Sarabun',sans-serif;margin-top:3px}
-.c-vs{font-size:13px;font-weight:700;color:rgba(255,255,255,0.3)}
-.type-rows{display:flex;flex-direction:column;gap:6px}
-.type-row{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-family:'Sarabun',sans-serif}
-.tr-label{color:rgba(255,255,255,0.6);display:flex;align-items:center;gap:5px}
-.tr-vals{display:flex;gap:16px}
-.tr-in{color:#5ECFBF;font-weight:700}
-.tr-out{color:var(--blue-light);font-weight:700}
-
-/* COUNTRY LIST */
-.country-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-200)}
-.country-item:last-child{border-bottom:none}
-.c-flag{font-size:20px;flex-shrink:0}
-.c-name{font-size:12px;font-weight:600;color:var(--gray-800);flex:1}
-.c-count{font-size:11px;font-weight:700;color:var(--blue);background:var(--blue-pale);padding:2px 8px;border-radius:20px;font-family:'Sarabun',sans-serif}
-.c-bar-track{height:4px;background:var(--gray-200);border-radius:2px;margin-top:3px;overflow:hidden}
-.c-bar-fill{height:100%;border-radius:2px}
-
-.chart-wrap{position:relative;height:240px}
-.tab-btns{display:flex;background:var(--gray-200);border-radius:8px;padding:3px;gap:2px;width:fit-content}
-.tab-btn{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--gray-600);transition:all .2s;font-family:'Prompt',sans-serif}
-.tab-btn.active{background:var(--white);color:var(--blue);box-shadow:var(--shadow-sm)}
-
-.loading{text-align:center;padding:30px;color:var(--gray-400);font-family:'Sarabun',sans-serif;font-size:13px}
-footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(255,255,255,0.4);font-size:11px;font-family:'Sarabun',sans-serif;margin-top:40px}
-
-
-
-
-  50%{transform:translateY(-15px) scale(1.05)}
-}
-
-
-
-
-
-100%{background-position:-200% 0}}
-
-
-
-
-
-
-
-.page-hero, 
-/* Remove dark overlay */
-.page-hero::after, 
-.page-hero::before, 
-
-/* Light glass orbs */
-
-  50%{transform:translateY(-15px) scale(1.05)}
-}
-
-
-
-/* KPI on light hero */
-
-.hkpi-label { color: rgba(15,45,90,0.6) !important; }
-.page-hero h1 { color: var(--navy-dark) !important; }
-.page-hero p { color: var(--gray-600) !important; }
-.page-hero .hkpi-num { filter: none; }
-
-
-
-/* ============================================================
-   ROUND 7 — MOBILE RESPONSIVE FIXES
-   ============================================================ */
-@media (max-width: 960px){
-  nav{height:auto;min-height:60px;padding:10px 4%;gap:10px;flex-wrap:wrap;position:sticky;background:rgba(255,255,255,.96);box-shadow:0 1px 16px rgba(15,45,90,.08)}
-  .nav-logo{min-width:0}.nav-logo-text{font-size:15px}.nav-links{order:3;width:100%;display:flex;gap:10px;overflow-x:auto;padding:4px 0 2px;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}
-  .nav-link{font-size:12px;white-space:nowrap;padding:6px 10px;border-radius:999px;background:var(--gray-100, #F8F9FB)}
-  .nav-lang{margin-left:auto}.nav-admin-btn{padding:7px 12px;font-size:11px}
-  .page-hero{padding:34px 5% 28px!important;text-align:center}.page-hero h1{font-size:30px!important}.page-hero p{font-size:13px!important}
-  .hero-kpi{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:12px!important;justify-content:stretch!important}.hkpi{padding:12px;background:rgba(255,255,255,.52);border-radius:14px}
-  .content{padding:18px 4%!important}.grid-2,.grid-3{grid-template-columns:1fr!important}.filter-bar{align-items:stretch!important}.search-wrap{min-width:100%!important}.filter-select{width:100%}.status-pills{width:100%;overflow-x:auto;padding-bottom:2px}
-  .cards-grid,.scholar-grid,.features-grid{grid-template-columns:1fr!important}.map-stats-row{grid-template-columns:repeat(2,1fr)!important}.table-wrap{border-radius:12px;overflow-x:auto}.table-wrap table{min-width:760px}
-  .event-item,.event-row{align-items:flex-start!important}.map-dark,.card{min-width:0}.chart-wrap{min-height:240px}.hero-btns{justify-content:center}.hero-stats{justify-content:center;flex-wrap:wrap}
-}
-@media (max-width: 640px){
-  .hero{min-height:auto!important;display:block!important;padding:90px 5% 40px!important;text-align:center}.hero-title{font-size:34px!important}.hero-title .accent2{font-size:24px!important}.hero-sub{font-size:14px!important}.hero-btns a{width:100%;justify-content:center}.hero-stats{display:grid!important;grid-template-columns:repeat(2,1fr);gap:10px}.stat-divider{display:none}.hero-visual{margin-top:18px}.globy-wrap{width:min(310px,90vw)!important;height:min(310px,90vw)!important;margin:auto}.globy-bubble{font-size:10px;transform:scale(.9)}.gb1{left:0!important}.gb2{right:0!important}.gb3{left:0!important}.gb4{right:0!important}
-  section{padding:46px 5%!important}.section-title{font-size:26px!important}.section-sub{font-size:13px!important}.about-strip{display:block!important;text-align:center;padding:36px 5%!important}.about-globy{margin-bottom:18px}.about-contact{justify-content:center}footer{display:block!important;text-align:center}.footer-logo{justify-content:center;margin-bottom:10px}.footer-admin{margin-top:12px}
-  .page-hero h1{font-size:26px!important}.hero-kpi{grid-template-columns:1fr 1fr!important}.hkpi-num{font-size:26px!important}.event-item,.event-row{display:grid!important;grid-template-columns:auto 1fr;gap:10px!important}.event-item .ev-arrow,.event-row .ev-arrow{display:none}
-}
-
+:root{--blue:#1A6DB5;--blue-light:#4BBDE8;--blue-pale:#E8F4FD;--navy:#0F2D5A;--navy-dark:#071828;--green:#5BAD3E;--green-pale:#EBF7E3;--gold:#D4890A;--gold-pale:#FEF3DC;--red:#D63B32;--red-pale:#FDECEA;--purple:#7C3AED;--purple-pale:#F0EBFF;--teal:#0D9488;--teal-pale:#E0F7F5;--gray-100:#F8F9FB;--gray-200:#EEF1F5;--gray-300:#DDE2EA;--gray-400:#B8C2D0;--gray-600:#6B7A8D;--gray-800:#2D3748;--white:#fff;--shadow-sm:0 1px 4px rgba(15,45,90,.08);--shadow-md:0 4px 16px rgba(15,45,90,.12);--shadow-lg:0 12px 36px rgba(15,45,90,.16)}
+html{scroll-behavior:smooth}body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--navy);min-height:100vh}a{text-decoration:none;color:inherit}
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--gray-200);padding:0 5%;min-height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm);gap:14px}.nav-logo{display:flex;align-items:center;gap:8px}.nav-links{display:flex;align-items:center;gap:20px;flex-wrap:wrap}.nav-link{font-size:13px;font-weight:500;color:var(--gray-600);border-bottom:2px solid transparent;padding:4px 0}.nav-link:hover,.nav-link.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}.nav-lang{display:flex;background:var(--gray-200);border-radius:8px;padding:3px;gap:2px}.nav-lang-btn{padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;color:var(--gray-600)}.nav-lang-btn.active{background:var(--blue);color:#fff}.nav-admin-btn{padding:7px 16px;background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:20px;font-size:12px;font-weight:700;color:#fff}
+.page-hero{background:linear-gradient(135deg,#F0EBFF 0%,#E8F4FD 50%,#E0F7F5 100%);padding:52px 5% 44px}.page-hero h1{font-size:36px;font-weight:900;color:var(--navy-dark);margin-bottom:8px}.page-hero p{font-size:14px;color:var(--gray-600);font-family:'Sarabun',sans-serif}.hero-kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:28px}.hkpi{background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.9);border-radius:16px;padding:16px;text-align:center;box-shadow:var(--shadow-sm)}.hkpi-num{font-size:34px;font-weight:900;line-height:1}.hkpi-label{font-size:11px;color:rgba(15,45,90,.65);font-family:'Sarabun',sans-serif;margin-top:5px}
+.content{padding:28px 5%;max-width:1500px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:22px}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}.section-title{font-size:22px;font-weight:900;color:var(--navy-dark)}.section-sub{font-size:13px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:3px}.card{background:var(--white);border-radius:18px;box-shadow:var(--shadow-sm);border:1px solid var(--gray-200);overflow:hidden}.card-head{padding:15px 18px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;gap:12px}.card-title{font-size:14px;font-weight:800;color:var(--navy)}.card-body{padding:16px}.grid-2{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:18px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.filter-bar{background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);border-radius:16px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.filter-label{font-size:12px;font-weight:800;color:var(--gray-600);white-space:nowrap}.filter-input,.filter-select{border:1.5px solid var(--gray-300);border-radius:11px;background:#fff;padding:10px 12px;font-family:'Prompt',sans-serif;font-size:13px;outline:none}.filter-input:focus,.filter-select:focus{border-color:var(--blue-light);box-shadow:0 0 0 3px rgba(75,189,232,.12)}.filter-input{flex:1;min-width:260px}.pill-group{display:flex;gap:6px;flex-wrap:wrap}.pill{border:1.5px solid var(--gray-300);background:#fff;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:800;color:var(--gray-600);cursor:pointer}.pill.active{background:var(--navy-dark);color:#fff;border-color:var(--navy-dark)}.empty{padding:32px;text-align:center;color:var(--gray-600);font-family:'Sarabun',sans-serif}.loading{padding:32px;text-align:center;color:var(--gray-500);font-family:'Sarabun',sans-serif}
+.map-card{background:var(--navy-dark);border-radius:18px;padding:18px;color:#fff;min-height:390px;box-shadow:var(--shadow-lg)}.map-title{font-size:16px;font-weight:900}.map-sub{font-size:12px;color:rgba(255,255,255,.58);font-family:'Sarabun',sans-serif;margin-top:3px}.map-wrap{height:310px;margin-top:14px;border-radius:14px;background:#081d31;overflow:hidden;position:relative}.map-wrap svg{width:100%;height:100%;display:block}.country{fill:#24384f;stroke:#344a62;stroke-width:.35}.country.active-low{fill:#4BBDE8}.country.active-mid{fill:#1A6DB5}.country.active-high{fill:#F5A623}.map-tooltip{position:absolute;display:none;background:#fff;color:#10233f;border-radius:10px;padding:8px 10px;font-size:12px;box-shadow:var(--shadow-lg);pointer-events:none;z-index:10}.chart-wrap{position:relative;height:260px}
+.mobility-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}.mob-card{background:#fff;border:1px solid var(--gray-200);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden;cursor:pointer;transition:.2s}.mob-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(75,189,232,.55)}.mob-top{height:94px;background:linear-gradient(135deg,var(--blue-pale),var(--teal-pale));display:flex;align-items:center;justify-content:space-between;padding:14px}.mob-avatar{width:56px;height:56px;border-radius:16px;background:#fff;box-shadow:var(--shadow-sm);display:grid;place-items:center;font-size:25px}.mob-badge{font-size:11px;font-weight:900;border-radius:999px;padding:5px 10px}.mob-badge.in{background:var(--teal-pale);color:var(--teal)}.mob-badge.out{background:var(--blue-pale);color:var(--blue)}.mob-body{padding:14px}.mob-title{font-size:14px;font-weight:900;color:var(--navy-dark);line-height:1.35;margin-bottom:6px}.mob-meta{font-size:12px;color:var(--gray-600);font-family:'Sarabun',sans-serif;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}.mob-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:12px}.small-tag{font-size:10px;font-weight:800;background:var(--gray-100);color:var(--gray-600);border-radius:6px;padding:3px 7px}.file-link{display:inline-flex;align-items:center;gap:4px;margin-top:10px;background:var(--green-pale);color:var(--green);border-radius:8px;padding:6px 9px;font-size:11px;font-weight:800}
+.timeline{position:relative;padding-left:20px}.timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--blue-light),var(--green))}.timeline-item{position:relative;margin-bottom:14px}.timeline-dot{position:absolute;left:-18px;top:18px;width:14px;height:14px;background:var(--blue);border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 3px var(--blue-pale)}.timeline-box{background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-sm);cursor:pointer;transition:.2s}.timeline-box:hover{box-shadow:var(--shadow-lg);transform:translateX(4px)}.timeline-title{font-size:14px;font-weight:900;color:var(--navy-dark);line-height:1.35}.timeline-meta{font-size:12px;color:var(--gray-600);font-family:'Sarabun',sans-serif;margin-top:5px;display:flex;gap:8px;flex-wrap:wrap}.timeline-date{font-size:11px;color:var(--blue);font-weight:800;margin-top:8px}.timeline-actions{margin-top:8px}.timeline-actions a{display:inline-flex;align-items:center;gap:4px;background:var(--blue-pale);color:var(--blue);border-radius:8px;padding:6px 9px;font-size:11px;font-weight:800}
+.country-list{display:flex;flex-direction:column;gap:9px}.country-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--gray-200)}.country-row:last-child{border-bottom:none}.country-flag{font-size:20px;width:26px}.country-name{font-size:12px;font-weight:800;color:var(--gray-800);flex:1}.country-count{font-size:11px;font-weight:900;color:var(--blue);background:var(--blue-pale);border-radius:999px;padding:3px 9px}.country-track{height:5px;background:var(--gray-200);border-radius:999px;margin-top:4px;overflow:hidden}.country-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),var(--blue-light))}
+.modal-backdrop{position:fixed;inset:0;background:rgba(7,24,40,.6);z-index:500;display:none;align-items:center;justify-content:center;padding:18px}.modal-backdrop.show{display:flex}.modal{width:min(720px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;box-shadow:0 30px 90px rgba(0,0,0,.32)}.modal-head{padding:18px 22px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between;gap:12px}.modal-title{font-size:18px;font-weight:900;color:var(--navy-dark)}.modal-close{border:0;background:var(--gray-100);border-radius:10px;width:36px;height:36px;cursor:pointer;font-weight:900}.modal-body{padding:20px}.detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.detail-item{background:var(--gray-100);border-radius:12px;padding:11px}.detail-label{font-size:10px;color:var(--gray-600);font-weight:900;text-transform:uppercase;letter-spacing:.3px}.detail-val{font-size:13px;color:var(--navy-dark);font-weight:700;margin-top:3px;word-break:break-word}.detail-item.full{grid-column:1/-1}.modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.btn{border:0;border-radius:11px;padding:10px 14px;font-family:'Prompt',sans-serif;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:6px}.btn.blue{background:var(--blue-pale);color:var(--blue)}.btn.green{background:var(--green-pale);color:var(--green)}footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(255,255,255,.4);font-size:11px;font-family:'Sarabun',sans-serif;margin-top:40px}
+@media(max-width:980px){.hero-kpi{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}.grid-3{grid-template-columns:1fr}.nav-links{gap:10px}.map-wrap{height:260px}.detail-grid{grid-template-columns:1fr}}@media(max-width:640px){nav{padding:10px 4%;align-items:flex-start}.nav-links{width:100%;overflow-x:auto;padding-bottom:4px}.page-hero{padding:34px 5%}.page-hero h1{font-size:28px}.content{padding:20px 4%}.hero-kpi{grid-template-columns:1fr}.filter-input,.filter-select{width:100%;min-width:0}.pill-group{width:100%}.pill{flex:1;text-align:center}.mobility-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-
 <nav>
-  <a class="nav-logo" href="public-landing.html">
-    <img src="iroup-logo.png" alt="iROUP" style="height:34px;object-fit:contain" onerror="this.style.display='none'">
-  </a>
+  <a class="nav-logo" href="public-landing.html"><img src="iroup-logo.png" alt="iROUP" style="height:34px;object-fit:contain" onerror="this.style.display='none'"></a>
   <div class="nav-links">
     <a href="public-mou.html" class="nav-link">🤝 MOU</a>
     <a href="public-scholar.html" class="nav-link">🎓 ทุนการศึกษา</a>
     <a href="public-events.html" class="nav-link">📅 กิจกรรม</a>
     <a href="public-mobility.html" class="nav-link active">👥 Mobility</a>
-    <div class="nav-lang">
-      <div class="nav-lang-btn active" onclick="setLang('TH')">TH</div>
-      <div class="nav-lang-btn" onclick="setLang('EN')">EN</div>
-    </div>
+    <div class="nav-lang"><div class="nav-lang-btn active" onclick="setLang('TH')">TH</div><div class="nav-lang-btn" onclick="setLang('EN')">EN</div></div>
     <a href="index.html" class="nav-admin-btn">🔐 Admin</a>
   </div>
 </nav>
-
-<div class="page-hero">
+<section class="page-hero">
   <h1>👥 Mobility</h1>
-  <p>สถิติการเคลื่อนย้ายนิสิต อาจารย์ และนักวิจัย Inbound & Outbound</p>
+  <p>สถิติการเคลื่อนย้ายนิสิต อาจารย์ นักวิจัย และการเดินทางบุคลากรระหว่างประเทศ</p>
   <div class="hero-kpi">
-    <div class="hkpi">
-      <div class="hkpi-num" style="color:#5ECFBF" id="kpi-in">—</div>
-      <div class="hkpi-label">Inbound ทั้งหมด</div>
-    </div>
-    <div class="hkpi">
-      <div class="hkpi-num" style="color:var(--blue-light)" id="kpi-out">—</div>
-      <div class="hkpi-label">Outbound ทั้งหมด</div>
-    </div>
-    <div class="hkpi">
-      <div class="hkpi-num" style="color:#A78BFA" id="kpi-total">—</div>
-      <div class="hkpi-label">รวมทั้งหมด</div>
-    </div>
-    <div class="hkpi">
-      <div class="hkpi-num" style="color:#FBBF24" id="kpi-countries">—</div>
-      <div class="hkpi-label">ประเทศ</div>
-    </div>
+    <div class="hkpi"><div class="hkpi-num" style="color:#0D9488" id="kpi-in">—</div><div class="hkpi-label">Inbound</div></div>
+    <div class="hkpi"><div class="hkpi-num" style="color:#1A6DB5" id="kpi-out">—</div><div class="hkpi-label">Outbound</div></div>
+    <div class="hkpi"><div class="hkpi-num" style="color:#7C3AED" id="kpi-travel">—</div><div class="hkpi-label">การเดินทางบุคลากร</div></div>
+    <div class="hkpi"><div class="hkpi-num" style="color:#D4890A" id="kpi-total">—</div><div class="hkpi-label">รวมรายการทั้งหมด</div></div>
+    <div class="hkpi"><div class="hkpi-num" style="color:#5BAD3E" id="kpi-countries">—</div><div class="hkpi-label">ประเทศ</div></div>
   </div>
-</div>
-
-<div class="content">
-
-  <!-- COMPARE + CHART -->
-  <div class="grid-2">
-    <!-- COMPARE -->
-    <div class="compare-card">
-      <div class="compare-title">📊 In vs Out ปีการศึกษา 2568</div>
-      <div class="compare-row">
-        <div class="compare-side c-in">
-          <div class="c-num" style="color:#5ECFBF" id="cmp-in">—</div>
-          <div class="c-label">Inbound</div>
-        </div>
-        <div class="c-vs">vs</div>
-        <div class="compare-side c-out">
-          <div class="c-num" style="color:var(--blue-light)" id="cmp-out">—</div>
-          <div class="c-label">Outbound</div>
-        </div>
-      </div>
-      <div class="type-rows" id="typeRows">
-        <div class="loading" style="color:rgba(255,255,255,0.3);padding:10px">กำลังโหลด...</div>
-      </div>
+</section>
+<main class="content">
+  <section class="filter-bar">
+    <div class="filter-label">🔎 ค้นหา / กรองข้อมูล</div>
+    <input class="filter-input" id="searchInput" placeholder="ค้นหาชื่อ สถาบัน ประเทศ โครงการ...">
+    <select class="filter-select" id="countryFilter"><option value="all">ทุกประเทศ</option></select>
+    <div class="pill-group">
+      <button class="pill active" data-type="all">ทั้งหมด</button>
+      <button class="pill" data-type="inbound">Inbound</button>
+      <button class="pill" data-type="outbound">Outbound</button>
     </div>
-
-    <!-- BAR CHART -->
+  </section>
+  <section class="grid-2">
+    <div class="map-card">
+      <div class="map-title">🗺️ แผนที่ Mobility & Travel</div>
+      <div class="map-sub">ประเทศที่มี Inbound / Outbound / การเดินทางบุคลากร</div>
+      <div class="map-wrap" id="worldMap"><div class="loading" style="color:#fff">กำลังโหลดแผนที่...</div></div>
+    </div>
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">📈 แยกตามประเภท</div>
-        <div class="tab-btns">
-          <div class="tab-btn active" onclick="switchChart('bar',this)">แท่ง</div>
-          <div class="tab-btn" onclick="switchChart('doughnut',this)">วงกลม</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="chart-wrap"><canvas id="typeChart"></canvas></div>
-      </div>
+      <div class="card-head"><div class="card-title">📊 Summary Dashboard</div></div>
+      <div class="card-body"><div class="chart-wrap"><canvas id="summaryChart"></canvas></div></div>
     </div>
-  </div>
-
-  <!-- COUNTRIES -->
-  <div class="grid-2">
-    <!-- INBOUND COUNTRIES -->
+  </section>
+  <section class="grid-2">
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">🌏 ประเทศที่มาหา ม.พะเยา (Inbound)</div>
-      </div>
-      <div class="card-body" id="inCountries">
-        <div class="loading">⏳ กำลังโหลด...</div>
-      </div>
+      <div class="card-head"><div class="card-title">📈 ประเภท Mobility</div></div>
+      <div class="card-body"><div class="chart-wrap"><canvas id="typeChart"></canvas></div></div>
     </div>
-
-    <!-- OUTBOUND COUNTRIES -->
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">✈️ ประเทศที่ ม.พะเยาไป (Outbound)</div>
-      </div>
-      <div class="card-body" id="outCountries">
-        <div class="loading">⏳ กำลังโหลด...</div>
-      </div>
+      <div class="card-head"><div class="card-title">🌏 Top Countries</div></div>
+      <div class="card-body"><div id="topCountries" class="country-list"><div class="loading">กำลังโหลด...</div></div></div>
     </div>
-  </div>
-
-</div>
-
+  </section>
+  <section>
+    <div class="section-head"><div><div class="section-title">🌍 Mobility Inbound / Outbound</div><div class="section-sub">แสดงเป็น card grid คลิกเพื่อดูรายละเอียด</div></div><div class="section-sub" id="mobilityCount">—</div></div>
+    <div class="mobility-grid" id="mobilityCards"><div class="loading">กำลังโหลด Mobility...</div></div>
+  </section>
+  <section>
+    <div class="section-head"><div><div class="section-title">✈️ การเดินทางบุคลากร</div><div class="section-sub">ข้อมูลการเดินทางไปปฏิบัติงานต่างประเทศของบุคลากร แสดงเป็น timeline</div></div><div class="section-sub" id="travelCount">—</div></div>
+    <div class="timeline" id="travelTimeline"><div class="loading">กำลังโหลด Timeline...</div></div>
+  </section>
+</main>
 <footer>© 2569 International Relations Office · University of Phayao</footer>
-
+<div class="modal-backdrop" id="detailModal"><div class="modal"><div class="modal-head"><div class="modal-title" id="modalTitle">รายละเอียด</div><button class="modal-close" onclick="closeDetail()">✕</button></div><div class="modal-body" id="modalBody"></div></div></div>
 <script src="iroup-config.js"></script>
 <script>
-let typeChartObj = null;
-const FLAGS = {'China':'🇨🇳','Japan':'🇯🇵','South Korea':'🇰🇷','Germany':'🇩🇪','Australia':'🇦🇺','Taiwan':'🇹🇼','USA':'🇺🇸','United Kingdom':'🇬🇧','France':'🇫🇷','Vietnam':'🇻🇳','Myanmar':'🇲🇲','Indonesia':'🇮🇩','Malaysia':'🇲🇾','Philippines':'🇵🇭','Singapore':'🇸🇬','India':'🇮🇳','Thailand':'🇹🇭'};
-
-async function loadData() {
-  try {
-    const [inbound, outbound] = await Promise.all([
-      IROUP.getAll(IROUP.SHEETS.INBOUND),
-      IROUP.getAll(IROUP.SHEETS.OUTBOUND),
-    ]);
-
-    // KPI
-    const allCountries = [...new Set([
-      ...inbound.map(r => r['ประเทศ']),
-      ...outbound.map(r => r['ประเทศ']),
-    ].filter(Boolean))];
-
-    document.getElementById('kpi-in').textContent       = inbound.length;
-    document.getElementById('kpi-out').textContent      = outbound.length;
-    document.getElementById('kpi-total').textContent    = inbound.length + outbound.length;
-    document.getElementById('kpi-countries').textContent = allCountries.length;
-    document.getElementById('cmp-in').textContent       = inbound.length;
-    document.getElementById('cmp-out').textContent      = outbound.length;
-
-    // Type breakdown
-    const typeIn  = countByField(inbound, 'ประเภท');
-    const typeOut = countByField(outbound, 'ประเภท');
-    const types   = [...new Set([...Object.keys(typeIn), ...Object.keys(typeOut)])];
-    const typeEmoji = {'นิสิต':'🎓','อาจารย์':'👨‍🏫','นักวิจัย':'🔬','บุคลากร':'👔','ผู้บริหาร':'🏢'};
-
-    document.getElementById('typeRows').innerHTML = types.map(t => `
-      <div class="type-row">
-        <div class="tr-label">${typeEmoji[t]||'👤'} ${t}</div>
-        <div class="tr-vals">
-          <span class="tr-in">${typeIn[t]||0}</span>
-          <span class="tr-out">${typeOut[t]||0}</span>
-        </div>
-      </div>`).join('');
-
-    renderTypeChart(typeIn, typeOut, types, 'bar');
-
-    // Countries
-    renderCountries('inCountries', countByField(inbound, 'ประเทศ'), '#5ECFBF');
-    renderCountries('outCountries', countByField(outbound, 'ประเทศ'), '#4BBDE8');
-
-  } catch(e) {
-    console.log('Error:', e);
-    document.getElementById('inCountries').innerHTML  = '<div class="loading">⚠️ ไม่สามารถโหลดได้</div>';
-    document.getElementById('outCountries').innerHTML = '<div class="loading">⚠️ ไม่สามารถโหลดได้</div>';
-  }
-}
-
-function countByField(data, field) {
-  const count = {};
-  data.forEach(r => {
-    const val = r[field];
-    if (val) count[val] = (count[val]||0) + 1;
-  });
-  return count;
-}
-
-function renderCountries(elId, countObj, color) {
-  const el = document.getElementById(elId);
-  const sorted = Object.entries(countObj).sort((a,b) => b[1]-a[1]).slice(0, 8);
-  if (sorted.length === 0) { el.innerHTML = '<div class="loading">ยังไม่มีข้อมูล</div>'; return; }
-  const max = sorted[0][1];
-  el.innerHTML = sorted.map(([country, count]) => `
-    <div class="country-item">
-      <div class="c-flag">${FLAGS[country]||'🌍'}</div>
-      <div style="flex:1">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div class="c-name">${country}</div>
-          <div class="c-count">${count} คน</div>
-        </div>
-        <div class="c-bar-track">
-          <div class="c-bar-fill" style="width:${Math.round(count/max*100)}%;background:${color}"></div>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function renderTypeChart(typeIn, typeOut, types, chartType) {
-  const ctx = document.getElementById('typeChart').getContext('2d');
-  if (typeChartObj) typeChartObj.destroy();
-
-  if (chartType === 'bar') {
-    typeChartObj = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: types,
-        datasets: [
-          { label: 'Inbound',  data: types.map(t => typeIn[t]||0),  backgroundColor: 'rgba(13,148,136,0.7)',  borderRadius: 6 },
-          { label: 'Outbound', data: types.map(t => typeOut[t]||0), backgroundColor: 'rgba(75,189,232,0.7)', borderRadius: 6 },
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8, boxWidth: 10 } } },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 10, family: "'Sarabun',sans-serif" } } },
-          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } }
-        }
-      }
-    });
-  } else {
-    const allTypes = [...new Set([...Object.keys(typeIn), ...Object.keys(typeOut)])];
-    typeChartObj = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: allTypes,
-        datasets: [{
-          data: allTypes.map(t => (typeIn[t]||0) + (typeOut[t]||0)),
-          backgroundColor: ['#4BBDE8','#7C3AED','#0D9488','#D4890A','#5BAD3E'],
-          borderWidth: 0, hoverOffset: 6,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '60%',
-        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8, boxWidth: 10 } } }
-      }
-    });
-  }
-}
-
-function switchChart(type, el) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  // Re-fetch and render
-  loadData();
-}
-
-function setLang(lang) {
-  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
-}
-
-loadData();
+const FLAGS={'China':'🇨🇳','Japan':'🇯🇵','South Korea':'🇰🇷','Korea':'🇰🇷','Germany':'🇩🇪','Australia':'🇦🇺','Taiwan':'🇹🇼','USA':'🇺🇸','United States':'🇺🇸','United Kingdom':'🇬🇧','France':'🇫🇷','Vietnam':'🇻🇳','Myanmar':'🇲🇲','Indonesia':'🇮🇩','Malaysia':'🇲🇾','Philippines':'🇵🇭','Singapore':'🇸🇬','India':'🇮🇳','Thailand':'🇹🇭','Laos':'🇱🇦','Cambodia':'🇰🇭','Hong Kong':'🇭🇰'};
+const countryAlias={'china':['china','cn','จีน'],'japan':['japan','jp','ญี่ปุ่น'],'south korea':['south korea','korea','kr','เกาหลี'],'united states of america':['usa','us','united states','america','สหรัฐ'],'australia':['australia','au','ออสเตรเลีย'],'france':['france','fr','ฝรั่งเศส'],'germany':['germany','de','เยอรมนี'],'thailand':['thailand','th','ไทย'],'malaysia':['malaysia','my','มาเลเซีย'],'indonesia':['indonesia','id','อินโดนีเซีย'],'singapore':['singapore','sg','สิงคโปร์'],'india':['india','in','อินเดีย'],'vietnam':['vietnam','vn','เวียดนาม'],'laos':['laos','lao','ลาว'],'cambodia':['cambodia','kh','กัมพูชา'],'myanmar':['myanmar','mm','พม่า']};
+let inbound=[],outbound=[],travel=[],summaryChart=null,typeChart=null,currentType='all';
+function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+function toDate(v){if(!v)return null;if(v instanceof Date)return v;const s=String(v).trim();let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);if(m){let y=+m[3];if(y>2400)y-=543;if(y<100)y+=2000;return new Date(y,+m[2]-1,+m[1]);}let d=new Date(s);return isNaN(d)?null:d;}
+function fmtDate(v){const d=toDate(v);return d?d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'2-digit'}):(v||'-');}
+function dateValue(v){const d=toDate(v);return d?d.getTime():0;}
+function flag(c){return FLAGS[c]||'🌍'}
+function first(...vals){return vals.find(v=>v!==undefined && v!==null && String(v).trim()!=='')||''}
+function mobilityName(r,kind){return kind==='inbound' ? first([r['ชื่อ'],r['ชื่อกลาง'],r['สกุล']].filter(Boolean).join(' '),r['โครงการ']) : first(r['ชื่อ_สกุล'],r['โครงการ']);}
+function mobilityDate(r,kind){return kind==='inbound'?`${fmtDate(r['วันมาถึง'])} – ${fmtDate(r['วันกลับ'])}`:`${fmtDate(r['วันออก'])} – ${fmtDate(r['วันกลับ'])}`}
+function mobilitySortDate(r,kind){return kind==='inbound'?dateValue(r['วันมาถึง']):dateValue(r['วันออก']);}
+function cleanCountry(v){return String(v||'').replace(/^[A-Z]{2,3}\s+/,'').trim();}
+function countryCounts(){const o={};[...inbound,...outbound,...travel].forEach(r=>{const c=cleanCountry(r['ประเทศ']);if(c)o[c]=(o[c]||0)+1});return o;}
+function matchesRow(r,q){return !q || Object.values(r).join(' ').toLowerCase().includes(q);}
+function filteredMobility(){const q=document.getElementById('searchInput').value.toLowerCase().trim();const c=document.getElementById('countryFilter').value;let rows=[];if(currentType==='all'||currentType==='inbound')rows.push(...inbound.map(r=>({...r,_kind:'inbound'})));if(currentType==='all'||currentType==='outbound')rows.push(...outbound.map(r=>({...r,_kind:'outbound'})));rows=rows.filter(r=>(c==='all'||cleanCountry(r['ประเทศ'])===c)&&matchesRow(r,q));rows.sort((a,b)=>mobilitySortDate(b,b._kind)-mobilitySortDate(a,a._kind));return rows;}
+function filteredTravel(){const q=document.getElementById('searchInput').value.toLowerCase().trim();const c=document.getElementById('countryFilter').value;return travel.filter(r=>(c==='all'||cleanCountry(r['ประเทศ'])===c)&&matchesRow(r,q)).sort((a,b)=>dateValue(b['วันเริ่ม'])-dateValue(a['วันเริ่ม']));}
+function renderAll(){renderCards();renderTimeline();renderCharts();renderTopCountries();renderMap();}
+function renderCards(){const rows=filteredMobility();document.getElementById('mobilityCount').textContent=`${rows.length} รายการ`;const el=document.getElementById('mobilityCards');if(!rows.length){el.innerHTML='<div class="empty">ไม่พบข้อมูล Mobility ตามเงื่อนไขที่เลือก</div>';return;}el.innerHTML=rows.map((r,i)=>{const kind=r._kind;const name=mobilityName(r,kind);const country=cleanCountry(r['ประเทศ']);const inst=first(r['สถาบัน'],r['สถาบัน_ปลายทาง']);const unit=first(r['หน่วยงาน_UP'],r['คณะ']);return `<article class="mob-card" onclick="openDetail('${kind}',${i})"><div class="mob-top"><div class="mob-avatar">${flag(country)}</div><div class="mob-badge ${kind==='inbound'?'in':'out'}">${kind==='inbound'?'Inbound':'Outbound'}</div></div><div class="mob-body"><div class="mob-title">${esc(name||'-')}</div><div class="mob-meta">🌍 ${esc(country||'-')}</div><div class="mob-meta">🏛️ ${esc(inst||unit||'-')}</div><div class="mob-meta">📅 ${esc(mobilityDate(r,kind))}</div><div class="mob-tags"><span class="small-tag">${esc(first(r['ประเภท'],r['ระดับ'],'Mobility'))}</span><span class="small-tag">${esc(first(r['วัตถุประสงค์'],r['โครงการ'],'International'))}</span></div>${r['ไฟล์_URL']?`<a class="file-link" href="${esc(r['ไฟล์_URL'])}" target="_blank" onclick="event.stopPropagation()">📎 เอกสาร</a>`:''}</div></article>`}).join('');}
+function renderTimeline(){const rows=filteredTravel();document.getElementById('travelCount').textContent=`${rows.length} รายการ`;const el=document.getElementById('travelTimeline');if(!rows.length){el.innerHTML='<div class="empty">ไม่พบข้อมูลการเดินทางบุคลากรตามเงื่อนไขที่เลือก</div>';return;}el.innerHTML=rows.map((r,i)=>`<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-box" onclick="openDetail('travel',${i})"><div class="timeline-title">${esc(first(r['ชื่อโครงการ'],r['วัตถุประสงค์'],'การเดินทางบุคลากร'))}</div><div class="timeline-meta"><span>🌍 ${esc(cleanCountry(r['ประเทศ'])||'-')}</span><span>📍 ${esc(r['เมือง']||'-')}</span><span>👤 ${esc(r['ชื่อผู้เดินทาง']||'-')}</span></div><div class="timeline-date">${fmtDate(r['วันเริ่ม'])} → ${fmtDate(r['วันสิ้นสุด'])}</div>${r['ไฟล์_URL']?`<div class="timeline-actions"><a href="${esc(r['ไฟล์_URL'])}" target="_blank" onclick="event.stopPropagation()">📎 ดูเอกสาร</a></div>`:''}</div></div>`).join('');}
+function renderCharts(){const ctx1=document.getElementById('summaryChart').getContext('2d');if(summaryChart)summaryChart.destroy();summaryChart=new Chart(ctx1,{type:'doughnut',data:{labels:['Inbound','Outbound','การเดินทางบุคลากร'],datasets:[{data:[inbound.length,outbound.length,travel.length],backgroundColor:['#0D9488','#4BBDE8','#7C3AED'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:11,family:"Prompt"},boxWidth:10}}}}});const typeIn=countBy(inbound,'ประเภท'),typeOut=countBy(outbound,'ประเภท');const types=[...new Set([...Object.keys(typeIn),...Object.keys(typeOut)])];const ctx2=document.getElementById('typeChart').getContext('2d');if(typeChart)typeChart.destroy();typeChart=new Chart(ctx2,{type:'bar',data:{labels:types.length?types:['ไม่มีข้อมูล'],datasets:[{label:'Inbound',data:(types.length?types:['ไม่มีข้อมูล']).map(t=>typeIn[t]||0),backgroundColor:'rgba(13,148,136,.72)',borderRadius:7},{label:'Outbound',data:(types.length?types:['ไม่มีข้อมูล']).map(t=>typeOut[t]||0),backgroundColor:'rgba(75,189,232,.72)',borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:"Prompt"},boxWidth:10}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}});}
+function countBy(arr,field){const o={};arr.forEach(r=>{const v=first(r[field],'ไม่ระบุ');o[v]=(o[v]||0)+1});return o;}
+function renderTopCountries(){const counts=Object.entries(countryCounts()).sort((a,b)=>b[1]-a[1]).slice(0,8);const el=document.getElementById('topCountries');if(!counts.length){el.innerHTML='<div class="empty">ยังไม่มีข้อมูลประเทศ</div>';return;}const max=counts[0][1]||1;el.innerHTML=counts.map(([c,n])=>`<div><div class="country-row"><div class="country-flag">${flag(c)}</div><div style="flex:1"><div style="display:flex;align-items:center;justify-content:space-between"><div class="country-name">${esc(c)}</div><div class="country-count">${n}</div></div><div class="country-track"><div class="country-fill" style="width:${Math.round(n/max*100)}%"></div></div></div></div></div>`).join('');}
+function matchCountryName(mapName,data){const n=String(mapName).toLowerCase();for(const [k,aliases] of Object.entries(countryAlias)){if(n===k||aliases.some(a=>n.includes(a))){for(const dc of Object.keys(data)){const d=cleanCountry(dc).toLowerCase();if(d.includes(k)||aliases.some(a=>d.includes(a)))return data[dc];}}}for(const dc of Object.keys(data)){const d=cleanCountry(dc).toLowerCase();if(d && (n.includes(d)||d.includes(n)))return data[dc];}return 0;}
+async function renderMap(){const el=document.getElementById('worldMap');if(!el)return;const data=countryCounts();try{const world=await d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');const countries=topojson.feature(world,world.objects.countries).features;el.innerHTML='<svg></svg><div class="map-tooltip" id="mapTip"></div>';const svg=d3.select(el).select('svg');const w=el.clientWidth||900,h=el.clientHeight||310;const projection=d3.geoNaturalEarth1().fitSize([w,h],{type:'Sphere'});const path=d3.geoPath(projection);const tip=el.querySelector('#mapTip');svg.attr('viewBox',`0 0 ${w} ${h}`);svg.append('path').datum({type:'Sphere'}).attr('d',path).attr('fill','#081d31');svg.selectAll('path.country').data(countries).join('path').attr('class',d=>{const v=matchCountryName(d.properties.name,data);return 'country '+(v>=8?'active-high':v>=4?'active-mid':v>=1?'active-low':'')}).attr('d',path).on('mousemove',(ev,d)=>{const v=matchCountryName(d.properties.name,data);if(!v)return;tip.style.display='block';tip.style.left=(ev.offsetX+12)+'px';tip.style.top=(ev.offsetY+12)+'px';tip.innerHTML=`<b>${esc(d.properties.name)}</b><br>${v} รายการ`;}).on('mouseleave',()=>tip.style.display='none');}catch(e){console.error(e);el.innerHTML='<div class="empty" style="color:#b8c9da">โหลดแผนที่ไม่ได้ แต่ข้อมูลยังใช้งานได้</div>';}}
+function openDetail(kind,index){let rows=kind==='travel'?filteredTravel():filteredMobility().filter(r=>r._kind===kind);const r=rows[index];if(!r)return;const title=kind==='travel'?first(r['ชื่อโครงการ'],r['วัตถุประสงค์'],'การเดินทางบุคลากร'):mobilityName(r,kind);document.getElementById('modalTitle').textContent=title||'รายละเอียด';let fields=[];if(kind==='travel'){fields=[['ประเภท','การเดินทางบุคลากร'],['ประเทศ',r['ประเทศ']],['เมือง',r['เมือง']],['ผู้เดินทาง',r['ชื่อผู้เดินทาง']],['วันเริ่ม',fmtDate(r['วันเริ่ม'])],['วันสิ้นสุด',fmtDate(r['วันสิ้นสุด'])],['วัตถุประสงค์',r['วัตถุประสงค์']],['งบประเภท',r['งบประเภท']],['จำนวนเงิน',r['จำนวนเงิน']],['หมายเหตุ',r['หมายเหตุ']]];}else if(kind==='inbound'){fields=[['ประเภท','Inbound'],['ชื่อ',mobilityName(r,kind)],['เพศ',r['เพศ']],['ระดับ',r['ระดับ']],['สถาบัน',r['สถาบัน']],['ประเทศ',r['ประเทศ']],['หน่วยงาน UP',r['หน่วยงาน_UP']],['วันมาถึง',fmtDate(r['วันมาถึง'])],['วันกลับ',fmtDate(r['วันกลับ'])],['โครงการ',r['โครงการ']],['วัตถุประสงค์',r['วัตถุประสงค์']],['หมายเหตุ',r['หมายเหตุ']]];}else{fields=[['ประเภท','Outbound'],['ชื่อ',mobilityName(r,kind)],['คณะ',r['คณะ']],['สาขา',r['สาขา']],['สถาบันปลายทาง',r['สถาบัน_ปลายทาง']],['ประเทศ',r['ประเทศ']],['วันออก',fmtDate(r['วันออก'])],['วันกลับ',fmtDate(r['วันกลับ'])],['โครงการ',r['โครงการ']],['วัตถุประสงค์',r['วัตถุประสงค์']],['หมายเหตุ',r['หมายเหตุ']]];}document.getElementById('modalBody').innerHTML=`<div class="detail-grid">${fields.map(([l,v])=>`<div class="detail-item ${String(v||'').length>55?'full':''}"><div class="detail-label">${esc(l)}</div><div class="detail-val">${esc(v||'-')}</div></div>`).join('')}</div><div class="modal-actions">${r['ไฟล์_URL']?`<a class="btn green" href="${esc(r['ไฟล์_URL'])}" target="_blank">📎 เปิดเอกสารแนบ</a>`:''}<button class="btn blue" onclick="closeDetail()">ปิด</button></div>`;document.getElementById('detailModal').classList.add('show');}
+function closeDetail(){document.getElementById('detailModal').classList.remove('show');}
+document.getElementById('detailModal').addEventListener('click',e=>{if(e.target.id==='detailModal')closeDetail();});
+function setupFilters(){document.getElementById('searchInput').addEventListener('input',renderAll);document.getElementById('countryFilter').addEventListener('change',renderAll);document.querySelectorAll('.pill').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentType=b.dataset.type;renderAll();}));}
+function fillCountries(){const sel=document.getElementById('countryFilter');const countries=[...new Set([...inbound,...outbound,...travel].map(r=>cleanCountry(r['ประเทศ'])).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));countries.forEach(c=>{const op=document.createElement('option');op.value=c;op.textContent=c;sel.appendChild(op);});}
+function setLang(lang){document.querySelectorAll('.nav-lang-btn').forEach(b=>b.classList.toggle('active',b.textContent===lang));}
+async function init(){try{[inbound,outbound,travel]=await Promise.all([IROUP.getAll(IROUP.SHEETS.INBOUND),IROUP.getAll(IROUP.SHEETS.OUTBOUND),IROUP.getAll(IROUP.SHEETS.TRAVEL)]);document.getElementById('kpi-in').textContent=inbound.length;document.getElementById('kpi-out').textContent=outbound.length;document.getElementById('kpi-travel').textContent=travel.length;document.getElementById('kpi-total').textContent=inbound.length+outbound.length+travel.length;document.getElementById('kpi-countries').textContent=Object.keys(countryCounts()).length;fillCountries();setupFilters();renderAll();}catch(e){console.error(e);document.getElementById('mobilityCards').innerHTML='<div class="empty">⚠️ โหลดข้อมูล Mobility ไม่สำเร็จ</div>';document.getElementById('travelTimeline').innerHTML='<div class="empty">⚠️ โหลดข้อมูลการเดินทางไม่สำเร็จ</div>';}}
+init();
 </script>
-
-
-
 </body>
 </html>
