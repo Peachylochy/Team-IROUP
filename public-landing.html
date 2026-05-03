@@ -830,17 +830,17 @@ async function renderPublicScholarships(){
     const grid=document.querySelector('.scholar-grid'); if(!grid) return;
     const live=data
       .map(s=>({...s,_status:IROUP.getScholarStatus(s['วันเปิดรับ'],s['วันปิดรับ'])}))
-      .filter(s=>['open','upcoming'].includes(s._status.status))
-      .sort((a,b)=>(IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1))-(IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1)))
+      .filter(s=>['urgent','soon','open','upcoming'].includes(s._status.status))
+      .sort((a,b)=>(a._status.priority||9)-(b._status.priority||9) || ((IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1))-(IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1))))
       .slice(0,3);
     if(!live.length) return;
     const flags={'Japan':'🇯🇵','China':'🇨🇳','South Korea':'🇰🇷','Korea':'🇰🇷','USA':'🇺🇸','United Kingdom':'🇬🇧','UK':'🇬🇧','Australia':'🇦🇺','Germany':'🇩🇪','France':'🇫🇷','Thailand':'🇹🇭'};
     grid.innerHTML=live.map(s=>{
-      const st=s._status; const isOpen=st.status==='open';
+      const st=s._status; const isOpen=['urgent','soon','open'].includes(st.status); const badgeLabel=st.status==='urgent'?'🔥 ด่วน':st.status==='soon'?'ใกล้ปิดรับ':st.status==='open'?'เปิดรับ':'ยังไม่เปิดรับ';
       const covers=String(s['ครอบคลุม']||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,4);
-      const days=st.daysLeft!==null?`<div class="sc-days urgent">⏰ เหลือ ${st.daysLeft} วัน</div>`:'<div class="sc-days" style="color:var(--green);font-weight:700">📆 เร็วๆ นี้</div>';
+      const days=st.daysLeft!==null?`<div class="sc-days urgent">⏰ เหลือ ${st.daysLeft} วัน</div>`:'<div class="sc-days" style="color:var(--green);font-weight:700">📆 ยังไม่เปิดรับ</div>';
       return `<div class="scholar-card" onclick="window.location='public-scholar.html'">
-        <div class="sc-top"><div class="sc-flag-wrap" style="background:#E8F4FD">${flags[s['ประเทศ']]||'🌍'}</div><div class="sc-info"><div class="sc-title">${s['ชื่อทุน']||'—'}</div><div class="sc-org">${s['สถาบัน']||s['ประเทศ']||'—'}</div></div><span class="sc-badge ${isOpen?'sc-open':'sc-soon'}">${isOpen?'รับสมัคร':'เร็วๆ นี้'}</span></div>
+        <div class="sc-top"><div class="sc-flag-wrap" style="background:#E8F4FD">${flags[s['ประเทศ']]||'🌍'}</div><div class="sc-info"><div class="sc-title">${s['ชื่อทุน']||'—'}</div><div class="sc-org">${s['สถาบัน']||s['ประเทศ']||'—'}</div></div><span class="sc-badge ${isOpen?'sc-open':'sc-soon'}">${badgeLabel}</span></div>
         <div class="sc-covers">${covers.map(c=>`<span class="sc-tag">${c}</span>`).join('') || '<span class="sc-tag">รายละเอียดทุน</span>'}</div>
         <div class="sc-bottom"><div class="sc-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>${days}</div>
       </div>`;

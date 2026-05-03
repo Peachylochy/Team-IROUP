@@ -147,23 +147,66 @@ const IROUP = {
     return            { status: 'active',   label: 'Active',     color: '#5BAD3E' };
   },
 
-  getScholarStatus(openDate, closeDate) {
-    const today = new Date();
-    const open  = new Date(openDate);
-    const close = new Date(closeDate);
-    const diff  = Math.floor((close - today) / (1000 * 60 * 60 * 24));
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return isNaN(dateStr) ? null : dateStr;
+    const s = String(dateStr).trim();
+    if (!s || s === '-' || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return null;
 
-    if (today < open)  return { status: 'upcoming', label: 'เร็วๆ นี้',        daysLeft: null };
-    if (today > close) return { status: 'closed',   label: 'ปิดรับแล้ว',       daysLeft: null };
-    return              { status: 'open',     label: 'กำลังรับสมัคร',   daysLeft: diff };
+    let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+    if (m) {
+      let y = +m[1];
+      if (y > 2400) y -= 543;
+      return new Date(y, +m[2] - 1, +m[3]);
+    }
+
+    m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})$/);
+    if (m) {
+      let y = +m[3];
+      if (y > 2400) y -= 543;
+      if (y < 100) y += 2000;
+      return new Date(y, +m[2] - 1, +m[1]);
+    }
+
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+  },
+
+  startOfDay(d) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  },
+
+  daysBetween(a, b) {
+    return Math.ceil((this.startOfDay(b) - this.startOfDay(a)) / 86400000);
+  },
+
+  getScholarStatus(openDate, closeDate) {
+    const today = this.startOfDay(new Date());
+    const open  = this.parseDate(openDate);
+    const close = this.parseDate(closeDate);
+    const openDay  = open  ? this.startOfDay(open)  : null;
+    const closeDay = close ? this.startOfDay(close) : null;
+
+    if (closeDay && today > closeDay) return { status:'closed',   label:'ปิดรับแล้ว',   daysLeft:null, priority:5 };
+    if (openDay && today < openDay)   return { status:'upcoming', label:'ยังไม่เปิดรับ', daysLeft:null, priority:4 };
+
+    if (closeDay) {
+      const diff = this.daysBetween(today, closeDay);
+      if (diff <= 3)  return { status:'urgent', label:'🔥 ด่วน',     daysLeft:diff, priority:1 };
+      if (diff <= 10) return { status:'soon',   label:'ใกล้ปิดรับ', daysLeft:diff, priority:2 };
+      return { status:'open', label:'เปิดรับ', daysLeft:diff, priority:3 };
+    }
+
+    return { status:'open', label:'เปิดรับ', daysLeft:null, priority:3 };
   },
 
   // ============================================================
   // HELPER — Format วันที่เป็นภาษาไทย
   // ============================================================
   formatDate(dateStr) {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('th-TH', {
+    const d = this.parseDate ? this.parseDate(dateStr) : new Date(dateStr);
+    if (!d || isNaN(d)) return '—';
+    return d.toLocaleDateString('th-TH', {
       day: 'numeric', month: 'short', year: '2-digit'
     });
   },

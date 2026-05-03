@@ -69,6 +69,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.95);backdrop
 .card-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;font-family:'Sarabun',sans-serif;white-space:nowrap;flex-shrink:0}
 .s-open{background:var(--green-pale);color:var(--green)}
 .s-upcoming{background:var(--blue-pale);color:var(--blue)}
+.s-urgent{background:var(--red-pale);color:var(--red)}
+.s-soon{background:var(--gold-pale);color:var(--gold)}
 .s-closed{background:var(--gray-200);color:var(--gray-600)}
 .card-covers{padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:4px}
 .cover-tag{font-size:10px;padding:2px 7px;border-radius:4px;background:var(--blue-pale);color:var(--blue);font-weight:500;font-family:'Sarabun',sans-serif}
@@ -191,8 +193,10 @@ footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(
     </select>
     <div class="pills">
       <div class="pill on" onclick="setPill(this,'')">ทั้งหมด</div>
-      <div class="pill" onclick="setPill(this,'open')">รับสมัคร</div>
-      <div class="pill" onclick="setPill(this,'upcoming')">เร็วๆ นี้</div>
+      <div class="pill" onclick="setPill(this,'urgent')">🔥 ด่วน</div>
+      <div class="pill" onclick="setPill(this,'soon')">ใกล้ปิดรับ</div>
+      <div class="pill" onclick="setPill(this,'open')">เปิดรับ</div>
+      <div class="pill" onclick="setPill(this,'upcoming')">ยังไม่เปิดรับ</div>
       <div class="pill" onclick="setPill(this,'closed')">ปิดแล้ว</div>
     </div>
   </div>
@@ -223,10 +227,11 @@ async function loadData() {
   try {
     const data = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
     allScholar = data.sort((a,b) => {
-      // Pin ขึ้นก่อน
+      const sa = IROUP.getScholarStatus(a['วันเปิดรับ'], a['วันปิดรับ']);
+      const sb = IROUP.getScholarStatus(b['วันเปิดรับ'], b['วันปิดรับ']);
       if (a['Pin'] === 'TRUE' && b['Pin'] !== 'TRUE') return -1;
       if (b['Pin'] === 'TRUE' && a['Pin'] !== 'TRUE') return 1;
-      return 0;
+      return (sa.priority||9) - (sb.priority||9) || ((IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1)) - (IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1)));
     });
 
     // KPI
@@ -281,8 +286,8 @@ function renderCards() {
     return matchQ && matchC && matchL && matchS;
   });
 
-  const open   = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status === 'open');
-  const others = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status !== 'open');
+  const open   = filtered.filter(s => ['urgent','soon','open'].includes(IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status));
+  const others = filtered.filter(s => !['urgent','soon','open'].includes(IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status));
 
   document.getElementById('openSection').style.display = open.length > 0 ? 'block' : 'none';
   document.getElementById('openCards').innerHTML = open.map(s => cardHTML(s)).join('') || '<div class="loading">ไม่มีทุนที่กำลังรับสมัคร</div>';
@@ -297,12 +302,14 @@ function cardHTML(s) {
   const isPinned = s['Pin'] === 'TRUE';
 
   let statusClass = 's-closed', statusLabel = 'ปิดรับแล้ว';
-  if (st.status === 'open')     { statusClass = 's-open';     statusLabel = 'รับสมัคร'; }
-  if (st.status === 'upcoming') { statusClass = 's-upcoming'; statusLabel = 'เร็วๆ นี้'; }
+  if (st.status === 'urgent')   { statusClass = 's-urgent';   statusLabel = '🔥 ด่วน'; }
+  if (st.status === 'soon')     { statusClass = 's-soon';     statusLabel = 'ใกล้ปิดรับ'; }
+  if (st.status === 'open')     { statusClass = 's-open';     statusLabel = 'เปิดรับ'; }
+  if (st.status === 'upcoming') { statusClass = 's-upcoming'; statusLabel = 'ยังไม่เปิดรับ'; }
 
   let daysHTML = '';
   if (st.daysLeft !== null) {
-    const cls = st.daysLeft < 30 ? 'days-urgent' : st.daysLeft < 60 ? 'days-soon' : 'days-ok';
+    const cls = st.status === 'urgent' ? 'days-urgent' : st.status === 'soon' ? 'days-soon' : 'days-ok';
     daysHTML = `<span class="${cls}">⏰ เหลือ ${st.daysLeft} วัน</span>`;
   }
 
