@@ -266,6 +266,62 @@ body{font-family:'Prompt',sans-serif;background:var(--gray-100);color:var(--gray
   display:block !important;
 }
 
+
+/* iROUP EVENT LIST MODE PATCH */
+#eventCards,
+.events-grid{
+  display:block !important;
+}
+.event-card{
+  display:grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap:10px !important;
+  align-items:center !important;
+  margin-bottom:10px !important;
+  border-radius:14px !important;
+  overflow:visible !important;
+  background:#fff !important;
+}
+.event-card:hover{
+  transform:none !important;
+}
+.event-card .event-poster-img,
+.event-card .card-poster-bg,
+.event-card .card-poster{
+  display:none !important;
+}
+.event-card .event-top{
+  padding:14px 16px !important;
+  align-items:center !important;
+}
+.event-card .event-bottom{
+  padding:10px 12px !important;
+  border-top:0 !important;
+  min-width:360px !important;
+  justify-content:flex-end !important;
+  gap:10px !important;
+}
+.event-card .card-footer{
+  padding:10px 12px !important;
+  border-top:0 !important;
+  background:transparent !important;
+  min-width:320px;
+}
+.event-card .event-date-box{
+  width:56px !important;
+}
+.event-card .event-info{
+  min-width:0 !important;
+}
+.event-card .event-title{
+  font-size:13px !important;
+}
+.event-card .event-place,
+.event-card .event-time-line{
+  display:inline-flex !important;
+  margin-right:12px !important;
+}
+
 </style>
 </head>
 <body>
