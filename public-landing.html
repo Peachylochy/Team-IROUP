@@ -851,7 +851,7 @@ async function patchLandingScholarships(){
       const covers = String(x['ครอบคลุม'] || x['จำนวนเงิน'] || '').split(',').filter(Boolean).slice(0,3);
       return `
         <div class="scholar-card hover-lift">
-          ${poster ? `<div class="sc-poster"><img src="${safeText(poster)}" loading="lazy" alt="${safeText(x['ชื่อทุน']||'Scholarship')}" onerror="this.parentElement.style.display='none'"></div>` : ''}
+          ${poster ? `<div class="sc-poster"><img src="${safeText(poster)}" loading="lazy" alt="${safeText(x['ชื่อทุน']||'Scholarship')}" onerror="this.onerror=null;this.src='Globy_IROUP.png'"></div>` : ''}
           <div class="sc-top">
             <div class="sc-flag-wrap" style="background:#E8F6FD">${countryFlag(country)}</div>
             <div class="sc-info">
@@ -878,6 +878,8 @@ async function patchLandingScholarships(){
     }).join('');
   }catch(err){
     console.error('Landing scholar patch error', err);
+    const grid = document.getElementById('scholarGrid') || document.querySelector('.scholar-grid');
+    if(grid){grid.innerHTML = `<div class="skeleton-card" style="grid-column:1/-1;text-align:center;color:var(--gray-600)">ขณะนี้ไม่สามารถโหลดข้อมูลทุนได้ กรุณาลองใหม่อีกครั้ง</div>`;} 
   }
 }
 

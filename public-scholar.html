@@ -211,178 +211,79 @@ let currentFilter = '';
 const FLAGS = {'Japan':'🇯🇵','China':'🇨🇳','South Korea':'🇰🇷','Germany':'🇩🇪','Australia':'🇦🇺','France':'🇫🇷','USA':'🇺🇸','Taiwan':'🇹🇼','Thailand':'🇹🇭','Netherlands':'🇳🇱'};
 const BG = {'Japan':'#E8F4FD','China':'#FDECEA','South Korea':'#EBF7E3','Germany':'#F0EBFF','Australia':'#FEF3DC','France':'#E0F7F5','USA':'#DBEAFE','Taiwan':'#F3F0FF'};
 
-async function loadData() {
-  try {
-    const data = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
-    allScholar = data.sort((a,b) => {
-      // Pin ขึ้นก่อน
-      if (a['Pin'] === 'TRUE' && b['Pin'] !== 'TRUE') return -1;
-      if (b['Pin'] === 'TRUE' && a['Pin'] !== 'TRUE') return 1;
-      return 0;
-    });
+function escHtml(v){return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function cleanUrl(url){const u=String(url||'').trim(); if(!u||u==='-'||u.toLowerCase()==='undefined'||u.toLowerCase()==='null') return ''; return u;}
+function drivePreviewUrl(url){const u=cleanUrl(url); if(!u) return ''; const m=u.match(/\/file\/d\/([^/]+)/)||u.match(/[?&]id=([^&]+)/); return (m&&m[1])?`https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`:u;}
+function linkBtn(url,label,extraClass=''){ const u=cleanUrl(url); return u ? `<a href="${escHtml(u)}" target="_blank" rel="noopener" class="card-action-btn ${extraClass}">${label}</a>` : ''; }
+function isPinned(row){const v=String(row['Pin']||row['pin']||row['PIN']||'').toLowerCase().trim(); return ['true','yes','y','1','pin','pinned','ปักหมุด'].includes(v);}
+function pickScholarPoster(row){const keys=['Poster_URL','Poster URL','Poster_Clean','Banner_URL','Image_URL','รูปปก_URL','รูปภาพ_URL','ไฟล์รูป_URL','แบนเนอร์_URL']; for(const k of keys){ if(cleanUrl(row[k])) return drivePreviewUrl(row[k]); } return '';}
+function formatDateSafe(v){ if(window.IROUP && typeof IROUP.formatDate==='function') return IROUP.formatDate(v); return String(v||'-'); }
 
-    // KPI
-    const today = new Date();
-    const open = data.filter(s => {
-      const st = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
-      return st.status === 'open';
-    }).length;
-    const upcoming = data.filter(s => {
-      const st = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
-      return st.status === 'upcoming';
-    }).length;
-
-    document.getElementById('kpi-total').textContent    = data.length;
-    document.getElementById('kpi-open').textContent     = open;
-    document.getElementById('kpi-upcoming').textContent = upcoming;
-
-    // Country filter
-    const countries = [...new Set(data.map(s => s['ประเทศ']).filter(Boolean))].sort();
-    const sel = document.getElementById('countryFilter');
-    countries.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c; opt.textContent = `${FLAGS[c]||'🌍'} ${c}`;
-      sel.appendChild(opt);
-    });
-
-    renderCards();
-  } catch(e) {
-    document.getElementById('openCards').innerHTML = '<div class="loading">⚠️ ไม่สามารถโหลดข้อมูลได้</div>';
-  }
-}
-
-
-function escHtml(v){
-  return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function fixDriveUrl(url){
-  const u = String(url || '').trim();
-  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
-  // Google Drive /file/d/xxx/view links do not always render in <img>.
-  // Use thumbnail endpoint for image previews; keep original URL only for file buttons.
-  const m = u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
-  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
-  return u;
-}
-function linkBtn(url,label,extraClass=''){
-  const u = String(url || '').trim();
-  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
-  return `<a href="${escHtml(u)}" target="_blank" rel="noopener" class="card-action-btn ${extraClass}">${label}</a>`;
-}
-
-
-// ===== iROUP PUBLIC SCHOLAR HELPERS =====
 function scholarDeadlineBadge(start, end){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const e = new Date(end);
-  if (isNaN(e.getTime())) return {text:'ไม่ระบุวัน', cls:'s-upcoming', status:'upcoming', days:99999};
-
-  e.setHours(0,0,0,0);
-  const diff = Math.ceil((e - today) / (1000*60*60*24));
-
-  if (diff < 0) return {text:'ปิดแล้ว', cls:'s-closed', status:'closed', days:diff};
-  if (diff === 0) return {text:'วันสุดท้าย', cls:'s-upcoming', status:'open', days:0};
-  if (diff <= 7) return {text:`อีก ${diff} วัน`, cls:'s-upcoming', status:'open', days:diff};
+  const today = new Date(); today.setHours(0,0,0,0);
+  const s = new Date(start); const e = new Date(end);
+  const validS = !isNaN(s.getTime()); const validE = !isNaN(e.getTime());
+  if (validE){ e.setHours(0,0,0,0); if(today > e) return {text:'ปิดแล้ว', cls:'s-closed', status:'closed', days:-1}; }
+  if (validS){ s.setHours(0,0,0,0); if(today < s) return {text:'เร็วๆ นี้', cls:'s-upcoming', status:'upcoming', days:99999}; }
+  if (!validE) return {text:'เปิดรับ', cls:'s-open', status:'open', days:99999};
+  const diff = Math.ceil((e - today)/(1000*60*60*24));
+  if (diff === 0) return {text:'วันสุดท้าย', cls:'s-soon', status:'open', days:0};
+  if (diff <= 7) return {text:`อีก ${diff} วัน`, cls:'s-soon', status:'open', days:diff};
   return {text:'เปิดรับ', cls:'s-open', status:'open', days:diff};
 }
 
-function scholarStatus(row){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const start = new Date(row['วันเปิดรับ']);
-  const end = new Date(row['วันปิดรับ']);
-
-  if (!isNaN(end.getTime())) {
-    end.setHours(0,0,0,0);
-    if (today > end) return 'closed';
-  }
-
-  if (!isNaN(start.getTime())) {
-    start.setHours(0,0,0,0);
-    if (today < start) return 'upcoming';
-  }
-
-  return 'open';
+function normalizedScholar(r){ const b=scholarDeadlineBadge(r['วันเปิดรับ'], r['วันปิดรับ']); return {...r,_badge:b,_pinned:isPinned(r)}; }
+function compareScholar(a,b){
+  if(a._pinned!==b._pinned) return a._pinned?-1:1;
+  const order = {open:0, upcoming:1, closed:2};
+  if(order[a._badge.status]!==order[b._badge.status]) return order[a._badge.status]-order[b._badge.status];
+  return (a._badge.days??99999)-(b._badge.days??99999);
 }
 
-function isPinned(row){
-  const v = String(row['Pin'] || row['pin'] || row['PIN'] || '').toLowerCase().trim();
-  return ['true','yes','y','1','pin','pinned','ปักหมุด'].includes(v);
-}
+async function loadData() {
+  let data=[];
+  try{ if(window.IROUP && IROUP.getAll){ data = await IROUP.getAll(IROUP.SHEETS.SCHOLAR) || []; } }catch(e){ console.warn('getAll scholar failed',e); }
+  allScholar = (Array.isArray(data)?data:[]).map(normalizedScholar).sort(compareScholar);
 
-function cleanUrl(url){
-  const u = String(url || '').trim();
-  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
-  return u;
-}
+  document.getElementById('kpi-total').textContent = allScholar.length;
+  document.getElementById('kpi-open').textContent = allScholar.filter(s=>s._badge.status==='open').length;
+  document.getElementById('kpi-upcoming').textContent = allScholar.filter(s=>s._badge.status==='upcoming').length;
 
-function drivePreviewUrl(url){
-  const u = cleanUrl(url);
-  if(!u) return '';
-  const m = u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
-  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
-  return u;
-}
-
-function pickScholarPoster(row){
-  const keys = ['Poster_URL','Poster URL','Poster_Clean','Banner_URL','Image_URL','รูปปก_URL','รูปภาพ_URL','ไฟล์รูป_URL','แบนเนอร์_URL'];
-  for(const k of keys){
-    if(row[k]) return drivePreviewUrl(row[k]);
-  }
-  return '';
-}
-
-function safeText(v){
-  return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const countries = [...new Set(allScholar.map(s => s['ประเทศ']).filter(Boolean))].sort();
+  const sel = document.getElementById('countryFilter');
+  sel.innerHTML = '<option value="">ทุกประเทศ</option>';
+  countries.forEach(c => { const opt=document.createElement('option'); opt.value=c; opt.textContent=`${FLAGS[c]||'🌍'} ${c}`; sel.appendChild(opt); });
+  renderCards();
 }
 
 function renderCards() {
-  const q       = document.getElementById('searchInput').value.toLowerCase();
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
   const country = document.getElementById('countryFilter').value;
-  const level   = document.getElementById('levelFilter').value;
+  const level = document.getElementById('levelFilter').value;
 
-  let filtered = allScholar.filter(s => {
-    const matchQ  = !q || (s['ชื่อทุน']+s['สถาบัน']).toLowerCase().includes(q);
-    const matchC  = !country || s['ประเทศ'] === country;
-    const matchL  = !level || (s['ระดับ']||'').includes(level);
-    const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
-    const matchS  = !currentFilter || st.status === currentFilter;
+  const filtered = allScholar.filter(s => {
+    const name = String(s['ชื่อทุน']||''); const org=String(s['สถาบัน']||'');
+    const matchQ = !q || `${name} ${org}`.toLowerCase().includes(q);
+    const matchC = !country || s['ประเทศ'] === country;
+    const matchL = !level || String(s['ระดับ']||'').includes(level);
+    const matchS = !currentFilter || s._badge.status === currentFilter;
     return matchQ && matchC && matchL && matchS;
-  });
+  }).sort(compareScholar);
 
-  const open   = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status === 'open');
-  const others = filtered.filter(s => IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']).status !== 'open');
-
+  const open = filtered.filter(s => s._badge.status === 'open');
   document.getElementById('openSection').style.display = open.length > 0 ? 'block' : 'none';
-  document.getElementById('openCards').innerHTML = open.map(s => cardHTML(s)).join('') || '<div class="loading">ไม่มีทุนที่กำลังรับสมัคร</div>';
-  document.getElementById('allCards').innerHTML  = others.map(s => cardHTML(s)).join('') || '<div class="loading">ไม่พบข้อมูล</div>';
+  document.getElementById('openCards').innerHTML = open.map(cardHTML).join('') || '<div class="loading">ไม่มีทุนที่กำลังรับสมัคร</div>';
+  document.getElementById('allCards').innerHTML = filtered.map(cardHTML).join('') || '<div class="loading">ไม่พบข้อมูล</div>';
 }
 
 function cardHTML(s) {
-  const st      = IROUP.getScholarStatus(s['วันเปิดรับ'], s['วันปิดรับ']);
-  const flag    = FLAGS[s['ประเทศ']] || '🌍';
-  const bg      = BG[s['ประเทศ']] || '#F8F9FB';
-  const covers  = (s['ครอบคลุม']||'').split(',').map(x=>x.trim()).filter(Boolean);
-  const isPinned = s['Pin'] === 'TRUE';
-  const poster = fixDriveUrl(s['Poster_URL']);
-  const fileUrl = s['ไฟล์_URL'];
-  const linkUrl = s['Link'];
-
-  let statusClass = 's-closed', statusLabel = 'ปิดรับแล้ว';
-  if (st.status === 'open')     { statusClass = 's-open';     statusLabel = st.label || 'เปิดรับ'; }
-  if (st.status === 'upcoming') { statusClass = 's-upcoming'; statusLabel = st.label || 'ยังไม่เปิดรับ'; }
-
-  let daysHTML = '';
-  if (st.daysLeft !== null && st.daysLeft !== undefined) {
-    const cls = st.daysLeft <= 3 ? 'days-urgent' : st.daysLeft <= 10 ? 'days-soon' : 'days-ok';
-    daysHTML = `<span class="${cls}">⏰ เหลือ ${st.daysLeft} วัน</span>`;
-  }
+  const flag = FLAGS[s['ประเทศ']] || '🌍';
+  const bg = BG[s['ประเทศ']] || '#F8F9FB';
+  const covers = String(s['ครอบคลุม'] || s['จำนวนเงิน'] || '').split(',').map(x=>x.trim()).filter(Boolean);
+  const poster = pickScholarPoster(s);
 
   return `<div class="scholar-card" style="position:relative">
-    ${isPinned ? '<div class="pin-badge">📌</div>' : ''}
+    ${s._pinned ? '<div class="pin-badge">📌</div>' : ''}
     <div class="card-poster">
       ${poster ? `<img src="${escHtml(poster)}" alt="${escHtml(s['ชื่อทุน']||'poster')}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=&quot;card-poster-fallback&quot;>${flag}</div>'">` : `<div class="card-poster-fallback" style="background:${bg}">${flag}</div>`}
     </div>
@@ -391,20 +292,11 @@ function cardHTML(s) {
         <div class="card-name">${escHtml(s['ชื่อทุน']||'—')}</div>
         <div class="card-org">${escHtml(s['สถาบัน']||'—')} · ${escHtml(s['ประเทศ']||'—')}</div>
       </div>
-      <span class="card-status ${dl.cls}">${dl.text}</span>
+      <span class="card-status ${s._badge.cls}">${s._badge.text}</span>
     </div>
-    <div class="card-covers">
-      ${covers.map(c => `<span class="cover-tag">${escHtml(c)}</span>`).join('')}
-      ${s['ระดับ'] ? `<span class="card-level">${escHtml(s['ระดับ'])}</span>` : ''}
-    </div>
-    <div class="card-actions">
-      ${linkBtn(x['Link'],'📄 รายละเอียด','detail')}
-      ${linkBtn(x['Link'],'📝 สมัคร','apply')}
-      ${linkBtn(x['ไฟล์_URL'],'📎 ไฟล์แนบ','file')}
-    </div><div class="card-footer">
-      <div class="card-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>
-      ${daysHTML}
-    </div>
+    <div class="card-covers">${covers.map(c=>`<span class="cover-tag">${escHtml(c)}</span>`).join('')}${s['ระดับ']?`<span class="card-level">${escHtml(s['ระดับ'])}</span>`:''}</div>
+    <div class="card-actions">${linkBtn(s['Link'],'📄 รายละเอียด','detail')}${linkBtn(s['Link'],'📝 สมัคร','apply')}${linkBtn(s['ไฟล์_URL'],'📎 ไฟล์แนบ','file')}</div>
+    <div class="card-footer"><div class="card-deadline">📅 ปิดรับ ${formatDateSafe(s['วันปิดรับ'])}</div></div>
   </div>`;
 }
 
