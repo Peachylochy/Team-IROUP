@@ -16,28 +16,25 @@ const IROUP = {
   },
 
   // fetch helper กลาง — แก้ปัญหา CORS redirect ของ Apps Script
-  async _get(url) {
-    const res = await fetch(url, { redirect: 'follow' });
-    return res.json();
-  },
+ async _get(url) {
+  const res = await fetch(url, { redirect: 'follow' });
+  return res.json();
+},
 
-  async _post(body) {
-    const res = await fetch(this.SCRIPT_URL, {
-      method: 'POST',
-      redirect: 'follow',
-      body: JSON.stringify(body),
-    });
-    return res.json();
-  },
+async _post(body) {
+  const res = await fetch(this.SCRIPT_URL, {
+    method: 'POST',
+    redirect: 'follow',
+    body: JSON.stringify(body),
+  });
+  return res.json();
+},
 
-  // ============================================================
-  // GET — ดึงข้อมูลทั้งหมด
-  // ============================================================
-  async getAll(sheet) {
-    const url = `${this.SCRIPT_URL}?action=getAll&sheet=${encodeURIComponent(sheet)}`;
-    const data = await this._get(url);
-    return data.data || [];
-  },
+async getAll(sheet) {
+  const url = `${this.SCRIPT_URL}?action=getAll&sheet=${encodeURIComponent(sheet)}`;
+  const data = await this._get(url);
+  return data.data || [];
+},
 
   // ============================================================
   // SEARCH — ค้นหาข้อมูล
