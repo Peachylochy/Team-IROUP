@@ -364,16 +364,6 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
 .page-hero p { color: var(--gray-600) !important; }
 .page-hero .hkpi-num { filter: none; }
 
-
-/* iROUP landing active scholarship poster/actions */
-.sc-poster{height:110px;background:var(--sky-pale);overflow:hidden}
-.sc-poster img{width:100%;height:100%;object-fit:cover;display:block}
-.sc-actions{padding:0 16px 14px;display:flex;gap:6px;flex-wrap:wrap}
-.sc-action{font-size:11px;font-weight:700;text-decoration:none;border-radius:8px;padding:5px 10px;background:var(--sky-pale);color:var(--sky-dark);font-family:'Sarabun',sans-serif}
-.sc-action.apply{background:var(--gold-pale);color:var(--gold-dark)}
-.sc-action.file{background:var(--green-pale);color:var(--green)}
-.sc-badge.sc-closed{background:#EEF1F5;color:#6B7A8D}
-
 </style>
 </head>
 <body>
@@ -713,76 +703,6 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
 <script src="iroup-config.js"></script>
 
 <script>
-
-// ===== iROUP PUBLIC SCHOLAR HELPERS =====
-function scholarDeadlineBadge(start, end){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const e = new Date(end);
-  if (isNaN(e.getTime())) return {text:'ไม่ระบุวัน', cls:'s-upcoming', status:'upcoming', days:99999};
-
-  e.setHours(0,0,0,0);
-  const diff = Math.ceil((e - today) / (1000*60*60*24));
-
-  if (diff < 0) return {text:'ปิดแล้ว', cls:'s-closed', status:'closed', days:diff};
-  if (diff === 0) return {text:'วันสุดท้าย', cls:'s-upcoming', status:'open', days:0};
-  if (diff <= 7) return {text:`อีก ${diff} วัน`, cls:'s-upcoming', status:'open', days:diff};
-  return {text:'เปิดรับ', cls:'s-open', status:'open', days:diff};
-}
-
-function scholarStatus(row){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const start = new Date(row['วันเปิดรับ']);
-  const end = new Date(row['วันปิดรับ']);
-
-  if (!isNaN(end.getTime())) {
-    end.setHours(0,0,0,0);
-    if (today > end) return 'closed';
-  }
-
-  if (!isNaN(start.getTime())) {
-    start.setHours(0,0,0,0);
-    if (today < start) return 'upcoming';
-  }
-
-  return 'open';
-}
-
-function isPinned(row){
-  const v = String(row['Pin'] || row['pin'] || row['PIN'] || '').toLowerCase().trim();
-  return ['true','yes','y','1','pin','pinned','ปักหมุด'].includes(v);
-}
-
-function cleanUrl(url){
-  const u = String(url || '').trim();
-  if(!u || u === '-' || u.toLowerCase() === 'undefined' || u.toLowerCase() === 'null') return '';
-  return u;
-}
-
-function drivePreviewUrl(url){
-  const u = cleanUrl(url);
-  if(!u) return '';
-  const m = u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
-  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w1200`;
-  return u;
-}
-
-function pickScholarPoster(row){
-  const keys = ['Poster_URL','Poster URL','Poster_Clean','Banner_URL','Image_URL','รูปปก_URL','รูปภาพ_URL','ไฟล์รูป_URL','แบนเนอร์_URL'];
-  for(const k of keys){
-    if(row[k]) return drivePreviewUrl(row[k]);
-  }
-  return '';
-}
-
-function safeText(v){
-  return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-
 (function(){
   function cleanCountry(v){return String(v||'').replace(/^[A-Z]{2,3}\s+/,'').trim();}
   function first(){for(const v of arguments){if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;}return '';}
