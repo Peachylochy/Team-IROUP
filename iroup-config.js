@@ -1,6 +1,5 @@
 // ============================================================
 // iROUP — Config & API Helper
-// เปลี่ยน SCRIPT_URL เป็น URL ของ Apps Script ที่ Deploy แล้ว
 // ============================================================
 
 const IROUP = {
@@ -16,13 +15,27 @@ const IROUP = {
     OUTBOUND: 'Outbound',
   },
 
+  // fetch helper กลาง — แก้ปัญหา CORS redirect ของ Apps Script
+  async _get(url) {
+    const res = await fetch(url, { redirect: 'follow' });
+    return res.json();
+  },
+
+  async _post(body) {
+    const res = await fetch(this.SCRIPT_URL, {
+      method: 'POST',
+      redirect: 'follow',
+      body: JSON.stringify(body),
+    });
+    return res.json();
+  },
+
   // ============================================================
   // GET — ดึงข้อมูลทั้งหมด
   // ============================================================
   async getAll(sheet) {
     const url = `${this.SCRIPT_URL}?action=getAll&sheet=${encodeURIComponent(sheet)}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await this._get(url);
     return data.data || [];
   },
 
@@ -31,8 +44,7 @@ const IROUP = {
   // ============================================================
   async search(sheet, query) {
     const url = `${this.SCRIPT_URL}?action=search&sheet=${encodeURIComponent(sheet)}&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await this._get(url);
     return data.data || [];
   },
 
@@ -41,8 +53,7 @@ const IROUP = {
   // ============================================================
   async searchStaff(query) {
     const url = `${this.SCRIPT_URL}?action=searchStaff&q=${encodeURIComponent(query)}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await this._get(url);
     return data.data || [];
   },
 
@@ -50,33 +61,21 @@ const IROUP = {
   // ADD — เพิ่มข้อมูลใหม่
   // ============================================================
   async add(sheet, data) {
-    const res = await fetch(this.SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'add', sheet, data }),
-    });
-    return await res.json();
+    return this._post({ action: 'add', sheet, data });
   },
 
   // ============================================================
   // EDIT — แก้ไขข้อมูล
   // ============================================================
   async edit(sheet, id, data) {
-    const res = await fetch(this.SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'edit', sheet, id, data }),
-    });
-    return await res.json();
+    return this._post({ action: 'edit', sheet, id, data });
   },
 
   // ============================================================
   // DELETE — ลบข้อมูล
   // ============================================================
   async delete(sheet, id) {
-    const res = await fetch(this.SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'delete', sheet, id }),
-    });
-    return await res.json();
+    return this._post({ action: 'delete', sheet, id });
   },
 
   // ============================================================
@@ -84,9 +83,16 @@ const IROUP = {
   // ============================================================
   async getStats() {
     const url = `${this.SCRIPT_URL}?action=getStats`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await this._get(url);
     return data.stats || {};
+  },
+
+  // ============================================================
+  // GET REPORT — ดึงข้อมูลรายงาน
+  // ============================================================
+  async getReport(year = '') {
+    const url = `${this.SCRIPT_URL}?action=getReport&year=${encodeURIComponent(year)}`;
+    return this._get(url);
   },
 
   // ============================================================
@@ -94,8 +100,7 @@ const IROUP = {
   // ============================================================
   async getMouByCountry() {
     const url = `${this.SCRIPT_URL}?action=getMouByCountry`;
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await this._get(url);
     return data.data || {};
   },
 
@@ -130,8 +135,6 @@ const IROUP = {
     const today = new Date();
     const start = new Date(startDate);
     const end   = new Date(endDate);
-    const diff  = Math.floor((end - today) / (1000 * 60 * 60 * 24));
-
     if (today < start) return { status: 'upcoming', label: 'รอเดินทาง',     color: '#D4890A' };
     if (today > end)   return { status: 'done',     label: 'เสร็จสิ้น',     color: '#6B7A8D' };
     return               { status: 'active',    label: 'กำลังดำเนินการ', color: '#5BAD3E' };
@@ -141,10 +144,9 @@ const IROUP = {
     const today = new Date();
     const end   = new Date(endDate);
     const diff  = Math.floor((end - today) / (1000 * 60 * 60 * 24));
-
-    if (diff < 0)   return { status: 'expired', label: 'หมดอายุ',   color: '#D63B32' };
-    if (diff <= 180) return { status: 'soon',    label: 'ใกล้หมด',   color: '#D4890A' };
-    return            { status: 'active',   label: 'Active',     color: '#5BAD3E' };
+    if (diff < 0)    return { status: 'expired', label: 'หมดอายุ', color: '#D63B32' };
+    if (diff <= 180) return { status: 'soon',    label: 'ใกล้หมด', color: '#D4890A' };
+    return             { status: 'active',   label: 'Active',   color: '#5BAD3E' };
   },
 
   getScholarStatus(openDate, closeDate) {
@@ -152,10 +154,9 @@ const IROUP = {
     const open  = new Date(openDate);
     const close = new Date(closeDate);
     const diff  = Math.floor((close - today) / (1000 * 60 * 60 * 24));
-
-    if (today < open)  return { status: 'upcoming', label: 'เร็วๆ นี้',        daysLeft: null };
-    if (today > close) return { status: 'closed',   label: 'ปิดรับแล้ว',       daysLeft: null };
-    return              { status: 'open',     label: 'กำลังรับสมัคร',   daysLeft: diff };
+    if (today < open)  return { status: 'upcoming', label: 'เร็วๆ นี้',      daysLeft: null };
+    if (today > close) return { status: 'closed',   label: 'ปิดรับแล้ว',     daysLeft: null };
+    return              { status: 'open',     label: 'กำลังรับสมัคร', daysLeft: diff };
   },
 
   // ============================================================
