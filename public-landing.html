@@ -104,8 +104,6 @@ section{padding:80px 5%}
 .scholar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
 .scholar-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);transition:all .25s;cursor:pointer}
 .scholar-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-float)}
-.sc-poster{width:100%;height:120px;object-fit:cover;display:block;background:var(--gray-200)}
-.scholar-card.has-poster .sc-top{padding-top:14px}
 .sc-top{padding:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .sc-flag-wrap{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
 .sc-info{flex:1}
@@ -367,28 +365,6 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
 .page-hero h1 { color: var(--navy-dark) !important; }
 .page-hero p { color: var(--gray-600) !important; }
 .page-hero .hkpi-num { filter: none; }
-
-
-
-/* ============================================================
-   ROUND 7 — MOBILE RESPONSIVE FIXES
-   ============================================================ */
-@media (max-width: 960px){
-  nav{height:auto;min-height:60px;padding:10px 4%;gap:10px;flex-wrap:wrap;position:sticky;background:rgba(255,255,255,.96);box-shadow:0 1px 16px rgba(15,45,90,.08)}
-  .nav-logo{min-width:0}.nav-logo-text{font-size:15px}.nav-links{order:3;width:100%;display:flex;gap:10px;overflow-x:auto;padding:4px 0 2px;scrollbar-width:none}.nav-links::-webkit-scrollbar{display:none}
-  .nav-link{font-size:12px;white-space:nowrap;padding:6px 10px;border-radius:999px;background:var(--gray-100, #F8F9FB)}
-  .nav-lang{margin-left:auto}.nav-admin-btn{padding:7px 12px;font-size:11px}
-  .page-hero{padding:34px 5% 28px!important;text-align:center}.page-hero h1{font-size:30px!important}.page-hero p{font-size:13px!important}
-  .hero-kpi{display:grid!important;grid-template-columns:repeat(2,1fr)!important;gap:12px!important;justify-content:stretch!important}.hkpi{padding:12px;background:rgba(255,255,255,.52);border-radius:14px}
-  .content{padding:18px 4%!important}.grid-2,.grid-3{grid-template-columns:1fr!important}.filter-bar{align-items:stretch!important}.search-wrap{min-width:100%!important}.filter-select{width:100%}.status-pills{width:100%;overflow-x:auto;padding-bottom:2px}
-  .cards-grid,.scholar-grid,.features-grid{grid-template-columns:1fr!important}.map-stats-row{grid-template-columns:repeat(2,1fr)!important}.table-wrap{border-radius:12px;overflow-x:auto}.table-wrap table{min-width:760px}
-  .event-item,.event-row{align-items:flex-start!important}.map-dark,.card{min-width:0}.chart-wrap{min-height:240px}.hero-btns{justify-content:center}.hero-stats{justify-content:center;flex-wrap:wrap}
-}
-@media (max-width: 640px){
-  .hero{min-height:auto!important;display:block!important;padding:90px 5% 40px!important;text-align:center}.hero-title{font-size:34px!important}.hero-title .accent2{font-size:24px!important}.hero-sub{font-size:14px!important}.hero-btns a{width:100%;justify-content:center}.hero-stats{display:grid!important;grid-template-columns:repeat(2,1fr);gap:10px}.stat-divider{display:none}.hero-visual{margin-top:18px}.globy-wrap{width:min(310px,90vw)!important;height:min(310px,90vw)!important;margin:auto}.globy-bubble{font-size:10px;transform:scale(.9)}.gb1{left:0!important}.gb2{right:0!important}.gb3{left:0!important}.gb4{right:0!important}
-  section{padding:46px 5%!important}.section-title{font-size:26px!important}.section-sub{font-size:13px!important}.about-strip{display:block!important;text-align:center;padding:36px 5%!important}.about-globy{margin-bottom:18px}.about-contact{justify-content:center}footer{display:block!important;text-align:center}.footer-logo{justify-content:center;margin-bottom:10px}.footer-admin{margin-top:12px}
-  .page-hero h1{font-size:26px!important}.hero-kpi{grid-template-columns:1fr 1fr!important}.hkpi-num{font-size:26px!important}.event-item,.event-row{display:grid!important;grid-template-columns:auto 1fr;gap:10px!important}.event-item .ev-arrow,.event-row .ev-arrow{display:none}
-}
 
 </style>
 </head>
@@ -826,15 +802,6 @@ function renderPublicMap(countryData){
     })
     .catch(drawFallbackDots);
 }
-
-function publicAssetUrl(url){
-  const u=String(url||'').trim();
-  if(!u || u==='-' || u.toLowerCase()==='undefined' || u.toLowerCase()==='null') return '';
-  const m=u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
-  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
-  return u;
-}
-
 async function renderPublicScholarships(){
   try{
     const data=await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
@@ -850,10 +817,7 @@ async function renderPublicScholarships(){
       const st=s._status; const isOpen=st.status==='open';
       const covers=String(s['ครอบคลุม']||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,4);
       const days=st.daysLeft!==null?`<div class="sc-days urgent">⏰ เหลือ ${st.daysLeft} วัน</div>`:'<div class="sc-days" style="color:var(--green);font-weight:700">📆 เร็วๆ นี้</div>';
-      const poster=publicAssetUrl(s['Poster_URL']);
-      const posterHtml=poster ? `<img class="sc-poster" src="${poster}" alt="${s['ชื่อทุน']||'Scholarship poster'}" loading="lazy" onerror="this.style.display='none'">` : '';
-      return `<div class="scholar-card ${poster?'has-poster':''}" onclick="window.location='public-scholar.html'">
-        ${posterHtml}
+      return `<div class="scholar-card" onclick="window.location='public-scholar.html'">
         <div class="sc-top"><div class="sc-flag-wrap" style="background:#E8F4FD">${flags[s['ประเทศ']]||'🌍'}</div><div class="sc-info"><div class="sc-title">${s['ชื่อทุน']||'—'}</div><div class="sc-org">${s['สถาบัน']||s['ประเทศ']||'—'}</div></div><span class="sc-badge ${isOpen?'sc-open':'sc-soon'}">${isOpen?'รับสมัคร':'เร็วๆ นี้'}</span></div>
         <div class="sc-covers">${covers.map(c=>`<span class="sc-tag">${c}</span>`).join('') || '<span class="sc-tag">รายละเอียดทุน</span>'}</div>
         <div class="sc-bottom"><div class="sc-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>${days}</div>
