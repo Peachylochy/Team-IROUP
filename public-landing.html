@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iROUP — International Relations · University of Phayao</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -381,8 +379,8 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
     <a href="public-events.html" class="nav-link">📅 กิจกรรม</a>
     <a href="public-mobility.html" class="nav-link">👥 Mobility</a>
     <div class="nav-lang">
-      <div class="nav-lang-btn active" onclick="setLang('TH')">TH</div>
-      <div class="nav-lang-btn" onclick="setLang('EN')">EN</div>
+      <div class="nav-lang-btn active">TH</div>
+      <div class="nav-lang-btn">EN</div>
     </div>
     <a href="index.html" class="nav-admin-btn">🔐 เข้าสู่ระบบ Admin</a>
   </div>
@@ -570,14 +568,6 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
               <line x1="180" y1="0" x2="180" y2="450"/><line x1="360" y1="0" x2="360" y2="450"/><line x1="540" y1="0" x2="540" y2="450"/><line x1="720" y1="0" x2="720" y2="450"/>
             </g>
             <line x1="0" y1="225" x2="900" y2="225" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,4"/>
-            <g id="worldShapes" fill="rgba(75,189,232,0.09)" stroke="rgba(75,189,232,0.18)" stroke-width="1">
-              <path d="M115,125 C155,85 235,80 292,118 C330,142 314,198 268,208 C226,218 205,250 163,238 C123,226 85,174 115,125 Z"/>
-              <path d="M260,260 C310,240 360,272 360,322 C360,378 304,410 262,382 C220,354 218,280 260,260 Z"/>
-              <path d="M390,112 C450,82 538,103 570,152 C600,198 560,240 505,225 C460,212 420,230 384,202 C350,176 348,132 390,112 Z"/>
-              <path d="M505,218 C552,230 590,272 580,324 C570,374 520,394 482,365 C450,340 456,278 505,218 Z"/>
-              <path d="M570,135 C650,78 775,112 805,190 C833,262 735,315 650,278 C583,248 520,178 570,135 Z"/>
-              <path d="M715,325 C760,300 825,320 842,365 C858,410 790,425 735,402 C698,386 685,345 715,325 Z"/>
-            </g>
             <g id="countryDots"></g>
           </svg>
           <div style="position:absolute;bottom:10px;left:14px;display:flex;gap:14px">
@@ -602,10 +592,81 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
   <div class="section-tag">กิจกรรม & Events</div>
   <h2 class="section-title">กิจกรรมที่<span>กำลังจะมาถึง</span></h2>
   <p class="section-sub">ติดตามกิจกรรมนานาชาติ โปรแกรม Exchange และการเดินทางของมหาวิทยาลัย</p>
-  <div class="events-list" id="landingEventsList">
-    <div class="event-row" style="justify-content:center;color:var(--gray-600);font-family:Sarabun,sans-serif">⏳ กำลังโหลดกิจกรรม...</div>
+  <div class="events-list">
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">29</div><div class="ev-month">มิ.ย.</div></div>
+      <div class="ev-type-dot" style="background:#1A6DB5"></div>
+      <div class="ev-content">
+        <div class="ev-title">Immersion Hub @ Shanghai Open University</div>
+        <div class="ev-meta">
+          <span>📍 Shanghai, China · 29 มิ.ย.–11 ก.ค. 2569</span>
+          <span>👥 25 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-travel">✈️ การเดินทาง</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">3</div><div class="ev-month">มิ.ย.</div></div>
+      <div class="ev-type-dot" style="background:#7C3AED"></div>
+      <div class="ev-content">
+        <div class="ev-title">คณะผู้แทน Keimyung University เยือนมหาวิทยาลัยพะเยา</div>
+        <div class="ev-meta">
+          <span>📍 มหาวิทยาลัยพะเยา · 3–5 มิ.ย. 2569</span>
+          <span>👥 8 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-inbound">🌏 Inbound</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">20</div><div class="ev-month">พ.ค.</div></div>
+      <div class="ev-type-dot" style="background:#F5A623"></div>
+      <div class="ev-content">
+        <div class="ev-title">English Academic Writing Workshop</div>
+        <div class="ev-meta">
+          <span>📍 มหาวิทยาลัยพะเยา · 20–21 พ.ค. 2569</span>
+          <span>👥 40 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-train">📚 อบรม</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">8</div><div class="ev-month">ก.ค.</div></div>
+      <div class="ev-type-dot" style="background:#1A6DB5"></div>
+      <div class="ev-content">
+        <div class="ev-title">Executive Visit — Deggendorf Institute of Technology, Germany</div>
+        <div class="ev-meta">
+          <span>📍 Deggendorf, Germany · 8–14 ก.ค. 2569</span>
+          <span>👥 5 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-travel">✈️ การเดินทาง</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
   </div>
-  <a href="public-events.html" class="view-all-btn" style="background:var(--navy)" id="viewAllEventsBtn">ดูกิจกรรมทั้งหมด →</a>
+  <a href="public-scholar.html" class="view-all-btn" style="background:var(--navy)">ดูกิจกรรมทั้งหมด →</a>
+</section>
+
+
+<!-- MOBILITY OVERVIEW -->
+<section class="mobility-overview" id="mobility-overview" style="background:linear-gradient(160deg,#F0EBFF,#EAF5FC);padding:72px 5%">
+  <div class="section-tag">MOBILITY</div>
+  <h2 class="section-title">สถิติการเคลื่อนย้าย<span>นานาชาติ</span></h2>
+  <p class="section-sub">ภาพรวม Inbound / Outbound และการเดินทางบุคลากรจากข้อมูลจริง</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px" id="landingMobilityStats">
+    <div class="map-stat" style="background:#fff;color:var(--navy);border:1px solid var(--gray-200)"><div class="map-stat-flag">🌍</div><div class="map-stat-num" id="lm-inbound">—</div><div class="map-stat-label" style="color:var(--gray-600)">Inbound</div></div>
+    <div class="map-stat" style="background:#fff;color:var(--navy);border:1px solid var(--gray-200)"><div class="map-stat-flag">✈️</div><div class="map-stat-num" id="lm-outbound">—</div><div class="map-stat-label" style="color:var(--gray-600)">Outbound</div></div>
+    <div class="map-stat" style="background:#fff;color:var(--navy);border:1px solid var(--gray-200)"><div class="map-stat-flag">👥</div><div class="map-stat-num" id="lm-travel">—</div><div class="map-stat-label" style="color:var(--gray-600)">การเดินทางบุคลากร</div></div>
+    <div class="map-stat" style="background:#fff;color:var(--navy);border:1px solid var(--gray-200)"><div class="map-stat-flag">🌐</div><div class="map-stat-num" id="lm-country">—</div><div class="map-stat-label" style="color:var(--gray-600)">ประเทศ</div></div>
+  </div>
+  <a href="public-mobility.html" class="view-all-btn" style="margin-top:28px;background:var(--navy)">ดู Mobility ทั้งหมด →</a>
 </section>
 
 <!-- ABOUT STRIP -->
@@ -642,345 +703,26 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
 <script src="iroup-config.js"></script>
 
 <script>
-// ============================================================
-// iROUP PUBLIC LANDING — Live Data + Globy + Map
-// ============================================================
-const IROUP_COUNTRY_META = {
-  'China':{x:678,y:178,flag:'🇨🇳',continent:'asia'}, 'Japan':{x:744,y:178,flag:'🇯🇵',continent:'asia'},
-  'South Korea':{x:724,y:166,flag:'🇰🇷',continent:'asia'}, 'Korea':{x:724,y:166,flag:'🇰🇷',continent:'asia'},
-  'Taiwan':{x:722,y:205,flag:'🇹🇼',continent:'asia'}, 'Thailand':{x:657,y:240,flag:'🇹🇭',continent:'asia'},
-  'Vietnam':{x:682,y:242,flag:'🇻🇳',continent:'asia'}, 'Myanmar':{x:632,y:229,flag:'🇲🇲',continent:'asia'},
-  'Malaysia':{x:660,y:286,flag:'🇲🇾',continent:'asia'}, 'Singapore':{x:663,y:300,flag:'🇸🇬',continent:'asia'},
-  'Indonesia':{x:690,y:315,flag:'🇮🇩',continent:'asia'}, 'Philippines':{x:715,y:252,flag:'🇵🇭',continent:'asia'},
-  'India':{x:590,y:220,flag:'🇮🇳',continent:'asia'}, 'Cambodia':{x:666,y:249,flag:'🇰🇭',continent:'asia'},
-  'Laos':{x:655,y:231,flag:'🇱🇦',continent:'asia'}, 'Hong Kong':{x:698,y:205,flag:'🇭🇰',continent:'asia'},
-  'Germany':{x:440,y:144,flag:'🇩🇪',continent:'europe'}, 'France':{x:420,y:160,flag:'🇫🇷',continent:'europe'},
-  'United Kingdom':{x:405,y:132,flag:'🇬🇧',continent:'europe'}, 'UK':{x:405,y:132,flag:'🇬🇧',continent:'europe'},
-  'Netherlands':{x:425,y:140,flag:'🇳🇱',continent:'europe'}, 'Sweden':{x:452,y:103,flag:'🇸🇪',continent:'europe'},
-  'Norway':{x:438,y:94,flag:'🇳🇴',continent:'europe'}, 'Spain':{x:398,y:178,flag:'🇪🇸',continent:'europe'},
-  'Italy':{x:445,y:178,flag:'🇮🇹',continent:'europe'}, 'Austria':{x:450,y:158,flag:'🇦🇹',continent:'europe'},
-  'USA':{x:210,y:175,flag:'🇺🇸',continent:'america'}, 'United States':{x:210,y:175,flag:'🇺🇸',continent:'america'},
-  'Canada':{x:215,y:115,flag:'🇨🇦',continent:'america'}, 'Mexico':{x:205,y:230,flag:'🇲🇽',continent:'america'},
-  'Brazil':{x:310,y:315,flag:'🇧🇷',continent:'america'}, 'Australia':{x:735,y:348,flag:'🇦🇺',continent:'oceania'},
-  'New Zealand':{x:805,y:385,flag:'🇳🇿',continent:'oceania'}, 'South Africa':{x:470,y:365,flag:'🇿🇦',continent:'africa'},
-  'Egypt':{x:482,y:222,flag:'🇪🇬',continent:'africa'},
-  'จีน':{x:678,y:178,flag:'🇨🇳',continent:'asia'}, 'ญี่ปุ่น':{x:744,y:178,flag:'🇯🇵',continent:'asia'},
-  'เกาหลีใต้':{x:724,y:166,flag:'🇰🇷',continent:'asia'}, 'ไต้หวัน':{x:722,y:205,flag:'🇹🇼',continent:'asia'},
-  'ไทย':{x:657,y:240,flag:'🇹🇭',continent:'asia'}, 'ประเทศไทย':{x:657,y:240,flag:'🇹🇭',continent:'asia'},
-  'เวียดนาม':{x:682,y:242,flag:'🇻🇳',continent:'asia'}, 'เยอรมนี':{x:440,y:144,flag:'🇩🇪',continent:'europe'},
-  'สหรัฐอเมริกา':{x:210,y:175,flag:'🇺🇸',continent:'america'}, 'ออสเตรเลีย':{x:735,y:348,flag:'🇦🇺',continent:'oceania'}
-};
-
-function iroupSetText(id, value){ const el=document.getElementById(id); if(el) el.textContent=value; }
-function iroupSetHTML(id, value){ const el=document.getElementById(id); if(el) el.innerHTML=value; }
-function iroupAnimateNumber(el, target){
-  if(!el) return;
-  const n=Number(target)||0; const start=Number(el.textContent)||0; const dur=650; const t0=performance.now();
-  function tick(t){ const p=Math.min((t-t0)/dur,1); el.textContent=Math.round(start+(n-start)*(1-Math.pow(1-p,3))); if(p<1) requestAnimationFrame(tick); }
-  requestAnimationFrame(tick);
-}
-
-function renderPublicMap(countryData){
-  const svgEl = document.getElementById('svgWorldMap');
-  if(!svgEl) return;
-
-  const rawEntries = Object.entries(countryData || {}).filter(([,v]) => Number(v) > 0);
-  const alias = {
-    'จีน':'China','ญี่ปุ่น':'Japan','เกาหลีใต้':'South Korea','เกาหลี':'South Korea','ไต้หวัน':'Taiwan',
-    'ไทย':'Thailand','ประเทศไทย':'Thailand','เวียดนาม':'Vietnam','พม่า':'Myanmar','เมียนมา':'Myanmar',
-    'มาเลเซีย':'Malaysia','สิงคโปร์':'Singapore','อินโดนีเซีย':'Indonesia','ฟิลิปปินส์':'Philippines',
-    'อินเดีย':'India','กัมพูชา':'Cambodia','ลาว':'Laos','ฮ่องกง':'Hong Kong',
-    'เยอรมนี':'Germany','เยอรมัน':'Germany','ฝรั่งเศส':'France','สหราชอาณาจักร':'United Kingdom','อังกฤษ':'United Kingdom',
-    'เนเธอร์แลนด์':'Netherlands','สวีเดน':'Sweden','นอร์เวย์':'Norway','สเปน':'Spain','อิตาลี':'Italy','ออสเตรีย':'Austria',
-    'สหรัฐอเมริกา':'USA','สหรัฐฯ':'USA','อเมริกา':'USA','แคนาดา':'Canada','เม็กซิโก':'Mexico','บราซิล':'Brazil',
-    'ออสเตรเลีย':'Australia','นิวซีแลนด์':'New Zealand','แอฟริกาใต้':'South Africa','อียิปต์':'Egypt',
-    'United States':'USA','United States of America':'USA','UK':'United Kingdom','Korea':'South Korea'
-  };
-  const countryMeta = {
-    'China':{flag:'🇨🇳',continent:'asia'}, 'Japan':{flag:'🇯🇵',continent:'asia'}, 'South Korea':{flag:'🇰🇷',continent:'asia'},
-    'Taiwan':{flag:'🇹🇼',continent:'asia'}, 'Thailand':{flag:'🇹🇭',continent:'asia'}, 'Vietnam':{flag:'🇻🇳',continent:'asia'},
-    'Myanmar':{flag:'🇲🇲',continent:'asia'}, 'Malaysia':{flag:'🇲🇾',continent:'asia'}, 'Singapore':{flag:'🇸🇬',continent:'asia'},
-    'Indonesia':{flag:'🇮🇩',continent:'asia'}, 'Philippines':{flag:'🇵🇭',continent:'asia'}, 'India':{flag:'🇮🇳',continent:'asia'},
-    'Cambodia':{flag:'🇰🇭',continent:'asia'}, 'Laos':{flag:'🇱🇦',continent:'asia'}, 'Hong Kong':{flag:'🇭🇰',continent:'asia'},
-    'Germany':{flag:'🇩🇪',continent:'europe'}, 'France':{flag:'🇫🇷',continent:'europe'}, 'United Kingdom':{flag:'🇬🇧',continent:'europe'},
-    'Netherlands':{flag:'🇳🇱',continent:'europe'}, 'Sweden':{flag:'🇸🇪',continent:'europe'}, 'Norway':{flag:'🇳🇴',continent:'europe'},
-    'Spain':{flag:'🇪🇸',continent:'europe'}, 'Italy':{flag:'🇮🇹',continent:'europe'}, 'Austria':{flag:'🇦🇹',continent:'europe'},
-    'USA':{flag:'🇺🇸',continent:'america'}, 'Canada':{flag:'🇨🇦',continent:'america'}, 'Mexico':{flag:'🇲🇽',continent:'america'}, 'Brazil':{flag:'🇧🇷',continent:'america'},
-    'Australia':{flag:'🇦🇺',continent:'oceania'}, 'New Zealand':{flag:'🇳🇿',continent:'oceania'},
-    'South Africa':{flag:'🇿🇦',continent:'africa'}, 'Egypt':{flag:'🇪🇬',continent:'africa'}
-  };
-  const cNames = {4:'Afghanistan',36:'Australia',56:'Belgium',76:'Brazil',104:'Myanmar',116:'Cambodia',124:'Canada',156:'China',170:'Colombia',208:'Denmark',276:'Germany',300:'Greece',356:'India',360:'Indonesia',372:'Ireland',376:'Israel',380:'Italy',392:'Japan',410:'South Korea',458:'Malaysia',484:'Mexico',528:'Netherlands',554:'New Zealand',578:'Norway',586:'Pakistan',608:'Philippines',616:'Poland',620:'Portugal',643:'Russia',682:'Saudi Arabia',724:'Spain',752:'Sweden',756:'Switzerland',764:'Thailand',792:'Turkey',826:'United Kingdom',840:'USA',704:'Vietnam',158:'Taiwan',250:'France'};
-  const mapData = {};
-  const displayName = {};
-  rawEntries.forEach(([country,count]) => {
-    const key = alias[country] || country;
-    mapData[key] = (mapData[key] || 0) + Number(count || 0);
-    displayName[key] = country;
-  });
-
-  const cont={asia:0,europe:0,america:0,oceania:0,africa:0};
-  Object.entries(mapData).forEach(([country,count])=>{
-    const meta = countryMeta[country] || IROUP_COUNTRY_META?.[country];
-    if(meta?.continent) cont[meta.continent]=(cont[meta.continent]||0)+Number(count||0);
-  });
-  iroupSetText('ms-asia', cont.asia||0); iroupSetText('ms-europe', cont.europe||0); iroupSetText('ms-america', cont.america||0);
-  iroupSetText('ms-oceania', cont.oceania||0); iroupSetText('ms-africa', cont.africa||0);
-
-  const wrap = document.getElementById('svgMapWrap');
-  const w = Math.max(700, wrap?.clientWidth || 900);
-  const h = 330;
-  const svg = d3.select(svgEl);
-  svg.selectAll('*').remove();
-  svg.attr('viewBox',`0 0 ${w} ${h}`).attr('preserveAspectRatio','xMidYMid meet').style('height','330px');
-
-  const defs = svg.append('defs');
-  const grad = defs.append('radialGradient').attr('id','pubMapGrad').attr('cx','50%').attr('cy','40%');
-  grad.append('stop').attr('offset','0%').attr('stop-color','#162845');
-  grad.append('stop').attr('offset','100%').attr('stop-color','#071828');
-  svg.append('rect').attr('width',w).attr('height',h).attr('fill','url(#pubMapGrad)');
-
-  const projection = d3.geoNaturalEarth1().scale(w/6.5).translate([w/2, h/2 + 12]);
-  const path = d3.geoPath().projection(projection);
-  const grid = svg.append('g').attr('stroke','rgba(255,255,255,0.045)').attr('stroke-width',0.5);
-  for(let x=w/6; x<w; x+=w/6) grid.append('line').attr('x1',x).attr('x2',x).attr('y1',0).attr('y2',h);
-  for(let y=h/4; y<h; y+=h/4) grid.append('line').attr('x1',0).attr('x2',w).attr('y1',y).attr('y2',y);
-
-  const tip=document.getElementById('mapTooltipPub');
-  const setTip=(html,x,y)=>{ if(!tip) return; tip.innerHTML=html; tip.style.left=(x+14)+'px'; tip.style.top=(y+14)+'px'; tip.style.opacity='1'; };
-  const hideTip=()=>{ if(tip) tip.style.opacity='0'; };
-
-  if(!rawEntries.length){
-    svg.append('text').attr('x',w/2).attr('y',h/2).attr('fill','rgba(255,255,255,.55)').attr('text-anchor','middle')
-      .style('font-family','Prompt,sans-serif').style('font-size','16px').text('ยังไม่มีข้อมูล MOU Active');
-    return;
+(function(){
+  function cleanCountry(v){return String(v||'').replace(/^[A-Z]{2,3}\s+/,'').trim();}
+  function first(){for(const v of arguments){if(v!==undefined&&v!==null&&String(v).trim()!=='')return v;}return '';}
+  function personCount(r){const raw=first(r['จำนวน'],r['จำนวนคน'],r['ผู้เข้าร่วม'],r['participants']);const n=parseInt(String(raw).replace(/[^0-9]/g,''),10);if(!isNaN(n)&&n>0)return n;const name=first(r['ชื่อผู้เดินทาง'],r['ชื่อ_สกุล'],r['ชื่อ']);if(String(name).includes(',')||String(name).includes('、'))return String(name).split(/[,、]/).filter(x=>x.trim()).length||1;return name?1:1;}
+  function sumPeople(arr){return (arr||[]).reduce((a,r)=>a+personCount(r),0);}
+  async function loadLandingMobility(){
+    if(!window.IROUP||!IROUP.getAll)return;
+    try{
+      const [inb,out,tv]=await Promise.all([IROUP.getAll(IROUP.SHEETS.INBOUND),IROUP.getAll(IROUP.SHEETS.OUTBOUND),IROUP.getAll(IROUP.SHEETS.TRAVEL)]);
+      document.getElementById('lm-inbound').textContent=sumPeople(inb);
+      document.getElementById('lm-outbound').textContent=sumPeople(out);
+      document.getElementById('lm-travel').textContent=sumPeople(tv);
+      document.getElementById('lm-country').textContent=new Set([...(inb||[]),...(out||[]),...(tv||[])].map(r=>cleanCountry(r['ประเทศ'])).filter(Boolean)).size;
+    }catch(e){console.warn('landing mobility summary failed',e);}
   }
-
-  function colorScale(c){ return c >= 8 ? '#F5A623' : c >= 4 ? '#1A6DB5' : '#4BBDE8'; }
-
-  const drawFallbackDots = () => {
-    const g = svg.append('g');
-    Object.entries(mapData).forEach(([country,count])=>{
-      const meta = IROUP_COUNTRY_META[country] || countryMeta[country];
-      if(!meta || meta.x === undefined) return;
-      const r=Math.min(22, 7 + Number(count)*1.6);
-      const color=colorScale(count);
-      const item=g.append('g').style('cursor','pointer');
-      item.append('circle').attr('cx',meta.x/900*w).attr('cy',meta.y/450*h).attr('r',r+7).attr('fill',color).attr('opacity',.12);
-      item.append('circle').attr('cx',meta.x/900*w).attr('cy',meta.y/450*h).attr('r',r).attr('fill',color).attr('opacity',.92).attr('stroke','#fff').attr('stroke-opacity',.7).attr('stroke-width',1.5);
-      item.append('text').attr('x',meta.x/900*w).attr('y',meta.y/450*h+4).attr('text-anchor','middle').attr('fill','#fff').style('font-family','Prompt,sans-serif').style('font-size','11px').style('font-weight',800).text(count);
-      item.on('mousemove',ev=>setTip(`${meta.flag||'🌍'} ${displayName[country]||country} · <strong>${count}</strong> MOU Active`, ev.offsetX, ev.offsetY))
-          .on('mouseleave',hideTip).on('click',()=>{ window.location.href='public-mou.html?country='+encodeURIComponent(displayName[country]||country); });
-    });
-  };
-
-  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-    .then(r=>r.json())
-    .then(world=>{
-      const countries = topojson.feature(world, world.objects.countries);
-      svg.append('g').selectAll('path').data(countries.features).join('path')
-        .attr('d', path)
-        .attr('fill', d => {
-          const name = cNames[+d.id] || '';
-          const c = mapData[name] || 0;
-          return c === 0 ? 'rgba(255,255,255,0.075)' : colorScale(c);
-        })
-        .attr('stroke','rgba(255,255,255,0.12)')
-        .attr('stroke-width',0.45)
-        .style('cursor', d => mapData[cNames[+d.id]] ? 'pointer' : 'default')
-        .on('mousemove', function(ev,d){
-          const name = cNames[+d.id] || '';
-          const count = mapData[name] || 0;
-          if(!count) return hideTip();
-          const meta = countryMeta[name] || {};
-          setTip(`${meta.flag||'🌍'} ${displayName[name]||name} · <strong>${count}</strong> MOU Active`, ev.offsetX, ev.offsetY);
-        })
-        .on('mouseleave', hideTip)
-        .on('click', function(ev,d){
-          const name = cNames[+d.id] || '';
-          if(mapData[name]) window.location.href='public-mou.html?country='+encodeURIComponent(displayName[name]||name);
-        });
-    })
-    .catch(drawFallbackDots);
-}
-async function renderPublicScholarships(){
-  try{
-    const data=await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
-    const grid=document.querySelector('.scholar-grid'); if(!grid) return;
-    const live=data
-      .map(s=>({...s,_status:IROUP.getScholarStatus(s['วันเปิดรับ'],s['วันปิดรับ'])}))
-      .filter(s=>['open','upcoming'].includes(s._status.status))
-      .sort((a,b)=>(IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1))-(IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1)))
-      .slice(0,3);
-    if(!live.length) return;
-    const flags={'Japan':'🇯🇵','China':'🇨🇳','South Korea':'🇰🇷','Korea':'🇰🇷','USA':'🇺🇸','United Kingdom':'🇬🇧','UK':'🇬🇧','Australia':'🇦🇺','Germany':'🇩🇪','France':'🇫🇷','Thailand':'🇹🇭'};
-    grid.innerHTML=live.map(s=>{
-      const st=s._status; const isOpen=st.status==='open';
-      const covers=String(s['ครอบคลุม']||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,4);
-      const days=st.daysLeft!==null?`<div class="sc-days urgent">⏰ เหลือ ${st.daysLeft} วัน</div>`:'<div class="sc-days" style="color:var(--green);font-weight:700">📆 เร็วๆ นี้</div>';
-      return `<div class="scholar-card" onclick="window.location='public-scholar.html'">
-        <div class="sc-top"><div class="sc-flag-wrap" style="background:#E8F4FD">${flags[s['ประเทศ']]||'🌍'}</div><div class="sc-info"><div class="sc-title">${s['ชื่อทุน']||'—'}</div><div class="sc-org">${s['สถาบัน']||s['ประเทศ']||'—'}</div></div><span class="sc-badge ${isOpen?'sc-open':'sc-soon'}">${isOpen?'รับสมัคร':'เร็วๆ นี้'}</span></div>
-        <div class="sc-covers">${covers.map(c=>`<span class="sc-tag">${c}</span>`).join('') || '<span class="sc-tag">รายละเอียดทุน</span>'}</div>
-        <div class="sc-bottom"><div class="sc-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>${days}</div>
-      </div>`;
-    }).join('');
-    const btn=document.querySelector('.scholarships .view-all-btn'); if(btn) btn.textContent=`ดูทุนการศึกษาทั้งหมด ${data.length} ทุน →`;
-  }catch(e){ console.warn('Scholarship live load failed',e); }
-}
-
-
-function getEventAccent(type){
-  const t=String(type||'').toLowerCase();
-  if(t.includes('inbound')) return {dot:'#7C3AED', tag:'tag-inbound', icon:'🌏'};
-  if(t.includes('อบรม') || t.includes('train') || t.includes('workshop')) return {dot:'#F5A623', tag:'tag-train', icon:'📚'};
-  if(t.includes('ประชุม') || t.includes('meeting') || t.includes('visit')) return {dot:'#5BAD3E', tag:'tag-meet', icon:'🤝'};
-  return {dot:'#1A6DB5', tag:'tag-travel', icon:'✈️'};
-}
-function formatEventRange(startRaw,endRaw,lang='TH'){
-  const start=IROUP.parseDate(startRaw), end=IROUP.parseDate(endRaw);
-  if(!start) return '—';
-  const loc=lang==='EN'?'en-US':'th-TH';
-  const opt={day:'numeric',month:'short',year:'numeric'};
-  if(!end || start.toDateString()===end.toDateString()) return start.toLocaleDateString(loc,opt);
-  return `${start.toLocaleDateString(loc,{day:'numeric',month:'short'})}–${end.toLocaleDateString(loc,opt)}`;
-}
-function renderLandingEvents(events){
-  const list=document.getElementById('landingEventsList'); if(!list) return;
-  const lang=localStorage.getItem('iroup_lang')||'TH';
-  const today=new Date(); today.setHours(0,0,0,0);
-  const upcoming=(events||[]).map(e=>({...e,_start:IROUP.parseDate(e['วันเริ่ม']),_end:IROUP.parseDate(e['วันสิ้นสุด'])}))
-    .filter(e=>e._start && (!e._end || e._end>=today))
-    .sort((a,b)=>a._start-b._start).slice(0,4);
-  if(!upcoming.length){
-    list.innerHTML=`<div class="event-row" style="justify-content:center;color:var(--gray-600);font-family:Sarabun,sans-serif">${lang==='EN'?'No upcoming events':'ยังไม่มีกิจกรรมที่กำลังจะมาถึง'}</div>`;
-    return;
-  }
-  list.innerHTML=upcoming.map(e=>{
-    const acc=getEventAccent(e['ประเภท']);
-    const day=e._start.toLocaleDateString('th-TH',{day:'numeric'});
-    const month=e._start.toLocaleDateString('th-TH',{month:'short'}).replace('.','');
-    const title=e['ชื่อกิจกรรม']||'—';
-    const place=e['สถานที่']||e['ประเทศ']||'—';
-    const count=e['จำนวน']||'';
-    return `<div class="event-row" onclick="window.location='public-events.html'">
-      <div class="ev-date"><div class="ev-day">${day}</div><div class="ev-month">${month}</div></div>
-      <div class="ev-type-dot" style="background:${acc.dot}"></div>
-      <div class="ev-content">
-        <div class="ev-title">${title}</div>
-        <div class="ev-meta"><span>📍 ${place} · ${formatEventRange(e['วันเริ่ม'],e['วันสิ้นสุด'],lang)}</span>${count?`<span>👥 ${count} ${lang==='EN'?'people':'คน'}</span>`:''}</div>
-      </div>
-      <span class="ev-tag ${acc.tag}">${acc.icon} ${e['ประเภท']||'Event'}</span>
-      <div class="ev-arrow">›</div>
-    </div>`;
-  }).join('');
-}
-
-async function initPublicLanding(){
-  try{
-    const [stats,countryData,events] = await Promise.all([
-      IROUP.getStats(), IROUP.getMouByCountry(), IROUP.getAll(IROUP.SHEETS.EVENT).catch(()=>[])
-    ]);
-    const nums=document.querySelectorAll('.hero-stat .count-up');
-    const values=[stats?.mou?.total||0, stats?.mou?.countries||0, stats?.scholarship?.open||0, stats?.mobility?.total||0];
-    nums.forEach((el,i)=>iroupAnimateNumber(el,values[i]));
-    const fc=document.querySelectorAll('.feature-count-num');
-    if(fc[0]) fc[0].textContent=stats?.mou?.total||0; if(fc[1]) fc[1].textContent=stats?.scholarship?.open||0;
-    if(fc[2]) fc[2].textContent=events.length||0; if(fc[3]) fc[3].textContent=stats?.mobility?.total||0;
-    const ft=document.querySelectorAll('.feature-count');
-    if(ft[0]) ft[0].innerHTML=`<span class="feature-count-num">${stats?.mou?.total||0}</span> ฉบับ · ${stats?.mou?.countries||0} ประเทศ`;
-    if(ft[1]) ft[1].innerHTML=`<span class="feature-count-num">${stats?.scholarship?.open||0}</span> ทุน กำลังรับสมัคร`;
-    if(ft[2]) ft[2].innerHTML=`<span class="feature-count-num">${events.length||0}</span> กิจกรรมทั้งหมด`;
-    if(ft[3]) ft[3].innerHTML=`<span class="feature-count-num">${stats?.mobility?.total||0}</span> คน รวม Inbound/Outbound`;
-    iroupSetHTML('bubble1',`🤝 ${stats?.mou?.active||0} Active<div class="bubble-sub">MOU ใช้งานอยู่</div>`);
-    iroupSetHTML('bubble2',`🎓 ${stats?.scholarship?.open||0} Open<div class="bubble-sub">ทุนกำลังรับสมัคร</div>`);
-    iroupSetHTML('bubble3',`📅 ${events.length||0} Events<div class="bubble-sub">กิจกรรมทั้งหมด</div>`);
-    iroupSetHTML('bubble4',`🌍 ${stats?.mou?.countries||0} Countries<div class="bubble-sub">เครือข่ายทั่วโลก</div>`);
-    const title=document.querySelector('.map-header .section-title'); if(title) title.innerHTML=`มหาวิทยาลัยพะเยา<br><span>เชื่อมต่อ ${stats?.mou?.countries||0} ประเทศ</span>`;
-    renderPublicMap(countryData);
-    renderLandingEvents(events);
-  }catch(e){
-    console.error('iROUP live landing failed:',e);
-    renderPublicMap({});
-    ['bubble1','bubble2','bubble3','bubble4'].forEach((id,i)=>iroupSetHTML(id,['🤝 เชื่อมต่อข้อมูลไม่ได้','🎓 เชื่อมต่อข้อมูลไม่ได้','📅 เชื่อมต่อข้อมูลไม่ได้','🌍 เชื่อมต่อข้อมูลไม่ได้'][i]+'<div class="bubble-sub">ตรวจ Apps Script</div>'));
-  }
-  renderPublicScholarships();
-}
-
-
-let currentLang = localStorage.getItem('iroup_lang') || 'TH';
-const IROUP_LANDING_TEXT = {
-  TH: {
-    nav:['บริการ','ทุนการศึกษา','📅 กิจกรรม','👥 Mobility'], admin:'🎁 เข้าสู่ระบบ Admin',
-    tag:'● International Relations Office · University of Phayao',
-    title:'มหาวิทยาลัยสร้างปัญญา<br>และนวัตกรรมชุมชน<br><span class="accent2">สู่สากล อย่างยั่งยืน</span>',
-    sub:'รวบรวมข้อมูล <strong>MOU</strong> ทุนการศึกษา กิจกรรม และความเคลื่อนไหวนานาชาติของมหาวิทยาลัยพะเยาไว้ในที่เดียว',
-    btn1:'🎓 ดูทุนการศึกษา', btn2:'🤝 ดู MOU ทั้งหมด', stats:['MOU ทั้งหมด','ประเทศ','ทุนเปิดรับ','Mobility ปีนี้'],
-    featuresTag:'SERVICES', featuresTitle:'บริการและข้อมูล<br><span>นานาชาติ</span>', featuresSub:'เข้าถึงข้อมูลสำคัญของงานวิเทศสัมพันธ์ได้อย่างรวดเร็ว',
-    scholarTag:'SCHOLARSHIPS', scholarTitle:'ทุนการศึกษา<br><span>ที่กำลังเปิดรับ</span>', scholarSub:'โอกาสทุนต่างประเทศสำหรับนิสิต อาจารย์ และบุคลากร', scholarBtn:'ดูทุนการศึกษาทั้งหมด',
-    mapTag:'GLOBAL NETWORK', mapSub:'ดูแผนที่ความร่วมมือและ MOU ที่ Active ทั่วโลก',
-    eventsTag:'EVENTS', eventsTitle:'กิจกรรมที่<span>กำลังจะมาถึง</span>', eventsSub:'ติดตามกิจกรรมนานาชาติ โปรแกรม Exchange และการเดินทางของมหาวิทยาลัย', eventsBtn:'ดูกิจกรรมทั้งหมด →',
-    contact:'International Relations Office, University of Phayao (iROUP) ทำหน้าที่ประสานงานความร่วมมือนานาชาติ ดูแลการแลกเปลี่ยนนิสิต อาจารย์ และบุคลากร รวมถึงการทำ MOU กับสถาบันทั่วโลก'
-  },
-  EN: {
-    nav:['Services','Scholarships','📅 Events','👥 Mobility'], admin:'🎁 Admin Login',
-    tag:'● International Relations Office · University of Phayao',
-    title:'Wisdom and Community<br>Innovation for<br><span class="accent2">Sustainable Global Impact</span>',
-    sub:'A central hub for <strong>MOU</strong>, scholarships, events, and international mobility at the University of Phayao.',
-    btn1:'🎓 View Scholarships', btn2:'🤝 View all MOUs', stats:['Total MOUs','Countries','Open Scholarships','Mobility this year'],
-    featuresTag:'SERVICES', featuresTitle:'International<br><span>Services & Information</span>', featuresSub:'Quick access to key information from the International Relations Office.',
-    scholarTag:'SCHOLARSHIPS', scholarTitle:'Currently Open<br><span>Scholarships</span>', scholarSub:'International scholarship opportunities for students, lecturers, and staff.', scholarBtn:'View all scholarships',
-    mapTag:'GLOBAL NETWORK', mapSub:'Explore active partnerships and MOUs around the world.',
-    eventsTag:'EVENTS', eventsTitle:'Upcoming <span>Events</span>', eventsSub:'Follow international events, exchange programs, and university travel activities.', eventsBtn:'View all events →',
-    contact:'The International Relations Office, University of Phayao (iROUP), coordinates international partnerships, student and staff mobility, and MOU collaboration with institutions worldwide.'
-  }
-};
-function setLang(lang){
-  currentLang = lang; localStorage.setItem('iroup_lang', lang); document.documentElement.lang = lang === 'EN' ? 'en' : 'th';
-  document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang));
-  const t=IROUP_LANDING_TEXT[lang];
-  const featureTitles = lang==='EN' ? ['International MOUs','Scholarships','Activities & Events','Mobility'] : ['MOU ต่างประเทศ','ทุนการศึกษา','กิจกรรม & Events','Mobility'];
-  const featureDescs = lang==='EN' ? [
-    'Browse academic cooperation networks and active partners worldwide.',
-    'View scholarships and international opportunities for students, lecturers, and staff.',
-    'Follow international activities, exchange programs, and university travel.',
-    'Track inbound and outbound mobility of students, lecturers, and staff.'
-  ] : [
-    'ข้อมูลความร่วมมือทางวิชาการกับสถาบันทั่วโลก พร้อมแผนที่ interactive',
-    'ทุนและโอกาสแลกเปลี่ยนนานาชาติสำหรับนิสิตและบุคลากร พร้อมวันปิดรับสมัคร',
-    'ปฏิทินกิจกรรมนานาชาติ การเดินทาง และ Exchange แบบไทม์ไลน์',
-    'สถิติการเคลื่อนไหวนิสิต อาจารย์ และเจ้าหน้าที่ ทั้ง Inbound & Outbound'
-  ];
-  document.querySelectorAll('.feature-title').forEach((el,i)=>{ if(featureTitles[i]) el.textContent=featureTitles[i]; });
-  document.querySelectorAll('.feature-desc').forEach((el,i)=>{ if(featureDescs[i]) el.textContent=featureDescs[i]; });
-  const mapLabels = lang==='EN' ? ['Asia','Europe','America','Oceania','Africa'] : ['เอเชีย','ยุโรป','อเมริกา','โอเชียเนีย','แอฟริกา'];
-  document.querySelectorAll('.map-stat-label').forEach((el,i)=>{ if(mapLabels[i]) el.textContent=mapLabels[i]; });
-
-  const nav=document.querySelectorAll('.nav-links .nav-link'); nav.forEach((el,i)=>{ if(t.nav[i]) el.textContent=t.nav[i]; });
-  const admin=document.querySelector('.nav-admin-btn'); if(admin) admin.textContent=t.admin;
-  const tag=document.querySelector('.hero-tag'); if(tag) tag.innerHTML=t.tag;
-  const title=document.querySelector('.hero-title'); if(title) title.innerHTML=t.title;
-  const sub=document.querySelector('.hero-sub'); if(sub) sub.innerHTML=t.sub;
-  const buttons=document.querySelectorAll('.hero-btns a'); if(buttons[0]) buttons[0].textContent=t.btn1; if(buttons[1]) buttons[1].textContent=t.btn2;
-  document.querySelectorAll('.hero-stat-label').forEach((el,i)=>{ if(t.stats[i]) el.textContent=t.stats[i]; });
-  const sections=document.querySelectorAll('section');
-  const ft=document.querySelector('.features .section-tag'); if(ft) ft.textContent=t.featuresTag;
-  const ftitle=document.querySelector('.features .section-title'); if(ftitle) ftitle.innerHTML=t.featuresTitle;
-  const fsub=document.querySelector('.features .section-sub'); if(fsub) fsub.textContent=t.featuresSub;
-  const st=document.querySelector('.scholarships .section-tag'); if(st) st.textContent=t.scholarTag;
-  const stitle=document.querySelector('.scholarships .section-title'); if(stitle) stitle.innerHTML=t.scholarTitle;
-  const ssub=document.querySelector('.scholarships .section-sub'); if(ssub) ssub.textContent=t.scholarSub;
-  const sbtn=document.querySelector('.scholarships .view-all-btn'); if(sbtn) sbtn.textContent=`${t.scholarBtn} →`;
-  const mt=document.querySelector('.map-header .section-tag'); if(mt) mt.textContent=t.mapTag;
-  const msub=document.querySelector('.map-header .section-sub'); if(msub) msub.textContent=t.mapSub;
-  const et=document.querySelector('.events-section .section-tag'); if(et) et.textContent=t.eventsTag;
-  const etitle=document.querySelector('.events-section .section-title'); if(etitle) etitle.innerHTML=t.eventsTitle;
-  const esub=document.querySelector('.events-section .section-sub'); if(esub) esub.textContent=t.eventsSub;
-  const ebtn=document.getElementById('viewAllEventsBtn'); if(ebtn) ebtn.textContent=t.eventsBtn;
-  const about=document.querySelector('.about-text p'); if(about) about.textContent=t.contact;
-}
-
-document.addEventListener('DOMContentLoaded', initPublicLanding);
-document.addEventListener('DOMContentLoaded',()=>setLang(currentLang));
+  loadLandingMobility();
+})();
 </script>
+
+
 
 </body>
 </html>
