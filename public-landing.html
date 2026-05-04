@@ -602,8 +602,64 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
   <div class="section-tag">กิจกรรม & Events</div>
   <h2 class="section-title">กิจกรรมที่<span>กำลังจะมาถึง</span></h2>
   <p class="section-sub">ติดตามกิจกรรมนานาชาติ โปรแกรม Exchange และการเดินทางของมหาวิทยาลัย</p>
-  <div class="events-list" id="landingEventsList">
-    <div class="event-row" style="justify-content:center;color:var(--gray-600);font-family:Sarabun,sans-serif">⏳ กำลังโหลดกิจกรรม...</div>
+  <div class="events-list">
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">29</div><div class="ev-month">มิ.ย.</div></div>
+      <div class="ev-type-dot" style="background:#1A6DB5"></div>
+      <div class="ev-content">
+        <div class="ev-title">Immersion Hub @ Shanghai Open University</div>
+        <div class="ev-meta">
+          <span>📍 Shanghai, China · 29 มิ.ย.–11 ก.ค. 2569</span>
+          <span>👥 25 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-travel">✈️ การเดินทาง</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">3</div><div class="ev-month">มิ.ย.</div></div>
+      <div class="ev-type-dot" style="background:#7C3AED"></div>
+      <div class="ev-content">
+        <div class="ev-title">คณะผู้แทน Keimyung University เยือนมหาวิทยาลัยพะเยา</div>
+        <div class="ev-meta">
+          <span>📍 มหาวิทยาลัยพะเยา · 3–5 มิ.ย. 2569</span>
+          <span>👥 8 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-inbound">🌏 Inbound</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">20</div><div class="ev-month">พ.ค.</div></div>
+      <div class="ev-type-dot" style="background:#F5A623"></div>
+      <div class="ev-content">
+        <div class="ev-title">English Academic Writing Workshop</div>
+        <div class="ev-meta">
+          <span>📍 มหาวิทยาลัยพะเยา · 20–21 พ.ค. 2569</span>
+          <span>👥 40 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-train">📚 อบรม</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
+    <div class="event-row">
+      <div class="ev-date"><div class="ev-day">8</div><div class="ev-month">ก.ค.</div></div>
+      <div class="ev-type-dot" style="background:#1A6DB5"></div>
+      <div class="ev-content">
+        <div class="ev-title">Executive Visit — Deggendorf Institute of Technology, Germany</div>
+        <div class="ev-meta">
+          <span>📍 Deggendorf, Germany · 8–14 ก.ค. 2569</span>
+          <span>👥 5 คน</span>
+        </div>
+      </div>
+      <span class="ev-tag tag-travel">✈️ การเดินทาง</span>
+      <div class="ev-arrow">›</div>
+    </div>
+
   </div>
   <a href="public-events.html" class="view-all-btn" style="background:var(--navy)" id="viewAllEventsBtn">ดูกิจกรรมทั้งหมด →</a>
 </section>
@@ -827,53 +883,6 @@ async function renderPublicScholarships(){
   }catch(e){ console.warn('Scholarship live load failed',e); }
 }
 
-
-function getEventAccent(type){
-  const t=String(type||'').toLowerCase();
-  if(t.includes('inbound')) return {dot:'#7C3AED', tag:'tag-inbound', icon:'🌏'};
-  if(t.includes('อบรม') || t.includes('train') || t.includes('workshop')) return {dot:'#F5A623', tag:'tag-train', icon:'📚'};
-  if(t.includes('ประชุม') || t.includes('meeting') || t.includes('visit')) return {dot:'#5BAD3E', tag:'tag-meet', icon:'🤝'};
-  return {dot:'#1A6DB5', tag:'tag-travel', icon:'✈️'};
-}
-function formatEventRange(startRaw,endRaw,lang='TH'){
-  const start=IROUP.parseDate(startRaw), end=IROUP.parseDate(endRaw);
-  if(!start) return '—';
-  const loc=lang==='EN'?'en-US':'th-TH';
-  const opt={day:'numeric',month:'short',year:'numeric'};
-  if(!end || start.toDateString()===end.toDateString()) return start.toLocaleDateString(loc,opt);
-  return `${start.toLocaleDateString(loc,{day:'numeric',month:'short'})}–${end.toLocaleDateString(loc,opt)}`;
-}
-function renderLandingEvents(events){
-  const list=document.getElementById('landingEventsList'); if(!list) return;
-  const lang=localStorage.getItem('iroup_lang')||'TH';
-  const today=new Date(); today.setHours(0,0,0,0);
-  const upcoming=(events||[]).map(e=>({...e,_start:IROUP.parseDate(e['วันเริ่ม']),_end:IROUP.parseDate(e['วันสิ้นสุด'])}))
-    .filter(e=>e._start && (!e._end || e._end>=today))
-    .sort((a,b)=>a._start-b._start).slice(0,4);
-  if(!upcoming.length){
-    list.innerHTML=`<div class="event-row" style="justify-content:center;color:var(--gray-600);font-family:Sarabun,sans-serif">${lang==='EN'?'No upcoming events':'ยังไม่มีกิจกรรมที่กำลังจะมาถึง'}</div>`;
-    return;
-  }
-  list.innerHTML=upcoming.map(e=>{
-    const acc=getEventAccent(e['ประเภท']);
-    const day=e._start.toLocaleDateString('th-TH',{day:'numeric'});
-    const month=e._start.toLocaleDateString('th-TH',{month:'short'}).replace('.','');
-    const title=e['ชื่อกิจกรรม']||'—';
-    const place=e['สถานที่']||e['ประเทศ']||'—';
-    const count=e['จำนวน']||'';
-    return `<div class="event-row" onclick="window.location='public-events.html'">
-      <div class="ev-date"><div class="ev-day">${day}</div><div class="ev-month">${month}</div></div>
-      <div class="ev-type-dot" style="background:${acc.dot}"></div>
-      <div class="ev-content">
-        <div class="ev-title">${title}</div>
-        <div class="ev-meta"><span>📍 ${place} · ${formatEventRange(e['วันเริ่ม'],e['วันสิ้นสุด'],lang)}</span>${count?`<span>👥 ${count} ${lang==='EN'?'people':'คน'}</span>`:''}</div>
-      </div>
-      <span class="ev-tag ${acc.tag}">${acc.icon} ${e['ประเภท']||'Event'}</span>
-      <div class="ev-arrow">›</div>
-    </div>`;
-  }).join('');
-}
-
 async function initPublicLanding(){
   try{
     const [stats,countryData,events] = await Promise.all([
@@ -896,7 +905,6 @@ async function initPublicLanding(){
     iroupSetHTML('bubble4',`🌍 ${stats?.mou?.countries||0} Countries<div class="bubble-sub">เครือข่ายทั่วโลก</div>`);
     const title=document.querySelector('.map-header .section-title'); if(title) title.innerHTML=`มหาวิทยาลัยพะเยา<br><span>เชื่อมต่อ ${stats?.mou?.countries||0} ประเทศ</span>`;
     renderPublicMap(countryData);
-    renderLandingEvents(events);
   }catch(e){
     console.error('iROUP live landing failed:',e);
     renderPublicMap({});
@@ -937,23 +945,6 @@ function setLang(lang){
   currentLang = lang; localStorage.setItem('iroup_lang', lang); document.documentElement.lang = lang === 'EN' ? 'en' : 'th';
   document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === lang));
   const t=IROUP_LANDING_TEXT[lang];
-  const featureTitles = lang==='EN' ? ['International MOUs','Scholarships','Activities & Events','Mobility'] : ['MOU ต่างประเทศ','ทุนการศึกษา','กิจกรรม & Events','Mobility'];
-  const featureDescs = lang==='EN' ? [
-    'Browse academic cooperation networks and active partners worldwide.',
-    'View scholarships and international opportunities for students, lecturers, and staff.',
-    'Follow international activities, exchange programs, and university travel.',
-    'Track inbound and outbound mobility of students, lecturers, and staff.'
-  ] : [
-    'ข้อมูลความร่วมมือทางวิชาการกับสถาบันทั่วโลก พร้อมแผนที่ interactive',
-    'ทุนและโอกาสแลกเปลี่ยนนานาชาติสำหรับนิสิตและบุคลากร พร้อมวันปิดรับสมัคร',
-    'ปฏิทินกิจกรรมนานาชาติ การเดินทาง และ Exchange แบบไทม์ไลน์',
-    'สถิติการเคลื่อนไหวนิสิต อาจารย์ และเจ้าหน้าที่ ทั้ง Inbound & Outbound'
-  ];
-  document.querySelectorAll('.feature-title').forEach((el,i)=>{ if(featureTitles[i]) el.textContent=featureTitles[i]; });
-  document.querySelectorAll('.feature-desc').forEach((el,i)=>{ if(featureDescs[i]) el.textContent=featureDescs[i]; });
-  const mapLabels = lang==='EN' ? ['Asia','Europe','America','Oceania','Africa'] : ['เอเชีย','ยุโรป','อเมริกา','โอเชียเนีย','แอฟริกา'];
-  document.querySelectorAll('.map-stat-label').forEach((el,i)=>{ if(mapLabels[i]) el.textContent=mapLabels[i]; });
-
   const nav=document.querySelectorAll('.nav-links .nav-link'); nav.forEach((el,i)=>{ if(t.nav[i]) el.textContent=t.nav[i]; });
   const admin=document.querySelector('.nav-admin-btn'); if(admin) admin.textContent=t.admin;
   const tag=document.querySelector('.hero-tag'); if(tag) tag.innerHTML=t.tag;
