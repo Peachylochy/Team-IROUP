@@ -104,6 +104,8 @@ section{padding:80px 5%}
 .scholar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
 .scholar-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-card);transition:all .25s;cursor:pointer}
 .scholar-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-float)}
+.sc-poster{width:100%;height:120px;object-fit:cover;display:block;background:var(--gray-200)}
+.scholar-card.has-poster .sc-top{padding-top:14px}
 .sc-top{padding:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .sc-flag-wrap{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
 .sc-info{flex:1}
@@ -824,23 +826,35 @@ function renderPublicMap(countryData){
     })
     .catch(drawFallbackDots);
 }
+
+function publicAssetUrl(url){
+  const u=String(url||'').trim();
+  if(!u || u==='-' || u.toLowerCase()==='undefined' || u.toLowerCase()==='null') return '';
+  const m=u.match(/\/file\/d\/([^/]+)/) || u.match(/[?&]id=([^&]+)/);
+  if(m && m[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+  return u;
+}
+
 async function renderPublicScholarships(){
   try{
     const data=await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
     const grid=document.querySelector('.scholar-grid'); if(!grid) return;
     const live=data
       .map(s=>({...s,_status:IROUP.getScholarStatus(s['วันเปิดรับ'],s['วันปิดรับ'])}))
-      .filter(s=>['urgent','soon','open','upcoming'].includes(s._status.status))
-      .sort((a,b)=>(a._status.priority||9)-(b._status.priority||9) || ((IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1))-(IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1))))
+      .filter(s=>['open','upcoming'].includes(s._status.status))
+      .sort((a,b)=>(IROUP.parseDate(a['วันปิดรับ'])||new Date(9999,0,1))-(IROUP.parseDate(b['วันปิดรับ'])||new Date(9999,0,1)))
       .slice(0,3);
     if(!live.length) return;
     const flags={'Japan':'🇯🇵','China':'🇨🇳','South Korea':'🇰🇷','Korea':'🇰🇷','USA':'🇺🇸','United Kingdom':'🇬🇧','UK':'🇬🇧','Australia':'🇦🇺','Germany':'🇩🇪','France':'🇫🇷','Thailand':'🇹🇭'};
     grid.innerHTML=live.map(s=>{
-      const st=s._status; const isOpen=['urgent','soon','open'].includes(st.status); const badgeLabel=st.status==='urgent'?'🔥 ด่วน':st.status==='soon'?'ใกล้ปิดรับ':st.status==='open'?'เปิดรับ':'ยังไม่เปิดรับ';
+      const st=s._status; const isOpen=st.status==='open';
       const covers=String(s['ครอบคลุม']||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,4);
-      const days=st.daysLeft!==null?`<div class="sc-days urgent">⏰ เหลือ ${st.daysLeft} วัน</div>`:'<div class="sc-days" style="color:var(--green);font-weight:700">📆 ยังไม่เปิดรับ</div>';
-      return `<div class="scholar-card" onclick="window.location='public-scholar.html'">
-        <div class="sc-top"><div class="sc-flag-wrap" style="background:#E8F4FD">${flags[s['ประเทศ']]||'🌍'}</div><div class="sc-info"><div class="sc-title">${s['ชื่อทุน']||'—'}</div><div class="sc-org">${s['สถาบัน']||s['ประเทศ']||'—'}</div></div><span class="sc-badge ${isOpen?'sc-open':'sc-soon'}">${badgeLabel}</span></div>
+      const days=st.daysLeft!==null?`<div class="sc-days urgent">⏰ เหลือ ${st.daysLeft} วัน</div>`:'<div class="sc-days" style="color:var(--green);font-weight:700">📆 เร็วๆ นี้</div>';
+      const poster=publicAssetUrl(s['Poster_URL']);
+      const posterHtml=poster ? `<img class="sc-poster" src="${poster}" alt="${s['ชื่อทุน']||'Scholarship poster'}" loading="lazy" onerror="this.style.display='none'">` : '';
+      return `<div class="scholar-card ${poster?'has-poster':''}" onclick="window.location='public-scholar.html'">
+        ${posterHtml}
+        <div class="sc-top"><div class="sc-flag-wrap" style="background:#E8F4FD">${flags[s['ประเทศ']]||'🌍'}</div><div class="sc-info"><div class="sc-title">${s['ชื่อทุน']||'—'}</div><div class="sc-org">${s['สถาบัน']||s['ประเทศ']||'—'}</div></div><span class="sc-badge ${isOpen?'sc-open':'sc-soon'}">${isOpen?'รับสมัคร':'เร็วๆ นี้'}</span></div>
         <div class="sc-covers">${covers.map(c=>`<span class="sc-tag">${c}</span>`).join('') || '<span class="sc-tag">รายละเอียดทุน</span>'}</div>
         <div class="sc-bottom"><div class="sc-deadline">📅 ปิดรับ ${IROUP.formatDate(s['วันปิดรับ'])}</div>${days}</div>
       </div>`;
