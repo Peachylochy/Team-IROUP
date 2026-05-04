@@ -724,5 +724,87 @@ footer{background:var(--navy-dark);padding:32px 5%;display:flex;align-items:cent
 
 
 
+
+<script>
+// ===== iROUP LANDING SCHOLAR PATCH =====
+function landingLink(url,label,cls=''){
+  const u = cleanUrl(url);
+  if(!u) return '';
+  return `<a href="${safeText(u)}" target="_blank" rel="noopener" class="sc-action ${cls}">${label}</a>`;
+}
+
+function countryFlag(country){
+  const FLAGS = {'Japan':'🇯🇵','China':'🇨🇳','South Korea':'🇰🇷','Germany':'🇩🇪','Australia':'🇦🇺','France':'🇫🇷','USA':'🇺🇸','Taiwan':'🇹🇼','Thailand':'🇹🇭','Netherlands':'🇳🇱'};
+  return FLAGS[country] || '🌍';
+}
+
+async function patchLandingScholarships(){
+  try{
+    if(!window.IROUP) return;
+    const raw = await IROUP.getAll(IROUP.SHEETS.SCHOLAR);
+    const active = raw
+      .map(x => ({...x, _badge: scholarDeadlineBadge(x['วันเปิดรับ'], x['วันปิดรับ']), _status: scholarStatus(x)}))
+      .filter(x => x._status === 'open')
+      .sort((a,b) => {
+        if(isPinned(a) && !isPinned(b)) return -1;
+        if(isPinned(b) && !isPinned(a)) return 1;
+        return (a._badge.days || 99999) - (b._badge.days || 99999);
+      })
+      .slice(0, 3);
+
+    const targets = [
+      document.getElementById('scholarGrid'),
+      document.querySelector('.scholar-grid')
+    ].filter(Boolean);
+
+    if(!targets.length) return;
+    const grid = targets[0];
+
+    if(!active.length){
+      grid.innerHTML = `<div class="skeleton-card" style="grid-column:1/-1;text-align:center;color:var(--gray-600)">ยังไม่มีทุนที่เปิดรับในขณะนี้</div>`;
+      return;
+    }
+
+    grid.innerHTML = active.map(x => {
+      const poster = pickScholarPoster(x);
+      const country = x['ประเทศ'] || '';
+      const covers = String(x['ครอบคลุม'] || x['จำนวนเงิน'] || '').split(',').filter(Boolean).slice(0,3);
+      return `
+        <div class="scholar-card hover-lift">
+          ${poster ? `<div class="sc-poster"><img src="${safeText(poster)}" loading="lazy" alt="${safeText(x['ชื่อทุน']||'Scholarship')}" onerror="this.onerror=null;this.src='Globy_IROUP.png'"></div>` : ''}
+          <div class="sc-top">
+            <div class="sc-flag-wrap" style="background:#E8F6FD">${countryFlag(country)}</div>
+            <div class="sc-info">
+              <div class="sc-title">${safeText(x['ชื่อทุน'] || '-')}</div>
+              <div class="sc-org">${safeText(x['สถาบัน'] || '')}</div>
+            </div>
+            <span class="sc-badge ${x._badge.cls === 's-open' ? 'sc-open' : 'sc-soon'}">${x._badge.text}</span>
+          </div>
+          <div class="sc-covers">
+            ${covers.map(c => `<span class="sc-tag">${safeText(c.trim())}</span>`).join('')}
+            ${x['ระดับ'] ? `<span class="sc-tag">${safeText(x['ระดับ'])}</span>` : ''}
+          </div>
+          <div class="sc-actions">
+            ${landingLink(x['Link'],'รายละเอียด')}
+            ${landingLink(x['Link'],'สมัคร','apply')}
+            ${landingLink(x['ไฟล์_URL'],'ไฟล์แนบ','file')}
+          </div>
+          <div class="sc-bottom">
+            <span class="sc-deadline">⏰ ปิดรับ: ${safeText(x['วันปิดรับ'] || '-')}</span>
+            <span class="sc-days urgent">${x._badge.text}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }catch(err){
+    console.error('Landing scholar patch error', err);
+    const grid = document.getElementById('scholarGrid') || document.querySelector('.scholar-grid');
+    if(grid){grid.innerHTML = `<div class="skeleton-card" style="grid-column:1/-1;text-align:center;color:var(--gray-600)">ขณะนี้ไม่สามารถโหลดข้อมูลทุนได้ กรุณาลองใหม่อีกครั้ง</div>`;} 
+  }
+}
+
+document.addEventListener('DOMContentLoaded', patchLandingScholarships);
+</script>
+
 </body>
 </html>
