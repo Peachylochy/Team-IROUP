@@ -202,7 +202,7 @@ footer{background:var(--navy-dark);padding:24px 5%;text-align:center;color:rgba(
 
 <footer>© 2569 International Relations Office · University of Phayao</footer>
 
-<script src="iroup-config.js"></script>
+<script src="iroup-config.js" defer></script>
 <script>
 let allScholar = [];
 let currentFilter = '';
@@ -309,7 +309,10 @@ function setLang(lang) {
   document.querySelectorAll('.nav-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang));
 }
 
-loadData();
+document.addEventListener('DOMContentLoaded', loadData);
+} else {
+  loadData();
+}
 </script>
 
 
